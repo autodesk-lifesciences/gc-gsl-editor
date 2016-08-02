@@ -14,7 +14,6 @@ export default class Statusbar extends Component {
     }
   }
 
-
   toggleConsole = () => {
     console.log("Not implemented: Toggle console visiblity");
   }

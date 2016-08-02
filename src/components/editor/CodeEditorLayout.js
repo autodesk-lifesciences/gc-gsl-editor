@@ -5,6 +5,9 @@ import Statusbar from './Statusbar';
 import * as compiler from '../../behavior/compiler/client';
 import * as canvas from '../../behavior/canvas/output';
 const config = require('../../behavior/compiler/config.json');
+const extensionConfig = require('../../../package.json');
+
+import ToolbarMenu from './ToolbarMenu';
 
 export default class CodeEditorLayout extends Component {
   static propTypes = {
@@ -17,6 +20,7 @@ export default class CodeEditorLayout extends Component {
       editorContent: '',
       resultContent: '',
       statusMessage: 'Begin typing GSL code. Drag and drop blocks or GSL commands from the Inventory to use them in a script.',
+      showDownloadMenu: false,
     };
   }
 
@@ -37,7 +41,7 @@ export default class CodeEditorLayout extends Component {
   runCode = (e) => {
     console.log(`Sending code to the server: ${this.state.editorContent}`);
     this.onStatusMessageChange('Running code...');
-    compiler.run(this.state.editorContent, config.arguments).then((data) => {
+    compiler.run(this.state.editorContent, config.arguments, window.constructor.api.projects.projectGetCurrentId()).then((data) => {
       this.onResultContentChange(data.result);
       this.onStatusMessageChange('Program exited with status code: ' + data.status);
       if (data.status == 0)   // attempt to render in the canvas only if all is well.
@@ -45,19 +49,38 @@ export default class CodeEditorLayout extends Component {
     });
   };
 
-  downloadFile = () => {
-    const textType = 'text/plain';
+  saveCode = (e) => {
+    window.constructor.extensions.files.write(
+      window.constructor.api.projects.projectGetCurrentId(),
+      extensionConfig.name,
+      'project.gsl',
+      this.state.editorContent
+    )
+    .then(()=> {
+      this.onStatusMessageChange('Saved.');
+    })
+    .catch((err) => {
+      this.onStatusMessageChange('Failed to save the GSL code on the server.');
+    })
+  };
+
+  downloadFile = (evt) => {
+    console.log("Launch menu");
+    debugger;
+    this.onMenuToggle(true);
+    /*const textType = 'text/plain';
     const name = 'snippet.gsl';
     var a = document.getElementById("Download-a");
     let file = new Blob([this.state.editorContent], {type: textType});
     a.href = URL.createObjectURL(file);
-    a.download = name;
+    a.download = name;*/
   }
 
   showGSLLibrary = () => {
     window.constructor.api.ui.inventoryToggleVisibility(true);
     window.constructor.api.ui.inventorySelectTab('gsl');
   }
+
 
   // Toggles comments
   toggleComment = () => {
@@ -86,7 +109,6 @@ export default class CodeEditorLayout extends Component {
           addComment = false;
         }        
       }
-
 
       for(var token of this.codeEditor.ace.editor.session.getTokens(selectionRange.end.row)) {
         if (token.type === 'comment') {
@@ -119,6 +141,12 @@ export default class CodeEditorLayout extends Component {
     }
   }
 
+  onMenuToggle = (value) => {
+    this.setState( {
+      showDownloadMenu: value
+    });
+  }
+
   // Make the toolbar items.
   getToolbarItems = () => {
     return [
@@ -126,6 +154,10 @@ export default class CodeEditorLayout extends Component {
         label: 'Run',
         action: this.runCode,
         imageUrl: '/images/ui/run_icon.svg'
+      },
+      {
+        label: 'Save',
+        action: this.saveCode,
       },
       {
         label: 'GSL Library',
@@ -155,8 +187,7 @@ export default class CodeEditorLayout extends Component {
     let editorComponent;
     return (
         <div className="CodeEditorLayout" style={divStyle}>
-          <Toolbar 
-            toolbarItems={this.getToolbarItems()} />
+          <Toolbar toolbarItems={this.getToolbarItems()} />
           <CodeEditorAce 
             ref = {(el) => {
                 if (el) {
@@ -166,6 +197,7 @@ export default class CodeEditorLayout extends Component {
             }
           	callbackParent={this.onEditorContentChange} 
           	value={this.state.editorContent} />
+          <ToolbarMenu isOpen={this.state.showDownloadMenu} changeState={this.onMenuToggle} />
           <Statusbar message={this.state.statusMessage}/>
         </div>
     );

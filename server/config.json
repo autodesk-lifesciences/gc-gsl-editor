@@ -1,0 +1,35 @@
+{
+	"fileArguments" : {
+    	"--flat": {
+    		"arguments" : [ "<filePath>" ],
+    		"fileName" : "gslOutFlat.txt"	
+    	},
+    	"--json" : {
+    		"arguments": [ "<filePath>" ],
+    		"fileName": "gslOut.json"
+    	},
+    	"--ape" : {
+    		"arguments" : [ "<outDir>", "<prefix>" ],
+    		"fileName": "gslOut"
+    	},
+    	"--cm" : {
+    		"arguments" : [ "<outDir>", "<prefix>"],
+    		"fileName": "gslOut.cm"
+    	},
+    	"--primers" : {
+    		"arguments" : ["<filePath>"],
+    		"fileName": "gslOut.primers.txt"
+    	},
+    	"--docstring" : {
+    		"arguments" : ["<filePath>"],
+    		"fileName": "gslOut.doc"
+    	},
+    	"--name2id" : {
+    		"arguments" : ["<filePath>"],
+    		"fileName": "gslOut.name2id.txt"
+    	}
+	},
+	"gslFile" : {
+		"fileName" : "project.gsl"
+	}
+}

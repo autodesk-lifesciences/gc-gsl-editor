@@ -5,7 +5,12 @@ import path from 'path'
 import fs from 'fs';
 import { exec, spawn } from 'child_process';
 
-// read the environment variable and set the GSL directory.
+import { createProjectFilePath, createProjectFilesDirectoryPath } from '../../../server/utils/filePaths';
+var argConfig = require('./config.json');
+
+// read the environment variables and set the GSL directory.
+// Note: It is mandatory to specify the GSL_EXE path as the path of 
+// the binary file could change based on the project settings.
 let gslDir, gslBinary;
 if (process.env.GSL_DIR)
   gslDir = process.env.GSL_DIR;
@@ -13,13 +18,57 @@ if (process.env.GSL_EXE)
   gslBinary = process.env.GSL_EXE;
 
 const envVariables = `GSL_LIB=${gslDir}/data/lib`;
-const outputFile = '/tmp/placeholder.json';
-
 const router = express.Router();
 const jsonParser = bodyParser.json({
 	strict: false,
 }); 
 
+
+/* Preprocess arguments to find the arguments that create files */
+const preprocessArgs = (projectId, extensionKey, args) => {
+  let modifiedArgs = args;
+  for (let key of Object.keys(modifiedArgs)) {
+    if (argConfig.fileArguments.hasOwnProperty(key)) {
+      // Get or create a type for this file and modify the argument string.
+      let argCounter = 0;
+      for (let argType of argConfig.fileArguments[key].arguments) {
+        if (argType === '<filePath>') {
+          modifiedArgs[key][argCounter] = createProjectFilePath(projectId, extensionKey, argConfig.fileArguments[key].fileName);
+        }
+        else if (argType === '<prefix>') {
+          modifiedArgs[key][argCounter] = argConfig.fileArguments[key].fileName;
+        }
+        else if (argType === '<outDir>') {
+          modifiedArgs[key][argCounter] = createProjectFilesDirectoryPath(projectId, extensionKey);
+        }
+        argCounter++;
+      }
+    }
+  }
+  console.log('The modified args are ', modifiedArgs);
+  return modifiedArgs;
+}
+
+/* Make argument string */
+const makeArgumentString = (args) => {
+  let argumentString = '';
+  for (let key of Object.keys(args)){
+    // create the option string.
+    argumentString += " " + key + " ";
+    argumentString += args[key].join(" ");
+  }
+  return argumentString;
+}
+
+/* Get the JSON out file path */
+const getJsonOutFile = (args) => {
+  const json = '--json';
+  if (args.hasOwnProperty(json)) {
+    return args[json][0];
+  }
+}
+
+/* Router for running GSL programs on the server */
 router.post('/gslc', jsonParser, (req, res, next) => {
   const input = req.body;
   //let content = "#refgenome S288C \n" + input.code;
@@ -38,11 +87,12 @@ router.post('/gslc', jsonParser, (req, res, next) => {
     res.status(501).json(result); // Service not implemented
   } 
   else {
-  crypto.randomBytes(16, function(err, buffer) {
-    const filename = buffer.toString('hex');
-    const filePath = '/tmp/' + filename + '.gsl';
+    const modifiedArgs = preprocessArgs(input.projectId, input.extension, input.args);
+    const jsonOutFile =  getJsonOutFile(modifiedArgs);
+    argumentString = makeArgumentString(modifiedArgs);
+    const projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
+    const filePath = createProjectFilePath(input.projectId, input.extension, argConfig.gslFile.fileName);
     let output = '';
-
     // write out a file with the code.
     fs.writeFile(filePath, content, function(err) {
 
@@ -56,8 +106,7 @@ router.post('/gslc', jsonParser, (req, res, next) => {
         if (err) {
           console.log('The GSL command encountered an error:');
           console.log(err);
-        }
-        
+        }       
       });
 
      process.stdout.on('data', function(data) {
@@ -68,13 +117,13 @@ router.post('/gslc', jsonParser, (req, res, next) => {
         output += data;
       });
 
-      // find the exit code of the process.
-      
+      // find the exit code of the process.     
       process.on('exit', function(code) {
-        //console.log("Output:", output);
+        // mask all server paths
+        output = output.replace(new RegExp(projectFileDir, 'g'), '<Server_Path>');
         console.log('Child process exited with an exit code of ', code);
         if (code == 0) {
-          fs.readFile(outputFile, 'utf8', (err, contents) => {
+          fs.readFile(jsonOutFile, 'utf8', (err, contents) => {
             if (err) {
               res.status(500).send('Error reading the json file.');
               return;
@@ -96,9 +145,8 @@ router.post('/gslc', jsonParser, (req, res, next) => {
           res.status(422).json(result);
         }
       });
-    });
-  });
-}
+    }); 
+  }
 });
 
 module.exports = router;

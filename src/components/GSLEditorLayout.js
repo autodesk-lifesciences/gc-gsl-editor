@@ -21,12 +21,11 @@ export default class GSLEditorLayout extends Component {
   };
 
   render() {
-
     return (
-        <div className="GSLEditorLayout">
-          <CodeEditorLayout onSubmit={this.onResultContentChange}/>
-          <ConsoleLayout resultContent={this.state.resultContent} resultChange={this.onResultContentChange}/>
-        </div>
+      <div className="GSLEditorLayout">
+        <CodeEditorLayout onSubmit={this.onResultContentChange}/>
+        <ConsoleLayout resultContent={this.state.resultContent} resultChange={this.onResultContentChange}/>
+      </div>
     );
   }
 }
