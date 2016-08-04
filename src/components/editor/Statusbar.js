@@ -1,32 +1,29 @@
 import React, {PropTypes, Component} from 'react';
-require('../../styles/styles.css');
 
+require('../../styles/styles.css');
 
 export default class Statusbar extends Component {
   static propTypes = {
-    message: PropTypes.string
+    message: PropTypes.string,
+    showConsole: PropTypes.func,
+    isConsoleVisible: PropTypes.bool,
   };
 
   constructor(props) {
     super(props);
-    this.state = {
-      consoleVisible: false,
-    }
-  }
-
-  toggleConsole = () => {
-    console.log("Not implemented: Toggle console visiblity");
   }
 
   render() {
     return (
-      <div className='gslStatusbar'>
-        <div className='gslStatusbarText'>
+      <div className='Statusbar'>
+        <div className='StatusbarText'>
           { this.props.message }  
         </div>
-        <div className='gslConsoleButton'>
-          <input className='gslConsoleButton' type='button' value='Console' onClick={this.toggleConsole}/>
-        </div>
+        <input className='StatusbarButton'
+          type='button'value='Console'
+          onClick={this.props.showConsole}
+          style={{ display: this.props.isConsoleVisible ? 'none' : 'block'  }}
+        />
       </div>
     );
   }

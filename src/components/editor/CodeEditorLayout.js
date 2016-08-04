@@ -11,7 +11,11 @@ import ToolbarMenu from './ToolbarMenu';
 
 export default class CodeEditorLayout extends Component {
   static propTypes = {
-    onSubmit: PropTypes.func.isRequired
+    onEditorContentChange: PropTypes.func.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    onToggleConsoleVisibility: PropTypes.func.isRequired,
+    onStatusContentChange:PropTypes.func.isRequired,
+    isConsoleOpen: PropTypes.bool
   }
 
   constructor(props) {
@@ -21,20 +25,42 @@ export default class CodeEditorLayout extends Component {
       resultContent: '',
       statusMessage: 'Begin typing GSL code. Drag and drop blocks or GSL commands from the Inventory to use them in a script.',
       showDownloadMenu: false,
+      currentMenuPosition: {},
+      consoleVisible: true,
     };
   }
 
   onEditorContentChange = (content) => {
     this.setState({ editorContent: content });
+    this.props.onEditorContentChange(content);
   };
 
   onStatusMessageChange = (message) => {
   	this.setState({ statusMessage: message });
+    this.props.onStatusContentChange(message)
   };
 
   onResultContentChange = (result) => {
     this.setState({ resultContent: result });
     this.props.onSubmit(result);
+  }
+
+  onMenuToggle = (value) => {
+    this.setState( {
+      showDownloadMenu: value
+    });
+  }
+
+  onMenuPositionSet = (value) => {
+    this.setState( {
+      currentMenuPosition: value
+    });
+  }
+
+  showConsole = () => {
+    this.setState( { consoleVisible: true });
+    this.props.onToggleConsoleVisibility(this.state.consoleVisible);
+    window.dispatchEvent(new Event('resize'));
   }
 
   // Runs the GSL code
@@ -64,16 +90,12 @@ export default class CodeEditorLayout extends Component {
     })
   };
 
-  downloadFile = (evt) => {
-    console.log("Launch menu");
-    debugger;
+  downloadFile = (e) => {
     this.onMenuToggle(true);
-    /*const textType = 'text/plain';
-    const name = 'snippet.gsl';
-    var a = document.getElementById("Download-a");
-    let file = new Blob([this.state.editorContent], {type: textType});
-    a.href = URL.createObjectURL(file);
-    a.download = name;*/
+    this.onMenuPositionSet({
+      'x': e.target.getBoundingClientRect().left-10,
+      'y': e.target.getBoundingClientRect().bottom+10
+    })
   }
 
   showGSLLibrary = () => {
@@ -81,6 +103,15 @@ export default class CodeEditorLayout extends Component {
     window.constructor.api.ui.inventorySelectTab('gsl');
   }
 
+  componentDidMount() {
+   if (window.constructor.store['gslEditor'].hasOwnProperty('editorContent') && this.state.editorContent !== window.constructor.store['gslEditor']['editorContent']) {
+      console.log("Loading data from the store.");
+      console.log(window.constructor.store.gslEditor);
+      this.onEditorContentChange(window.constructor.store['gslEditor']['editorContent']);
+      this.onResultContentChange(window.constructor.store['gslEditor']['resultContent']);
+      this.onStatusMessageChange(window.constructor.store['gslEditor']['statusContent']);
+    }
+  }
 
   // Toggles comments
   toggleComment = () => {
@@ -141,19 +172,14 @@ export default class CodeEditorLayout extends Component {
     }
   }
 
-  onMenuToggle = (value) => {
-    this.setState( {
-      showDownloadMenu: value
-    });
-  }
-
   // Make the toolbar items.
   getToolbarItems = () => {
     return [
       {
         label: 'Run',
         action: this.runCode,
-        imageUrl: '/images/ui/run_icon.svg'
+        imageUrl: '/images/ui/run_icon.svg',
+        enabled: this.state.editorContent === '' ? false : true, 
       },
       {
         label: 'Save',
@@ -176,18 +202,107 @@ export default class CodeEditorLayout extends Component {
     ]
   };
 
+  downloadGslFile = () => {
+    const textType = 'text/plain';
+    const name = 'snippet.gsl';
+    var a = document.getElementById("Download-a");
+    let file = new Blob([this.state.editorContent], {type: textType});
+    a.href = URL.createObjectURL(file);
+    a.download = name;
+  }
+
+  saveToDisk = (fileUrl, fileName, buttonType) => {
+      var hyperlink = document.createElement('a');
+      hyperlink.href = fileUrl;
+      hyperlink.target = '_blank';
+      hyperlink.type = 'text/plain';
+      if (buttonType === 0)  // left click results in download else opens the file.
+        hyperlink.download = fileName || fileUrl;
+
+      var mouseEvent = new MouseEvent('click', {
+          view: window,
+          bubbles: true,
+          cancelable: true
+      });
+
+      hyperlink.dispatchEvent(mouseEvent);
+      (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href);
+    }
+
+  /* TODO: Bad. Make this configuable */
+  downloadFileItem = (evt) => { 
+    const fileMap = {
+      'gsl file' : 'project.gsl',
+      'json file' : 'gslOut.json',
+      'ape file' : 'gslOut.0.ape',
+      'txt file': 'gslOutFlat.txt',
+    }
+    const buttonType = evt.nativeEvent.button;
+
+    for (let key of Object.keys(fileMap)) {
+      if (evt.target.innerHTML.indexOf(key) !== -1) {
+        window.constructor.extensions.files.read(
+          window.constructor.api.projects.projectGetCurrentId(),
+          extensionConfig.name,
+          fileMap[key]
+        )
+        .then((response) => {
+          setTimeout(() => {
+            this.onStatusMessageChange('');
+          }, 2000);
+          this.onStatusMessageChange('Preparing to download the ' + key + ' associated with this project...');
+          this.saveToDisk(response.url, fileMap[key], buttonType);
+        })
+        .catch((err) => {
+          setTimeout(() => {
+            this.onStatusMessageChange('');
+          }, 5000);
+          this.onStatusMessageChange('Sorry, could not find a valid ' + key + ' associated with this project.');
+          console.log(err);
+        })
+      }
+    }
+  }
+
+  downloadMenuItems = () => {
+    return [
+      {
+        key: 'my-gsl-file',
+        text: 'gsl file',
+        disabled: false,
+        action: this.downloadFileItem,
+      },
+      {
+        key: 'my-json-file',
+        text: 'json file',
+        disabled: false,
+        action: this.downloadFileItem,
+      },
+      {
+        key: 'my-ape-file',
+        text: 'ape file',
+        disabled: false,
+        action: this.downloadFileItem,
+      },
+      {
+        key: 'my-txt-file',
+        text: 'txt file',
+        disabled: false,
+        action: this.downloadFileItem,
+      },
+    ];
+  };
+
   render() {
-    const divStyle = {
-      width: '100%',
-      height: '60%',
-      position: 'relative',
-      overflow: 'hidden',
-      display: 'inline-block',
-    };
     let editorComponent;
     return (
-        <div className="CodeEditorLayout" style={divStyle}>
+        <div className="CodeEditorLayout">
           <Toolbar toolbarItems={this.getToolbarItems()} />
+          <ToolbarMenu
+            isOpen={this.state.showDownloadMenu}
+            changeState={this.onMenuToggle}
+            position={this.state.currentMenuPosition}
+            toolbarMenuItems={this.downloadMenuItems()}/>
           <CodeEditorAce 
             ref = {(el) => {
                 if (el) {
@@ -196,9 +311,11 @@ export default class CodeEditorLayout extends Component {
               }
             }
           	callbackParent={this.onEditorContentChange} 
-          	value={this.state.editorContent} />
-          <ToolbarMenu isOpen={this.state.showDownloadMenu} changeState={this.onMenuToggle} />
-          <Statusbar message={this.state.statusMessage}/>
+          	value={this.state.editorContent}/>
+          <Statusbar
+            message={this.state.statusMessage}
+            showConsole={this.showConsole}
+            isConsoleVisible={this.props.isConsoleOpen}/>
         </div>
     );
   }

@@ -1,21 +1,15 @@
 import React, { Component, PropTypes } from 'react';
 
-/**
- * Popup window class. Accepts any component as it client.
- * Required properties:
- *
- * {String} title - title bar text for window
- * {Function} onClose - function to call when the window is closed
- * {ReactElement} client - element to place in the client area
- */
 export default class MenuItem extends Component {
   static propTypes = {
+    key: PropTypes.string,
     text: PropTypes.string.isRequired,
     action: PropTypes.func,
     disabled: PropTypes.bool,
     checked: PropTypes.bool,
     shortcut: PropTypes.string,
     classes: PropTypes.string,
+    data: PropTypes.object,
   };
 
   static defaultProps = {
@@ -35,7 +29,7 @@ export default class MenuItem extends Component {
     }
 
     return (
-      <div className={classes}
+      <div className={classes} data-id={this.props.key}
            onClick={(evt) => !this.props.disabled && this.props.action(evt)}>
         {check}
         {this.props.text}

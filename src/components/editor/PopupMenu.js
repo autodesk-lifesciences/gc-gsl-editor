@@ -42,12 +42,13 @@ export default class PopupMenu extends Component {
               }
             };
             return (
-                (<MenuItem key={item.text}
-                           disabled={item.disabled}
-                           classes={item.classes}
-                           text={item.text}
-                           action={boundAction}
-                           checked={item.checked}/>)
+              (<MenuItem
+                key={item.text}
+                disabled={item.disabled}
+                classes={item.classes}
+                text={item.text}
+                action={boundAction}
+                checked={item.checked}/>)
             );
           })}
         </div>

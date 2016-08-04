@@ -4,10 +4,17 @@ import PopupMenu from './PopupMenu';
 
 export default class ToolbarMenu extends Component {
 
-
   static propTypes = {
-    isOpen: PropTypes.bool,
+    isOpen: PropTypes.bool.isRequired,
+    position: PropTypes.object.isRequired,
     changeState: PropTypes.func,
+    toolbarMenuItems: React.PropTypes.arrayOf(
+      React.PropTypes.shape({
+        text: PropTypes.string.isRequired,
+        action: PropTypes.func.isRequired,
+        disabled: PropTypes.bool
+      })
+    )
   }
   constructor(props) {
     super(props);
@@ -17,32 +24,7 @@ export default class ToolbarMenu extends Component {
     }
   }
 
-  doAction = () => {
-    console.log("TODO: Download. Menu item clicked");
-  }
-
-  blockContextMenuItems = () => {
-    return [
-      {
-        text: '.gsl file',
-        disabled: false,
-        action: this.doAction,
-      },
-      {
-        text: '.json file',
-        disabled: false,
-        action: this.doAction,
-      },
-      {
-        text: '.ape file',
-        disabled: false,
-        action: this.doAction,
-      },
-    ];
-  };
-
   closePopups = (arg) => {
-    console.log("The popup was closed");
     this.props.changeState(false);
   }
 
@@ -50,9 +32,9 @@ export default class ToolbarMenu extends Component {
     return (
       <PopupMenu
         open={this.props.isOpen}
-        position={this.state.menuPosition}
+        position={this.props.position}
         closePopup={this.closePopups.bind(this)}
-        menuItems={this.blockContextMenuItems()}/>
+        menuItems={this.props.toolbarMenuItems}/>
       );
   }
 }

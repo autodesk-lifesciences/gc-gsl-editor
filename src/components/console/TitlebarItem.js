@@ -12,27 +12,10 @@ export default class TitlebarItem extends Component {
 
 	render() {
 		return (
-			<div
-        style={{
-          display: 'inline-block',
-          lineHeight: '30px',
-          verticalAlign: 'center',
-          margin: '0px 5px',
-          padding: '0px 20px 0px 60px',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'right',
-          backgroundImage: `url(${this.props.imageUrl})`,
-          cursor: 'pointer',
-          float: 'right',
-        }}
+			<div className="TitleBarItem"
+        style={{backgroundImage: `url(${this.props.imageUrl})` }}
         onClick = {this.props.action} > 
-        <a
-          style={{
-            color: '#EEEEEE', //color: '#4c505f',
-            textAlign: 'left',
-          }} >
-          {this.props.label}
-        </a>
+        <span>{this.props.label}</span>
       </div>
     );
 	}       

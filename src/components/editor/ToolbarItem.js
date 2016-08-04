@@ -17,12 +17,12 @@ export default class ToolbarItem extends Component {
 
 	render() {
 		return (
-			<div
+			<div classsName='ToolbarItem'
         style={{
           display: 'inline-block',
           lineHeight: '30px',
           verticalAlign: 'center',
-          margin: '0px 5px',
+          margin: '0px 0px',
           padding: '0px 16px',
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'left',

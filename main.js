@@ -6,42 +6,29 @@ import GSLEditorLayout from './src/components/GSLEditorLayout';
 let myvariable = null;
 function render(container, options) {
 
-  /*var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
-    var last = [];
+  var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
     var current = state.focus.blockIds;
-    if (current &&
-      current.length &&
-        (current.length !== last.length ||
-        !current.every(function (item, index) {return item !== last[index]}))
-    ) {
-
-      var block = state.blocks[current[0]];
-      block.getSequence().then(function (sequence) {
-        //console.log(sequence);
-      });
-
-      //console.log(current);
-      last = current;
+    if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
+      // save the current content of the editor.
+      window.constructor.extensions.files.write(
+        window.constructor.api.projects.projectGetCurrentId(),
+        'gslEditor',
+        'project.gsl',
+        window.constructor.store['gslEditor']['editorContent'],
+      )
+    } else if (lastAction.type === window.constructor.constants.actionTypes.FOCUS_PROJECT) {
+        console.log('TODO: Load the server content for the project. (Dont want to be overwriting GSL though)');
     }
-  });*/
+    }
+  );
 
-  //find out the size of the element we are rendering into
-  console.log(options);
-
-  //listen to changes in the Constructor app
-  var subscriber = window.constructor.store.subscribe(function storeSubscription(state, lastAction) {
-
-    console.log('The state is ', state);
-    console.log('The lastaction is ', lastAction);
-    console.log(lastAction.type);
-
-  });
-  subscriber();
+  if (!window.constructor.store.hasOwnProperty('gslEditor')) {
+    window.constructor.store['gslEditor'] = {};
+  }
   ReactDOM.render(<GSLEditorLayout/>, container);
   //return an unsubscribe function to clean up when the extension unmounts
   return function () {
-    console.log('i am called when the extension is closed');
-    //subscriber();
+    subscriber();
   };
 
 }

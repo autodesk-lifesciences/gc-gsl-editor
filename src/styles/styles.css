@@ -2,38 +2,47 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 .CodeEditorLayout {
-  display: block;
   width: 100%;
   position: relative;
   overflow: hidden;
-
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
-div.gslStatusbar {
-  display: block;
-  text-align: left;
+.Editor {
+  width: 100%;
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+.Statusbar {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: row;
+  justify-content: space-between;
+  align-content: left;
+  padding: 0 1em;
   width: 100%;
   height: 30px;
+  align-self: flex-end;
+  text-align: left;
   background: #EAEBF1;
   line-height: 1rem;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-  position: absolute;
-  bottom: 0; left: 0;
+  text-overflow: ellipsis;  
 }
 
-div.gslStatusbarText {
+.StatusbarText {
   display: inline-block;
   color: #757884;
-  padding-left: 10px;
-  padding-top: 9px;
-  text-align: left;
-  width: 85%;
-  height: 30px;
   background: #EAEBF1;
   font-size: 12px;
   font-family: Helvetica, Arial, sans-serif;
@@ -41,26 +50,75 @@ div.gslStatusbarText {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding-top: 9px;
 }
 
-div.gslConsoleButton {
-    padding-right: 15px;
-    padding-top: 5px;
-    width:15%;
-}
-.gslConsoleButton {
-  float: right;
+input.StatusbarButton {
+  flex-shrink: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+  border: 1px solid white;
+  padding: 0.25em 0.7em;
+  background: #FFFFFF;
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
 }
 
-div.titlebar {
-  display: inline-block;
-  background: #6B6F7C;
+.Toolbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  border: lightgrey;
+  border-width: thin;
+  border-style: none none solid none;
+}
+
+.ToolbarItems {}
+
+/* console stuff */
+
+.ConsoleLayout {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ConsoleLayout-resizeHandle {
+    cursor: ns-resize;
+    height: 5px;
+    flex-shrink: 0;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 10;
+    background-color: transparent;
+}
+
+.ConsoleLayout-resizeHandle:hover {
+  background: #999FB3;
+}
+
+.ConsoleLayout-resizeHandle.dragging {
+  background: #3F82FF;
+}
+
+.Titlebar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-shrink: 0;
+
   height: 30px;
   width: 100%;
+  background: #6B6F7C;
   line-height: 12px;
 }
 
-div.titlebarText {
+.TitlebarText {
   display: inline-block;
   font-family: Helvetica, Arial, sans-serif;
   color: #EEEEEE;
@@ -68,22 +126,38 @@ div.titlebarText {
   padding-top: 9px;
 }
 
-.consoleLayout {
-  position: absolute;
-  bottom: 0;
-  display: none;
+.TitleBarItem {
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  cursor: pointer;
+  color: #EEEEEE;
+  margin-right: 10px;
+  padding-right: 10px;
+  padding-top: 9px;
+  padding-left: 10px;
+  padding-bottom: 3px;
+}
+
+.TitleBarItem span {
+  display: inline-block;
 }
 
 .ResultViewer {
-  height: 140px;
   background: rgba(0,0,0,0.7);
   color: white;
   overflow:auto;
 }
 
+.ResultViewer.active {
+  min-height: 100px;
+  flex-grow: 1;
+}
+
+
 .preResult {
   white-space: pre;
-    margin-top: 0;
+    margin-top: 0;  
     display: block;
     padding-left: 9px;
     padding-top: 2px;

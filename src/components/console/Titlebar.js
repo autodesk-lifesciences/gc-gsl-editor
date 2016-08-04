@@ -4,25 +4,37 @@ import TitlebarItem from './TitlebarItem';
 export default class Titlebar extends Component {
 
   static propTypes = {
-    resultChange: PropTypes.func,
-    isVisible: PropTypes.bool.isRequired,
+    items: React.PropTypes.arrayOf(
+      React.PropTypes.shape({
+        label: PropTypes.string.isRequired,
+        imageUrl: PropTypes.string,
+        action: PropTypes.func.isRequired,
+        enabled: PropTypes.bool
+      })
+    )
   }
 
 	constructor(props) {
     super(props);
-    this.state = {
-      isVisible: true,
-    };
   }
 
 
   render() {
     return (
-      <div className="titlebar">
-      <div className="titlebarText">
-        GSL console
+      <div className="Titlebar">
+        <div className="TitlebarText">
+          GSL console
         </div>
-         <TitlebarItem label='Clear Console' action={this.props.resultChange.bind(this, '')} imageUrl='/images/ui/close_icon.svg' />
+        <div className="TitlebarItems">
+          {this.props.items.map(function(item, i){
+            return <TitlebarItem
+              key={i}
+              label={item.label}
+              action={item.action}
+              imageUrl={item.imageUrl}
+            />;
+          })}
+        </div>
       </div>
       );
   }

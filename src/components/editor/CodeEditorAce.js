@@ -9,8 +9,6 @@ import '../../behavior/editor/brace/ext/language_tools';
 
 // Code editor
 export default class CodeEditorAce extends Component {
-
-
   static propTypes = {
     callbackParent: PropTypes.func.isRequired,
     value: PropTypes.string.isRequired,
@@ -20,7 +18,12 @@ export default class CodeEditorAce extends Component {
     value: '',
   };
 
+  state = {
+    editorHeight: 200,
+  };
+
   componentDidMount() {
+    //todo - unmount this - see if there is a dispose() funciton, ask duncan
     window.constructor.DnD.registerTarget(this.element, {
       drop: this.onDrop.bind(this),
       zorder: 1000,
@@ -48,16 +51,30 @@ export default class CodeEditorAce extends Component {
     this.ace.editor.completers = [completer];*/
     
     this.ace.editor.completers.push({
-    getCompletions: function(editor, session, pos, prefix, callback) {
-        callback(null, autocompleteList.geneList);
-    },
-    getDocTooltip: function(item) {
-      if (autocompleteList.geneDocStrings[item.value]) {
-        item.docHTML = "<textarea rows=4 cols=40 enabled=false>" + autocompleteList.geneDocStrings[item.value] + " </textarea>";
+      getCompletions: function(editor, session, pos, prefix, callback) {
+          callback(null, autocompleteList.geneList);
+      },
+      getDocTooltip: function(item) {
+        if (autocompleteList.geneDocStrings[item.value]) {
+          item.docHTML = "<textarea rows=4 cols=40 enabled=false>" + autocompleteList.geneDocStrings[item.value] + " </textarea>";
+        }
       }
-    }
-  });
+    });
 
+    this.listener = window.addEventListener('resize', (evt) => {
+      this.setState({editorHeight: this.getEditorHeight() });
+    });
+    this.setState({editorHeight: this.getEditorHeight() });
+  }
+
+  componentWillUnmount() {
+    this.listener();
+  }
+
+  getEditorHeight = () => {
+    //return this.element.getBoundingClientRect().height;
+    const editorHeight =  document.querySelector('.GSLEditorLayout').getBoundingClientRect().height - document.querySelector('.ConsoleLayout').getBoundingClientRect().height - 60;
+    return editorHeight;
   }
 
   // This editor seems to be returning the content of the editor rather than the event
@@ -74,13 +91,9 @@ export default class CodeEditorAce extends Component {
 
 
   render() {
-    const textCodeStyle = {
-      width: '100%',
-      display: 'inline-block',
-    };
 
     return (
-        <div style={textCodeStyle} ref={(el) => {
+        <div className="Editor" ref={(el) => {
             if (el) {
               this.element = el;
             }
@@ -95,13 +108,11 @@ export default class CodeEditorAce extends Component {
              name="aceEditor"
              editorProps={{ $blockScrolling: Infinity}}
              setOptions={{dragEnabled: true}}
-             enableBasicAutocompletion={ true}
+             enableBasicAutocompletion={true}
              enableSnippets={true}
              enableLiveAutocompletion={true}
              width="Infinity"
-             height="200px"
-             maxLines={11}
-             minLines={5}
+             height={this.state.editorHeight + 'px'}
              showPrintMargin={false}
              value={this.props.value}
              onChange={this.handleChange}/>

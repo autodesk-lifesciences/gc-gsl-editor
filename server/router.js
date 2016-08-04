@@ -71,8 +71,8 @@ const getJsonOutFile = (args) => {
 /* Router for running GSL programs on the server */
 router.post('/gslc', jsonParser, (req, res, next) => {
   const input = req.body;
-  //let content = "#refgenome S288C \n" + input.code;
-  let content = input.code;
+  let content = "#refgenome S288C \n" + input.code; 
+  //let content = input.code;
   let argumentString = input.arguments;
 
   // make sure that the server is configured with GSL before sending out

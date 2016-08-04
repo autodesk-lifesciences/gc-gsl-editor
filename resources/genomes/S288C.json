@@ -1,5 +1,10 @@
 [
   {
+    "systematicName": "S288C", 
+    "commonName": "", 
+    "description": "Strain used in the systematic sequencing project, the sequence stored in SGD. S288C does not form pseudohyphae. In addition, since it has a mutated copy of HAP1, it is not a good strain for mitochondrial studies. It has an allelic variant of MIP1 which increases petite frequency. S288C strains are gal2- and they do not use galactose anaerobically."   
+  },
+  {
     "systematicName": "TEL01L-TR", 
     "commonName": "", 
     "description": "Terminal stretch of telomeric repeats on the left arm of Chromosome I"

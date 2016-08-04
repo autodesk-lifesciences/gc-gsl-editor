@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
   "geneticConstructor": {
-    "readable": "GSL Editor",
+    "readable": "GSL Editor (S288C)",
     "region": "sequenceDetail",
     "router": "server/router.js"
   },
@@ -16,6 +16,7 @@
   "dependencies": {
     "brace": "^0.8.0",
     "jquery": "^3.1.0",
+    "lodash.throttle": "^4.1.0",
     "react": "^0.14.8",
     "react-ace": "^3.5.0",
     "react-dom": "0.14.2"
