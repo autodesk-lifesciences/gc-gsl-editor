@@ -1,6 +1,7 @@
 import React, { PropTypes, Component } from 'react';
 import CodeEditorLayout from './editor/CodeEditorLayout';
 import ConsoleLayout from './console/ConsoleLayout';
+import myState from '../../state';
 
 export default class GSLEditorLayout extends Component {
 
@@ -12,33 +13,35 @@ export default class GSLEditorLayout extends Component {
       statusContent: '',
       isConsoleOpen: true,
     }
-
   }
 
   onEditorContentChange = (content) => {
     this.setState({ editorContent: content });
-    window.constructor.store['gslEditor']['editorContent']  = content;
+    myState.editorContent = content;
+    window.constructor.store['gslEditor'].editorContent = content;
   };
 
   onResultContentChange = (content) => {
     this.setState({ resultContent: content });
-    window.constructor.store['gslEditor']['resultContent'] = content;
+    myState.resultContent = content;
+    window.constructor.store['gslEditor'].resultContent = content;
   };
 
   onStatusContentChange = (content) => {
     this.setState( { statusContent: content});
-    window.constructor.store['gslEditor']['statusContent'] = content;
+    myState.statusContent = content;
+    window.constructor.store['gslEditor'].statusContent = content;
   };
 
   onConsoleStateChange = (value) => {
     this.setState({ isConsoleOpen: value });
-    setTimeout(() => {window.dispatchEvent(new Event('resize'))}, 30);
-    window.constructor.store['gslEditor']['isConsoleOpen'] = value;
+    myState.isConsoleOpen = value;
+    window.constructor.store['gslEditor'].onConsoleStatusChange = value;
+    setTimeout(() => {window.dispatchEvent(new Event('resize'))}, 40);
   };
 
 
   render() {
-
     return (
       <div className="GSLEditorLayout">
         <CodeEditorLayout

@@ -2,12 +2,12 @@ import React, {PropTypes, Component} from 'react';
 import CodeEditorAce from './CodeEditorAce';
 import Toolbar from './Toolbar';
 import Statusbar from './Statusbar';
+import ToolbarMenu from './ToolbarMenu';
 import * as compiler from '../../behavior/compiler/client';
 import * as canvas from '../../behavior/canvas/output';
 const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
-
-import ToolbarMenu from './ToolbarMenu';
+import myState from '../../../state';
 
 export default class CodeEditorLayout extends Component {
   static propTypes = {
@@ -33,6 +33,10 @@ export default class CodeEditorLayout extends Component {
   onEditorContentChange = (content) => {
     this.setState({ editorContent: content });
     this.props.onEditorContentChange(content);
+    if (content === '')
+      this.onStatusMessageChange('Begin typing GSL code. Drag and drop blocks or GSL commands from the Inventory to use them in a script.');
+    else if (this.state.statusMessage.startsWith('Begin'))
+      this.onStatusMessageChange(' ');
   };
 
   onStatusMessageChange = (message) => {
@@ -104,18 +108,20 @@ export default class CodeEditorLayout extends Component {
   }
 
   componentDidMount() {
-   if (window.constructor.store['gslEditor'].hasOwnProperty('editorContent') && this.state.editorContent !== window.constructor.store['gslEditor']['editorContent']) {
-      console.log("Loading data from the store.");
-      console.log(window.constructor.store.gslEditor);
-      this.onEditorContentChange(window.constructor.store['gslEditor']['editorContent']);
-      this.onResultContentChange(window.constructor.store['gslEditor']['resultContent']);
-      this.onStatusMessageChange(window.constructor.store['gslEditor']['statusContent']);
+      // console.log('coming here');
+        //       this.onEditorContentChange(myState.editorContent);
+      //this.onResultContentChange(myState.resultContent);
+      //this.onStatusMessageChange(myState.statusContent);
+    if (window.constructor.store['gslEditor'].hasOwnProperty('editorContent') && this.state.editorContent !== window.constructor.store['gslEditor'].editorContent) {
+      this.onEditorContentChange(window.constructor.store['gslEditor'].editorContent);
+      this.onResultContentChange(window.constructor.store['gslEditor'].resultContent);
+      this.onStatusMessageChange(window.constructor.store['gslEditor'].statusContent);
+
     }
   }
 
   // Toggles comments
   toggleComment = () => {
-
     const uncomment = function(ace, token, pattern, row) {
       const column = token.value.indexOf(pattern) + token.start;
       console.log('pattern: ',pattern, ' column:', column);
@@ -200,7 +206,7 @@ export default class CodeEditorLayout extends Component {
         imageUrl: '/images/ui/download_icon.svg'
       }
     ]
-  };
+  }
 
   downloadGslFile = () => {
     const textType = 'text/plain';
@@ -209,6 +215,25 @@ export default class CodeEditorLayout extends Component {
     let file = new Blob([this.state.editorContent], {type: textType});
     a.href = URL.createObjectURL(file);
     a.download = name;
+  }
+
+  downloadZipFile = () => {
+    var sampleBytes = new Int8Array(4096);
+
+    var saveByteArray = (function () {  
+      var a = document.createElement("a");
+      document.body.appendChild(a);
+      a.style = "display: none";
+      window.constructor.extensions.files.read()
+      return function (data, name) {
+        var blob = new Blob(data, {type: "octet/stream"}),
+        url = window.URL.createObjectURL(blob);
+        a.href = url;
+        a.download = name;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      };
+    }());
   }
 
   saveToDisk = (fileUrl, fileName, buttonType) => {
@@ -234,9 +259,11 @@ export default class CodeEditorLayout extends Component {
     const fileMap = {
       'gsl file' : 'project.gsl',
       'json file' : 'gslOut.json',
-      'ape file' : 'gslOut.0.ape',
+      'ape file ' : 'gslOut.0.ape',
+      'ape zip file' : 'gslOut.ape.zip',
       'txt file': 'gslOutFlat.txt',
     }
+    console.log('Coming here');
     const buttonType = evt.nativeEvent.button;
 
     for (let key of Object.keys(fileMap)) {
@@ -251,6 +278,7 @@ export default class CodeEditorLayout extends Component {
             this.onStatusMessageChange('');
           }, 2000);
           this.onStatusMessageChange('Preparing to download the ' + key + ' associated with this project...');
+          console.log('The response is ', response);
           this.saveToDisk(response.url, fileMap[key], buttonType);
         })
         .catch((err) => {
@@ -281,6 +309,12 @@ export default class CodeEditorLayout extends Component {
       {
         key: 'my-ape-file',
         text: 'ape file',
+        disabled: false,
+        action: this.downloadFileItem,
+      },
+      {
+        key: 'my-ape-zip-file',
+        text: 'ape zip file',
         disabled: false,
         action: this.downloadFileItem,
       },

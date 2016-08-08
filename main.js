@@ -2,8 +2,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import GSLEditorLayout from './src/components/GSLEditorLayout';
+const extensionConfig = require('./package.json');
+import myState from './state';
 
-let myvariable = null;
 function render(container, options) {
 
   var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
@@ -12,7 +13,7 @@ function render(container, options) {
       // save the current content of the editor.
       window.constructor.extensions.files.write(
         window.constructor.api.projects.projectGetCurrentId(),
-        'gslEditor',
+        extensionConfig.name,
         'project.gsl',
         window.constructor.store['gslEditor']['editorContent'],
       )
@@ -30,7 +31,6 @@ function render(container, options) {
   return function () {
     subscriber();
   };
-
 }
 
-window.constructor.extensions.register('gslEditor', render);
+window.constructor.extensions.register(extensionConfig.name, render);

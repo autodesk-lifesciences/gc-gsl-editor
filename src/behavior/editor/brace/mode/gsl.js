@@ -91,7 +91,7 @@ var GslHighlightRules = function() {
             },
             {
                 token : "keyword.operator",
-                regex : "g|p|t|u|d|o|f|m|!|@",
+                regex : "g|p|t|u|d|o|f|m|!|@|~",
             },
             {
                 token : "keyword.operator",

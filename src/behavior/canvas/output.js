@@ -39,7 +39,9 @@ export const render = (assemblyList) => {
       window.constructor.api.blocks.blockSetSequence(block.id, dnaSlice.dna);
       // Add the block as a component to the main block
       window.constructor.api.blocks.blockAddComponent(mainBlock.id, block.id);
+
+
 		}
+    window.constructor.api.blocks.blockFreeze(mainBlock.id);
 	}
 }
-

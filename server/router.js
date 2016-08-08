@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import path from 'path'
 import fs from 'fs';
 import { exec, spawn } from 'child_process';
+var JSZip = require("jszip");
 
 import { createProjectFilePath, createProjectFilesDirectoryPath } from '../../../server/utils/filePaths';
 var argConfig = require('./config.json');
@@ -68,6 +69,74 @@ const getJsonOutFile = (args) => {
   }
 }
 
+export const fileRead = (path, jsonParse = true) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, 'utf8', (err, result) => {
+      if (err) {
+        if (err.code === 'ENOENT') {
+          return reject(err);
+        }
+        return reject(err);
+      }
+      const parsed = !!jsonParse ? parser(result) : result;
+      resolve(parsed);
+    });
+  });
+};
+
+
+const directoryContents = (path) => {
+  return new Promise((resolve, reject) => {
+    fs.readdir(path, (err, contents) => {
+      if (err) {
+        return reject(err);
+      }
+      function checkApe(fileName) {
+        return fileName.endsWith('.ape') && (fileName !== 'gslOut.all.ape');
+      }
+      resolve(contents.filter(checkApe));
+    });
+  });
+};
+
+const makeCombinedApe = (path) => {
+  directoryContents(path)
+  .then(contents => {
+   const promise = Promise.resolve('');
+   console.log('Contents are ', contents);
+   return contents.reduce((acc, fileName) => {
+     return acc.then(allContents => {
+       return fileRead(path + '/' + fileName, false)
+         .then(contents => {
+           return allContents + '\n' + contents;
+         });
+     });
+   }, promise);
+  })
+  .then(allContents => fs.writeFile(path +'/gslOut.all.ape', allContents, function(err) {
+    console.log('Finished writing the combined ape file');
+  }));
+}
+
+const makeApeZip = (path) => {
+  var zip = new JSZip();
+  directoryContents(path)
+  .then(contents => {
+    const promise = Promise.resolve('');
+    // read and add all the files into the zip file.
+    for (var fileName of contents) {
+      const fileContents = fileRead(path + '/' + fileName, false);
+      zip.file(fileName, fileContents);
+    }
+    zip
+    .generateNodeStream({type:'nodebuffer',streamFiles:true})
+    .pipe(fs.createWriteStream(path + '/' + 'gslOut.ape.zip'))
+    .on('finish', function () {
+      console.log('Written out the .zip file');
+    });
+  });
+};
+
 /* Router for running GSL programs on the server */
 router.post('/gslc', jsonParser, (req, res, next) => {
   const input = req.body;
@@ -119,6 +188,7 @@ router.post('/gslc', jsonParser, (req, res, next) => {
 
       // find the exit code of the process.     
       process.on('exit', function(code) {
+
         // mask all server paths
         output = output.replace(new RegExp(projectFileDir, 'g'), '<Server_Path>');
         console.log('Child process exited with an exit code of ', code);
@@ -144,6 +214,8 @@ router.post('/gslc', jsonParser, (req, res, next) => {
           }
           res.status(422).json(result);
         }
+        //makeCombinedApe(projectFileDir);
+        makeApeZip(projectFileDir);
       });
     }); 
   }

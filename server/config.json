@@ -30,6 +30,6 @@
     	}
 	},
 	"gslFile" : {
-		"fileName" : "project.gsl"
+		"fileName" : "project.run.gsl"
 	}
 }
