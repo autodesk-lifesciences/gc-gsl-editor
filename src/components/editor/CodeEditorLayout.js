@@ -5,9 +5,12 @@ import Statusbar from './Statusbar';
 import ToolbarMenu from './ToolbarMenu';
 import * as compiler from '../../behavior/compiler/client';
 import * as canvas from '../../behavior/canvas/output';
+import * as context from '../../behavior/editor/context';
 const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
 import myState from '../../../state';
+
+const FileSaver = require('file-saver');
 
 export default class CodeEditorLayout extends Component {
   static propTypes = {
@@ -71,6 +74,8 @@ export default class CodeEditorLayout extends Component {
   runCode = (e) => {
     console.log(`Sending code to the server: ${this.state.editorContent}`);
     this.onStatusMessageChange('Running code...');
+    // update the context before running 
+    //context.updateContext(this.state.editorContent, this.codeEditor.ace);
     compiler.run(this.state.editorContent, config.arguments, window.constructor.api.projects.projectGetCurrentId()).then((data) => {
       this.onResultContentChange(data.result);
       this.onStatusMessageChange('Program exited with status code: ' + data.status);
@@ -108,15 +113,10 @@ export default class CodeEditorLayout extends Component {
   }
 
   componentDidMount() {
-      // console.log('coming here');
-        //       this.onEditorContentChange(myState.editorContent);
-      //this.onResultContentChange(myState.resultContent);
-      //this.onStatusMessageChange(myState.statusContent);
-    if (window.constructor.store['gslEditor'].hasOwnProperty('editorContent') && this.state.editorContent !== window.constructor.store['gslEditor'].editorContent) {
-      this.onEditorContentChange(window.constructor.store['gslEditor'].editorContent);
-      this.onResultContentChange(window.constructor.store['gslEditor'].resultContent);
-      this.onStatusMessageChange(window.constructor.store['gslEditor'].statusContent);
-
+    if (window.gslEditor.hasOwnProperty('editorContent') && this.state.editorContent !== window.gslEditor.editorContent) {
+      this.onEditorContentChange(window.gslEditor.editorContent);
+      this.onResultContentChange(window.gslEditor.resultContent);
+      this.onStatusMessageChange(window.gslEditor.statusContent);
     }
   }
 
@@ -217,24 +217,61 @@ export default class CodeEditorLayout extends Component {
     a.download = name;
   }
 
+   readRemoteFile = (url) => {
+    /*var txtFile = new XMLHttpRequest();
+    txtFile.open("GET", url, true);
+    txtFile.onreadystatechange = function() {
+      if (txtFile.readyState === 4) {  // Makes sure the document is ready to parse.
+        if (txtFile.status === 200) {  // Makes sure it's found the file.
+          const allText = txtFile.responseText;
+           var a = document.createElement("a");
+          document.body.appendChild(a);
+          a.style = "display: none";
+            var blob = new Blob(allText.split(''), {type: "application/zip"}),
+            url = window.URL.createObjectURL(blob);
+            a.href = url;
+            a.download = 'gslOut.ape.zip';
+            a.click();
+            window.URL.revokeObjectURL(url);         
+        }
+      }
+    }
+    txtFile.send(null);*/
+
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = "blob";
+    xhr.withCredentials = true;
+    xhr.onreadystatechange = function (){
+      if (xhr.readyState === 4) {
+          var blob = xhr.response;
+          console.log(blob);
+          FileSaver.saveAs(blob, 'test.zip');
+      }
+    };
+    xhr.send();
+  }
+
+
   downloadZipFile = () => {
     var sampleBytes = new Int8Array(4096);
-
-    var saveByteArray = (function () {  
-      var a = document.createElement("a");
-      document.body.appendChild(a);
-      a.style = "display: none";
-      window.constructor.extensions.files.read()
-      return function (data, name) {
-        var blob = new Blob(data, {type: "octet/stream"}),
-        url = window.URL.createObjectURL(blob);
-        a.href = url;
-        a.download = name;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      };
-    }());
-  }
+      window.constructor.extensions.files.read(
+      window.constructor.api.projects.projectGetCurrentId(),
+      'gslEditor',
+      'gslOut.ape.zip'
+      )
+      .then((response) => {
+        if (response.status === 200) {
+          // read the file and populate the state
+          this.readRemoteFile(response.url);
+        }
+      })
+      .catch((err) => {
+        this.onStatusMessageChange('Could not find a zip file associated with this project.');
+        console.log(err);
+      }) ;
+    }
 
   saveToDisk = (fileUrl, fileName, buttonType) => {
       var hyperlink = document.createElement('a');
@@ -263,7 +300,6 @@ export default class CodeEditorLayout extends Component {
       'ape zip file' : 'gslOut.ape.zip',
       'txt file': 'gslOutFlat.txt',
     }
-    console.log('Coming here');
     const buttonType = evt.nativeEvent.button;
 
     for (let key of Object.keys(fileMap)) {
@@ -306,17 +342,17 @@ export default class CodeEditorLayout extends Component {
         disabled: false,
         action: this.downloadFileItem,
       },
-      {
+      /*{
         key: 'my-ape-file',
         text: 'ape file',
         disabled: false,
         action: this.downloadFileItem,
-      },
+      },*/
       {
         key: 'my-ape-zip-file',
         text: 'ape zip file',
         disabled: false,
-        action: this.downloadFileItem,
+        action: this.downloadZipFile,
       },
       {
         key: 'my-txt-file',

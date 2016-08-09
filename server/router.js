@@ -46,7 +46,6 @@ const preprocessArgs = (projectId, extensionKey, args) => {
       }
     }
   }
-  console.log('The modified args are ', modifiedArgs);
   return modifiedArgs;
 }
 
@@ -161,10 +160,13 @@ router.post('/gslc', jsonParser, (req, res, next) => {
     argumentString = makeArgumentString(modifiedArgs);
     const projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
     const filePath = createProjectFilePath(input.projectId, input.extension, argConfig.gslFile.fileName);
+    if (!fs.existsSync(projectFileDir)){
+      fs.mkdirSync(projectFileDir);
+    }
+
     let output = '';
     // write out a file with the code.
     fs.writeFile(filePath, content, function(err) {
-
       if (err) {
         console.log(err);
       }
