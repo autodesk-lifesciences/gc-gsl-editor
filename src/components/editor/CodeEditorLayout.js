@@ -5,7 +5,6 @@ import Statusbar from './Statusbar';
 import ToolbarMenu from './ToolbarMenu';
 import * as compiler from '../../behavior/compiler/client';
 import * as canvas from '../../behavior/canvas/output';
-import * as context from '../../behavior/editor/context';
 const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
 import myState from '../../../state';
