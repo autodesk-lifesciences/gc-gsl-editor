@@ -37,6 +37,7 @@ function render(container, options) {
 
   var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
     var current = state.focus.blockIds;
+    console.log('The lastAction is ', lastAction);
     if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
       // save the current content of the editor.
       window.constructor.extensions.files.write(
@@ -67,7 +68,7 @@ function render(container, options) {
       }
     }
   );
-
+  subscriber();
   if (!window.hasOwnProperty('gslEditor')) {
     window.gslEditor = {};
     window.gslEditor[window.constructor.api.projects.projectGetCurrentId()] = {};

@@ -7,7 +7,7 @@ let assemblyConstructMap = {}
 // Removes the GSL constructs
 const removeGSLConstructs = () => {
   // read the state and remove the blocks.
-  for (var blockId of window.constructor.store['gslEditor'].gslConstructs) {
+  for (var blockId of window.gslEditor.gslConstructs) {
     if (window.constructor.api.projects.projectHasComponent(
       window.constructor.api.projects.projectGetCurrentId(),
       blockId)) {
@@ -66,7 +66,7 @@ const renderBlocks = (assemblyList) => {
     gslConstructs.push(mainBlock.id);
   }
    // update the state
-    window.constructor.store['gslEditor'].gslConstructs = gslConstructs;
+    window.gslEditor.gslConstructs = gslConstructs;
       // write the blocks on the server. 
     window.constructor.extensions.files.write(
       window.constructor.api.projects.projectGetCurrentId(),
@@ -84,7 +84,7 @@ const readRemoteFile = (url, assemblyList) => {
       if (txtFile.status === 200) {  // Makes sure it's found the file.
         const allText = txtFile.responseText;
         const jsonSettings =  JSON.parse(allText);
-        window.constructor.store['gslEditor'].gslConstructs = jsonSettings.constructs;
+        window.gslEditor.gslConstructs = jsonSettings.constructs;
         removeGSLConstructs();
         renderBlocks(assemblyList);
       }
@@ -94,7 +94,7 @@ const readRemoteFile = (url, assemblyList) => {
 }
 
 const reloadStateGSLConstructs = (assemblyList) => {
-  if (!window.constructor.store['gslEditor'].hasOwnProperty('gslConstructs')) { 
+  if (!window.gslEditor.hasOwnProperty('gslConstructs')) { 
     window.constructor.extensions.files.read(
       window.constructor.api.projects.projectGetCurrentId(),
       'gslEditor',
@@ -106,7 +106,7 @@ const reloadStateGSLConstructs = (assemblyList) => {
         readRemoteFile(response.url, assemblyList);
       }
       else {
-        window.constructor.store['gslEditor'].gslConstructs = [];
+        window.gslEditor.gslConstructs = [];
       }
     })
     .catch((err) => {

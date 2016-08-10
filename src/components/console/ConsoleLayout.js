@@ -80,7 +80,7 @@ export default class ConsoleLayout extends Component {
   render() {
 
     return (
-      <div className="ConsoleLayout" style={{height: this.props.isOpen ? this.state.openHeight : 25 }}>
+      <div className="ConsoleLayout" style={{height: this.props.isOpen ? this.state.openHeight : 0 }}>
         <div ref="resizeHandle"
              className="ConsoleLayout-resizeHandle"
              onMouseDown={this.handleResizableMouseDown}></div>
