@@ -1,8 +1,7 @@
 import React, { PropTypes, Component } from 'react';
 import CodeEditorLayout from './editor/CodeEditorLayout';
 import ConsoleLayout from './console/ConsoleLayout';
-import myState from '../../state';
-//var myState = require('../../globals');
+var gslState = require('../../globals');
 export default class GSLEditorLayout extends Component {
 
   constructor(props) {
@@ -17,28 +16,22 @@ export default class GSLEditorLayout extends Component {
 
   onEditorContentChange = (content) => {
     this.setState({ editorContent: content });
-    //myState.editorContent = content;
-    window.gslEditor.editorContent = content;
+    gslState.editorContent= content;
   };
 
   onResultContentChange = (content) => {
     this.setState({ resultContent: content });
-    //myState.resultContent = content;
-    //console.log('result is ', content);
-    window.gslEditor.resultContent = content;
+    gslState.resultContent = content;
   };
 
   onStatusContentChange = (content) => {
     this.setState( { statusContent: content});
-    //myState.statusContent = content;
-    //console.log('status is ', content);
-    window.gslEditor.statusContent = content;
+    gslState.statusContent = content;
   };
 
   onConsoleStateChange = (value) => {
     this.setState({ isConsoleOpen: value });
-    //myState.isConsoleOpen = value;
-    window.gslEditor.onConsoleStatusChange = value;
+    gslState.onConsoleStatusChange = value;
     setTimeout(() => {window.dispatchEvent(new Event('resize'))}, 40);
   };
 

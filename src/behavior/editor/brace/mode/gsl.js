@@ -90,7 +90,7 @@ var GslHighlightRules = function() {
             },
             {
                 token : "keyword.operator",
-                regex : "g|p|t|u|d|o|f|m|!|@|~|$",
+                regex : "g|p|t|u|d|o|f|m|!|@|~|$"
             },
             {
                 token : "keyword.operator",
@@ -138,14 +138,6 @@ var GslHighlightRules = function() {
                 token : "string",
                 regex : '.+'
             },
-        ],
-
-        "findgenes" : [
-            {
-                token : keywordMapper,
-                regex : "[a-zA-Z_$\-][a-zA-Z0-9_$\-]*\\b",
-                next: "start"
-            }
         ]
     };
 };

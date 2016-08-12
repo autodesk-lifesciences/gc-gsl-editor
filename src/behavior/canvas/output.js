@@ -1,13 +1,11 @@
-
-// Holds the associations while within the session, prior to saving.
-// TODO: Persist this along with any GSL code that should be a part of the project.
+const gslState = require('../../../globals');
+const extensionConfig = require('../../../package.json');
 let assemblyConstructMap = {}
-
 
 // Removes the GSL constructs
 const removeGSLConstructs = () => {
   // read the state and remove the blocks.
-  for (var blockId of window.gslEditor.gslConstructs) {
+  for (var blockId of gslState.gslConstructs) {
     if (window.constructor.api.projects.projectHasComponent(
       window.constructor.api.projects.projectGetCurrentId(),
       blockId)) {
@@ -15,7 +13,6 @@ const removeGSLConstructs = () => {
         window.constructor.api.projects.projectGetCurrentId(),
         blockId
       )
-      //console.log(`Removed ${blockId}`);
     }
   }
 }
@@ -26,13 +23,6 @@ const renderBlocks = (assemblyList) => {
   let gslConstructs = [];
   assemblyList.reverse();
   for (const assembly of assemblyList) {
-
-    /*if (assemblyConstructMap.hasOwnProperty(assembly.name)) {
-      // focus the existing construct.
-      console.log(`Construct exists for ${assembly.name}: ${assemblyConstructMap[assembly.name]}`);
-      window.constructor.api.focus.focusBlocks([assemblyConstructMap[assembly.name]]);
-      continue;
-    }*/
     // Create the top level block (construct) and assign it the assembly name
     blockModel = {
       metadata: { name: assembly.name}
@@ -59,21 +49,19 @@ const renderBlocks = (assemblyList) => {
       window.constructor.api.blocks.blockSetSequence(block.id, dnaSlice.dna);
       // Add the block as a component to the main block
       window.constructor.api.blocks.blockAddComponent(mainBlock.id, block.id);
-
-
     }
     window.constructor.api.blocks.blockFreeze(mainBlock.id);
     gslConstructs.push(mainBlock.id);
   }
-   // update the state
-    window.gslEditor.gslConstructs = gslConstructs;
-      // write the blocks on the server. 
-    window.constructor.extensions.files.write(
-      window.constructor.api.projects.projectGetCurrentId(),
-      'gslEditor',
-      'settings.json',
-      JSON.stringify({ 'constructs' : gslConstructs})
-    );  
+  // update the state
+  gslState.gslConstructs = gslConstructs;
+  // write the blocks on the server. 
+  window.constructor.extensions.files.write(
+    window.constructor.api.projects.projectGetCurrentId(),
+    'gslEditor',
+    'settings.json',
+    JSON.stringify({ 'constructs' : gslConstructs})
+  );  
 }
 
 const readRemoteFile = (url, assemblyList) => {
@@ -84,7 +72,7 @@ const readRemoteFile = (url, assemblyList) => {
       if (xhr.status === 200) { 
         const allText = xhr.responseText;
         const jsonSettings =  JSON.parse(allText);
-        window.gslEditor.gslConstructs = jsonSettings.constructs;
+        gslState.gslConstructs = jsonSettings.constructs;
         removeGSLConstructs();
         renderBlocks(assemblyList);
       }
@@ -94,7 +82,7 @@ const readRemoteFile = (url, assemblyList) => {
 }
 
 const reloadStateGSLConstructs = (assemblyList) => {
-  if (!window.gslEditor.hasOwnProperty('gslConstructs')) { 
+  if (!gslState.hasOwnProperty('gslConstructs')) { 
     window.constructor.extensions.files.read(
       window.constructor.api.projects.projectGetCurrentId(),
       'gslEditor',
@@ -106,7 +94,7 @@ const reloadStateGSLConstructs = (assemblyList) => {
         readRemoteFile(response.url, assemblyList);
       }
       else {
-        window.gslEditor.gslConstructs = [];
+        gslState.gslConstructs = [];
       }
     })
     .catch((err) => {

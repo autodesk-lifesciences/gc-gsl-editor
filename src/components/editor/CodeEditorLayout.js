@@ -7,8 +7,7 @@ import * as compiler from '../../behavior/compiler/client';
 import * as canvas from '../../behavior/canvas/output';
 const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
-//import myState from '../../../state';
-var myState = require('../../../globals');
+var gslState = require('../../../globals');
 
 const FileSaver = require('file-saver');
 
@@ -74,8 +73,6 @@ export default class CodeEditorLayout extends Component {
   runCode = (e) => {
     console.log(`Sending code to the server: ${this.state.editorContent}`);
     this.onStatusMessageChange('Running code...');
-    // update the context before running 
-    //context.updateContext(this.state.editorContent, this.codeEditor.ace);
     compiler.run(this.state.editorContent, config.arguments, window.constructor.api.projects.projectGetCurrentId()).then((data) => {
       this.onResultContentChange(data.result);
       this.onStatusMessageChange('Program exited with status code: ' + data.status);
@@ -114,11 +111,10 @@ export default class CodeEditorLayout extends Component {
 
   componentDidMount() {
 
-    console.log('The state from inside the app ' , myState.editorContent);
-    if (window.gslEditor.hasOwnProperty('editorContent') && this.state.editorContent !== window.gslEditor.editorContent) {
-      this.onEditorContentChange(window.gslEditor.editorContent);
-      this.onResultContentChange(window.gslEditor.resultContent);
-      this.onStatusMessageChange(window.gslEditor.statusContent);
+    if (gslState.hasOwnProperty('editorContent') && this.state.editorContent !== gslState.editorContent) {
+      this.onEditorContentChange(gslState.editorContent);
+      this.onResultContentChange(gslState.resultContent);
+      this.onStatusMessageChange(gslState.statusContent);
     }
   }
 
@@ -126,7 +122,6 @@ export default class CodeEditorLayout extends Component {
   toggleComment = () => {
     const uncomment = function(ace, token, pattern, row) {
       const column = token.value.indexOf(pattern) + token.start;
-      console.log('pattern: ',pattern, ' column:', column);
       if (token.value.indexOf(pattern) != -1) {
         ace.editor.session.replace({
           start: { row: row, column: column },
@@ -210,47 +205,16 @@ export default class CodeEditorLayout extends Component {
     ]
   }
 
-  // Update: Not used
-  downloadGslFile = () => {
-    const textType = 'text/plain';
-    const name = 'snippet.gsl';
-    var a = document.getElementById("Download-a");
-    let file = new Blob([this.state.editorContent], {type: textType});
-    a.href = URL.createObjectURL(file);
-    a.download = name;
-  }
-
-  // Update: Not used
-  saveToDisk = (fileUrl, fileName, buttonType) => {
-      var hyperlink = document.createElement('a');
-      hyperlink.href = fileUrl;
-      hyperlink.target = '_blank';
-      hyperlink.type = 'text/plain';
-      if (buttonType === 0)  // left click results in download else opens the file.
-        hyperlink.download = fileName || fileUrl;
-
-      var mouseEvent = new MouseEvent('click', {
-          view: window,
-          bubbles: true,
-          cancelable: true
-      });
-
-      hyperlink.dispatchEvent(mouseEvent);
-      (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href);
-    }
-
   downloadFileByType = (fileType, buttonType) => {
     var hyperlink = document.createElement('a');
     hyperlink.href = '/extensions/api/gslEditor/download?projectId='+ 
       window.constructor.api.projects.projectGetCurrentId() +
       '&extension=gslEditor' + 
       '&type=' + fileType; 
-    //hyperlink.type = 'application/zip';
-    //hyperlink.target = '_blank';
+
     if (buttonType === 0)  // TODO: Create a separate route for opening the raw file in the browser.
       hyperlink.download = true;
 
-    
     var mouseEvent = new MouseEvent('click', {
         view: window,
         bubbles: true,
@@ -261,7 +225,8 @@ export default class CodeEditorLayout extends Component {
     (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href); 
   }
 
-  myDownload = (evt) => {
+  doDownload = (evt) => {
+    // TODO: Associate with something other than label!
     const fileMap = {
       'gsl file' : 'gsl',
       'json file' : 'json',
@@ -282,45 +247,6 @@ export default class CodeEditorLayout extends Component {
       }
     }
   }
-  /* TODO: Bad. Make this configuable  - Update: Now not used*/
-  downloadFileItem = (evt) => { 
-    const fileMap = {
-      'gsl file' : 'project.gsl',
-      'json file' : 'gslOut.json',
-      'ape file ' : 'gslOut.0.ape',
-      'ape zip file' : 'gslOut.ape.zip',
-      'txt file': 'gslOutFlat.txt',
-    }
-    const buttonType = evt.nativeEvent.button;
-
-    for (let key of Object.keys(fileMap)) {
-      if (evt.target.innerHTML.indexOf(key) !== -1) {
-        window.constructor.extensions.files.read(
-          window.constructor.api.projects.projectGetCurrentId(),
-          extensionConfig.name,
-          fileMap[key]
-        )
-        .then((response) => {
-          setTimeout(() => {
-            this.onStatusMessageChange('');
-          }, 2000);
-          this.onStatusMessageChange('Preparing to download the ' + key + ' associated with this project...');
-          //window.open(response.url);
-          //console.log('The response is ', response);
-          //this.saveToDisk(response.url, fileMap[key], buttonType);
-        })
-        .catch((err) => {
-          setTimeout(() => {
-            this.onStatusMessageChange('');
-          }, 5000);
-          this.onStatusMessageChange('Sorry, could not find a valid ' + key + ' associated with this project.');
-          console.log(err);
-        })
-      }
-    }
-  }
-
-
 
   downloadMenuItems = () => {
     return [
@@ -328,13 +254,13 @@ export default class CodeEditorLayout extends Component {
         key: 'my-gsl-file',
         text: 'gsl file',
         disabled: false,
-        action: this.myDownload,
+        action: this.doDownload,
       },
       {
         key: 'my-json-file',
         text: 'json file',
         disabled: false,
-        action: this.myDownload,
+        action: this.doDownload,
       },
       /*{
         key: 'my-ape-file',
@@ -346,13 +272,13 @@ export default class CodeEditorLayout extends Component {
         key: 'my-ape-zip-file',
         text: 'ape zip file',
         disabled: false,
-        action: this.myDownload,
+        action: this.doDownload,
       },
       {
         key: 'my-txt-file',
         text: 'txt file',
         disabled: false,
-        action: this.myDownload,
+        action: this.doDownload,
       },
     ];
   };

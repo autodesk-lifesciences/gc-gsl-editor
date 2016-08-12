@@ -29,7 +29,6 @@ export const run = (data, args, projectId) => {
   .then(resp => resp.json())
   .then(function(data) {
     console.log(data);
-    //console.log(JSON.parse(data.contents));
     return data;
   });
 };

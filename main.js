@@ -3,8 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import GSLEditorLayout from './src/components/GSLEditorLayout';
 const extensionConfig = require('./package.json');
-//import myState from './state';
-var myState = require('./globals'); //<< globals.js path
+var gslState = require('./globals');
 
 const loadProjectCode = (url) => {
   // check in the cache for project code before making a request to the server.
@@ -15,28 +14,23 @@ const loadProjectCode = (url) => {
       if (xhr.readyState === 4) { 
         if (xhr.status === 200) { 
           const allText = xhr.responseText;
-          myState.editorContent = allText;
-          window.gslEditor.editorContent = allText;
-          window.gslEditor.resultContent = '';
-          window.gslEditor.statusContent = '';
+          gslState.editorContent = allText;
+          gslState.resultContent = '';
+          gslState.statusContent = '';
           resolve();
         }
       }
     }
     xhr.send(null);
   });
-  }
+}
 
 function render(container, options) {
-  
+
   var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
     var current = state.focus.blockIds;
-    //console.log('The lastAction is ', lastAction);
-    if (!window.hasOwnProperty('gslEditor')) {
-      window.gslEditor = {};
-    }    
     if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
-          if (!window.gslEditor.hasOwnProperty('prevProject') || window.gslEditor.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
+          if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
           // read code from the server.
           window.constructor.extensions.files.read(
             window.constructor.api.projects.projectGetCurrentId(),
@@ -51,20 +45,17 @@ function render(container, options) {
             }
           })
           .catch((err) => {
-              window.gslEditor.editorContent = '';
-              window.gslEditor.resultContent = '';
-              window.gslEditor.statusContent = '';
+              gslState.editorContent = '';
+              gslState.resultContent = '';
+              gslState.statusContent = '';
               ReactDOM.render(<GSLEditorLayout/>, container);
           });
         } else {
             ReactDOM.render(<GSLEditorLayout/>, container);
-            //console.log("Done re-rendering");
         }
-        window.gslEditor.prevProject = window.constructor.api.projects.projectGetCurrentId();
-        console.log('Setting prevProject: ' , window.gslEditor.prevProject);
+        gslState.prevProject = window.constructor.api.projects.projectGetCurrentId();
     } else {
         ReactDOM.render(<GSLEditorLayout/>, container);
-        //console.log("Done rendering");
     }
     if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
       // save the current content of the editor.
@@ -72,7 +63,7 @@ function render(container, options) {
         window.constructor.api.projects.projectGetCurrentId(),
         extensionConfig.name,
         'project.gsl',
-        window.gslEditor.editorContent,
+        gslState.editorContent,
       )
       console.log('Saving GSL Code.');
     } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_OPEN) {
@@ -92,14 +83,9 @@ function render(container, options) {
       }
     }, true
   );
-  if (!window.hasOwnProperty('gslEditor')) {
-    window.gslEditor = {};
-  }
+
   //return an unsubscribe function to clean up when the extension unmounts
   return function () {
-    if (!window.hasOwnProperty('gslEditor')) {
-    window.gslEditor = {};
-    }
     subscriber();
   };
 }
