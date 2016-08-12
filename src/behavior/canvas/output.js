@@ -77,12 +77,12 @@ const renderBlocks = (assemblyList) => {
 }
 
 const readRemoteFile = (url, assemblyList) => {
-  var txtFile = new XMLHttpRequest();
-  txtFile.open("GET", url, true);
-  txtFile.onreadystatechange = function() {
-    if (txtFile.readyState === 4) {  // Makes sure the document is ready to parse.
-      if (txtFile.status === 200) {  // Makes sure it's found the file.
-        const allText = txtFile.responseText;
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", url, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) { 
+      if (xhr.status === 200) { 
+        const allText = xhr.responseText;
         const jsonSettings =  JSON.parse(allText);
         window.gslEditor.gslConstructs = jsonSettings.constructs;
         removeGSLConstructs();
@@ -90,7 +90,7 @@ const readRemoteFile = (url, assemblyList) => {
       }
     }
   }
-  txtFile.send(null);
+  xhr.send(null);
 }
 
 const reloadStateGSLConstructs = (assemblyList) => {
@@ -119,8 +119,6 @@ const reloadStateGSLConstructs = (assemblyList) => {
     renderBlocks(assemblyList);
   }
 }
-
-
 
 // Renders the blocks created through GSL code.
 export const render = (assemblyList) => {

@@ -11,22 +11,26 @@ let geneListString;
 
 for(var genome of genomes) {
 	for (var element of genome) {
-		autocompleteGeneList.push(element['systematicName']);
-		altName = "";
-		if (element['commonName'] != "") {
-			altName = "[" + element['commonName'] + "] ";
+		if (element['systematicName'].trim() != '') {
+			autocompleteGeneList.push(element['systematicName']);
+			altName = "";
+			if (element['commonName'] != "") {
+				altName = "[" + element['commonName'] + "] ";
+			}
+			autocompleteDocStrings[element['systematicName']] = altName + element['description'];
+			geneList.push({ value: element['systematicName'], meta:"gene"});
 		}
-		autocompleteDocStrings[element['systematicName']] = altName + element['description'];
-		geneList.push({ value: element['systematicName'], meta:"gene"});
 	}
 	for (var element of genome) {
-		autocompleteGeneList.push(element['commonName']);
-		altName = "";
-		if (element['systematicName'] != "") {
-			altName = "[" + element['systematicName'] + "] ";
-		}
-		autocompleteDocStrings[element['commonName']] = altName + element['description'];
-		geneList.push({ value: element['commonName'], meta:"gene"});
+    if (element['commonName'].trim() != '') {
+  		autocompleteGeneList.push(element['commonName']);
+  		altName = "";
+  		if (element['systematicName'] != "") {
+  			altName = "[" + element['systematicName'] + "] ";
+  		}
+  		autocompleteDocStrings[element['commonName']] = altName + element['description'];
+  		geneList.push({ value: element['commonName'], meta:"gene"});
+    }
 	}
 }
 // sort the lists alphabetically 

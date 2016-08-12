@@ -23,7 +23,6 @@ var GslHighlightRules = function() {
     );
 
     // adding GSL Genes to the wordlist.
-    autocompleteList.geneListString
     var keywordMapper = this.createKeywordMapper({
         "variable.language": "this",
         "keyword": keywords,
@@ -91,12 +90,16 @@ var GslHighlightRules = function() {
             },
             {
                 token : "keyword.operator",
-                regex : "g|p|t|u|d|o|f|m|!|@|~",
+                regex : "g|p|t|u|d|o|f|m|!|@|~|$",
             },
             {
                 token : "keyword.operator",
                 regex : "\\+\\.|\\-\\.|\\*\\.|\\/\\.|#|;;|\\+|\\-|\\*|\\*\\*\\/|\\/\\/|%|<<|>>|&|\\||\\^|~|<|>|<=|=>|==|!=|<>|<-|="
             },
+            /*{
+                token : "constant.gene",
+                regex : autocompleteList.geneListString,
+            },*/
             {
                 token : keywordMapper,
                 regex : "[a-zA-Z_$\-][a-zA-Z0-9_$\-]*\\b"

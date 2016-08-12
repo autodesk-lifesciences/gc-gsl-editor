@@ -25,6 +25,8 @@ const jsonParser = bodyParser.json({
 }); 
 
 
+/***** HELPER FUNCTIONS *****/
+
 /* Preprocess arguments to find the arguments that create files */
 const preprocessArgs = (projectId, extensionKey, args) => {
   let modifiedArgs = args;
@@ -84,42 +86,26 @@ export const fileRead = (path, jsonParse = true) => {
 };
 
 
-const directoryContents = (path) => {
+const directoryContents = (path, ext='') => {
   return new Promise((resolve, reject) => {
     fs.readdir(path, (err, contents) => {
       if (err) {
         return reject(err);
       }
       function checkApe(fileName) {
-        return fileName.endsWith('.ape') && (fileName !== 'gslOut.all.ape');
+        if (ext === '')
+          return true;
+        return fileName.endsWith(ext);
       }
       resolve(contents.filter(checkApe));
     });
   });
 };
 
-const makeCombinedApe = (path) => {
-  directoryContents(path)
-  .then(contents => {
-   const promise = Promise.resolve('');
-   console.log('Contents are ', contents);
-   return contents.reduce((acc, fileName) => {
-     return acc.then(allContents => {
-       return fileRead(path + '/' + fileName, false)
-         .then(contents => {
-           return allContents + '\n' + contents;
-         });
-     });
-   }, promise);
-  })
-  .then(allContents => fs.writeFile(path +'/gslOut.all.ape', allContents, function(err) {
-    console.log('Finished writing the combined ape file');
-  }));
-}
 
 const makeApeZip = (path) => {
   var zip = new JSZip();
-  directoryContents(path)
+  directoryContents(path, '.ape')
   .then(contents => {
     const promise = Promise.resolve('');
     // read and add all the files into the zip file.
@@ -129,17 +115,37 @@ const makeApeZip = (path) => {
     }
     zip
     .generateNodeStream({type:'nodebuffer',streamFiles:true})
-    .pipe(fs.createWriteStream(path + '/' + 'gslOut.ape.zip'))
+    .pipe(fs.createWriteStream(path + '/' + argConfig.downloadableFileTypes.ape.fileName))
     .on('finish', function () {
       console.log('Written out the .zip file');
     });
   });
 };
 
+const makeZip = (path, fileType) => {
+  var zip = new JSZip();
+  directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt)
+  .then(contents => {
+    const promise = Promise.resolve('');
+    // read and add all the files into the zip file.
+    for (var fileName of contents) {
+      const fileContents = fileRead(path + '/' + fileName, false);
+      zip.file(fileName, fileContents);
+    }
+    zip
+    .generateNodeStream({type:'nodebuffer', streamFiles:true})
+    .pipe(fs.createWriteStream(path + '/' + argConfig.downloadableFileTypes[fileType].fileName))
+    .on('finish', function () {
+      console.log('Written out the .zip file');
+    });
+  });
+};
+
+/***** ROUTERS *****/
 /* Router for running GSL programs on the server */
 router.post('/gslc', jsonParser, (req, res, next) => {
   const input = req.body;
-  let content = "#refgenome S288C \n" + input.code; 
+  let content = "#refgenome S288C \n" + input.code; // TODO: Make configurable
   //let content = input.code;
   let argumentString = input.arguments;
 
@@ -216,11 +222,28 @@ router.post('/gslc', jsonParser, (req, res, next) => {
           }
           res.status(422).json(result);
         }
-        //makeCombinedApe(projectFileDir);
-        makeApeZip(projectFileDir);
+        makeZip(projectFileDir, 'ape');
+        //makeApeZip(projectFileDir);
       });
     }); 
   }
 });
+
+/* Download any data file */
+router.get('/download*', function(req, res, next) {
+
+  if (argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
+    console.log("Got a request to download the type: ", argConfig.downloadableFileTypes[req.query.type]);
+    const fileName = argConfig.downloadableFileTypes[req.query.type].fileName
+    const filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
+    res.header("Content-Type", argConfig.downloadableFileTypes[req.query.type].contentType);
+    res.download(filePath, fileName);
+  }
+  else {
+    res.send('Could not find an appropriate file type to download.');
+    res.send(501);
+  }
+});
+
 
 module.exports = router;

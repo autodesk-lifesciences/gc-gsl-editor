@@ -7,7 +7,8 @@ import * as compiler from '../../behavior/compiler/client';
 import * as canvas from '../../behavior/canvas/output';
 const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
-import myState from '../../../state';
+//import myState from '../../../state';
+var myState = require('../../../globals');
 
 const FileSaver = require('file-saver');
 
@@ -112,6 +113,8 @@ export default class CodeEditorLayout extends Component {
   }
 
   componentDidMount() {
+
+    console.log('The state from inside the app ' , myState.editorContent);
     if (window.gslEditor.hasOwnProperty('editorContent') && this.state.editorContent !== window.gslEditor.editorContent) {
       this.onEditorContentChange(window.gslEditor.editorContent);
       this.onResultContentChange(window.gslEditor.resultContent);
@@ -207,6 +210,7 @@ export default class CodeEditorLayout extends Component {
     ]
   }
 
+  // Update: Not used
   downloadGslFile = () => {
     const textType = 'text/plain';
     const name = 'snippet.gsl';
@@ -216,62 +220,7 @@ export default class CodeEditorLayout extends Component {
     a.download = name;
   }
 
-   readRemoteFile = (url) => {
-    /*var txtFile = new XMLHttpRequest();
-    txtFile.open("GET", url, true);
-    txtFile.onreadystatechange = function() {
-      if (txtFile.readyState === 4) {  // Makes sure the document is ready to parse.
-        if (txtFile.status === 200) {  // Makes sure it's found the file.
-          const allText = txtFile.responseText;
-           var a = document.createElement("a");
-          document.body.appendChild(a);
-          a.style = "display: none";
-            var blob = new Blob(allText.split(''), {type: "application/zip"}),
-            url = window.URL.createObjectURL(blob);
-            a.href = url;
-            a.download = 'gslOut.ape.zip';
-            a.click();
-            window.URL.revokeObjectURL(url);         
-        }
-      }
-    }
-    txtFile.send(null);*/
-
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = "blob";
-    xhr.withCredentials = true;
-    xhr.onreadystatechange = function (){
-      if (xhr.readyState === 4) {
-          var blob = xhr.response;
-          console.log(blob);
-          FileSaver.saveAs(blob, 'test.zip');
-      }
-    };
-    xhr.send();
-  }
-
-
-  downloadZipFile = () => {
-    var sampleBytes = new Int8Array(4096);
-      window.constructor.extensions.files.read(
-      window.constructor.api.projects.projectGetCurrentId(),
-      'gslEditor',
-      'gslOut.ape.zip'
-      )
-      .then((response) => {
-        if (response.status === 200) {
-          // read the file and populate the state
-          this.readRemoteFile(response.url);
-        }
-      })
-      .catch((err) => {
-        this.onStatusMessageChange('Could not find a zip file associated with this project.');
-        console.log(err);
-      }) ;
-    }
-
+  // Update: Not used
   saveToDisk = (fileUrl, fileName, buttonType) => {
       var hyperlink = document.createElement('a');
       hyperlink.href = fileUrl;
@@ -290,7 +239,50 @@ export default class CodeEditorLayout extends Component {
       (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href);
     }
 
-  /* TODO: Bad. Make this configuable */
+  downloadFileByType = (fileType, buttonType) => {
+    var hyperlink = document.createElement('a');
+    hyperlink.href = '/extensions/api/gslEditor/download?projectId='+ 
+      window.constructor.api.projects.projectGetCurrentId() +
+      '&extension=gslEditor' + 
+      '&type=' + fileType; 
+    //hyperlink.type = 'application/zip';
+    //hyperlink.target = '_blank';
+    if (buttonType === 0)  // TODO: Create a separate route for opening the raw file in the browser.
+      hyperlink.download = true;
+
+    
+    var mouseEvent = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+    });
+
+    hyperlink.dispatchEvent(mouseEvent);
+    (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href); 
+  }
+
+  myDownload = (evt) => {
+    const fileMap = {
+      'gsl file' : 'gsl',
+      'json file' : 'json',
+      'ape zip file' : 'ape',
+      'txt file': 'flat',
+    }
+    const buttonType = evt.nativeEvent.button;
+
+    for (let key of Object.keys(fileMap)) {
+      // TODO: Create route to check if file exists on server.
+      // Disable menu options accordingly.
+      if (evt.target.innerHTML.indexOf(key) !== -1) {
+          setTimeout(() => {
+            this.onStatusMessageChange('');
+          }, 2000);
+          this.onStatusMessageChange('Preparing to download the ' + key + ' associated with this project...');
+          this.downloadFileByType(fileMap[key], buttonType);
+      }
+    }
+  }
+  /* TODO: Bad. Make this configuable  - Update: Now not used*/
   downloadFileItem = (evt) => { 
     const fileMap = {
       'gsl file' : 'project.gsl',
@@ -313,8 +305,9 @@ export default class CodeEditorLayout extends Component {
             this.onStatusMessageChange('');
           }, 2000);
           this.onStatusMessageChange('Preparing to download the ' + key + ' associated with this project...');
-          console.log('The response is ', response);
-          this.saveToDisk(response.url, fileMap[key], buttonType);
+          //window.open(response.url);
+          //console.log('The response is ', response);
+          //this.saveToDisk(response.url, fileMap[key], buttonType);
         })
         .catch((err) => {
           setTimeout(() => {
@@ -327,19 +320,21 @@ export default class CodeEditorLayout extends Component {
     }
   }
 
+
+
   downloadMenuItems = () => {
     return [
       {
         key: 'my-gsl-file',
         text: 'gsl file',
         disabled: false,
-        action: this.downloadFileItem,
+        action: this.myDownload,
       },
       {
         key: 'my-json-file',
         text: 'json file',
         disabled: false,
-        action: this.downloadFileItem,
+        action: this.myDownload,
       },
       /*{
         key: 'my-ape-file',
@@ -351,13 +346,13 @@ export default class CodeEditorLayout extends Component {
         key: 'my-ape-zip-file',
         text: 'ape zip file',
         disabled: false,
-        action: this.downloadZipFile,
+        action: this.myDownload,
       },
       {
         key: 'my-txt-file',
         text: 'txt file',
         disabled: false,
-        action: this.downloadFileItem,
+        action: this.myDownload,
       },
     ];
   };

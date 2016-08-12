@@ -5,7 +5,7 @@ exports.cssClass = "ace-xcode";
 exports.cssText = "\
 .ace-xcode .ace_gutter {\
 background: #e8e8e8;\
-color: #333\
+color: #555555\
 }\
 .ace-xcode .ace_print-margin {\
 width: 1px;\
@@ -16,7 +16,7 @@ background-color: #FFFFFF;\
 color: #000000\
 }\
 .ace-xcode .ace_cursor {\
-color: #000000\
+color: #777777\
 }\
 .ace-xcode .ace_marker-layer .ace_selection {\
 background: #B5D5FF\
@@ -45,6 +45,9 @@ border: 1px solid #B5D5FF\
 .ace-xcode .ace_meta,\
 .ace-xcode .ace_variable.ace_language {\
 color: #C800A4\
+}\
+.ace-xcode .ace_keyword.ace_operator {\
+color: #3F82FF\
 }\
 .ace-xcode .ace_invisible {\
 color: #BFBFBF\
@@ -83,7 +86,7 @@ color: #008E00\
 background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==) right repeat-y\
 }\
 .ace_gene {\
-  color: #FF0000\
+  color: #CC3333\
 }";
 
 var dom = acequire("../lib/dom");

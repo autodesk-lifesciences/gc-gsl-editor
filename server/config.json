@@ -27,9 +27,45 @@
     	"--name2id" : {
     		"arguments" : ["<filePath>"],
     		"fileName": "gslOut.name2id.txt"
-    	}
+    	},
+        "--thumper" : {
+            "arguments" : ["<prefix>"],
+            "fileName": "thumperOut"
+        }
 	},
 	"gslFile" : {
 		"fileName" : "project.run.gsl"
-	}
+	},
+    "downloadableFileTypes" : {
+        "ape" : {
+            "fileName": "gslOutApe.zip",
+            "contentType": "application/zip",
+            "contentExt": ".ape"
+        },
+        "cm" : {
+            "fileName": "gslOutCm.zip",
+            "contentType": "application/zip",
+            "contentExt": ".cm"
+        },
+        "thumper" : {
+            "fileName" :"gslOutThumper.zip",
+            "contentType": "application/zip",
+            "contentExt": ".xml|.csv"
+        },
+        "gsl" : {
+            "fileName": "project.gsl",
+            "contentType": "text/plain",
+            "contentExt": ".gsl"
+        },
+        "json" : {
+            "fileName": "gslOut.json",
+            "contentType": "application/json",
+            "contentExt": ".json"
+        },
+        "flat" : {
+            "fileName": "gslOutFlat.txt",
+            "contentType": "application",
+            "contentExt": ".json"
+        }
+    }
 }

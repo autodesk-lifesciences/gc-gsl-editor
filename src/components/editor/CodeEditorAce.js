@@ -52,7 +52,7 @@ export default class CodeEditorAce extends Component {
     
     this.ace.editor.completers.push({
       getCompletions: function(editor, session, pos, prefix, callback) {
-          callback(null, autocompleteList.geneList);
+         // callback(null, autocompleteList.geneList);
       },
       getDocTooltip: function(item) {
         if (autocompleteList.geneDocStrings[item.value]) {
@@ -101,6 +101,7 @@ export default class CodeEditorAce extends Component {
           <AceEditor ref={(el) => {
             if (el) {
               this.ace = el;
+              window.ace = el;
             }
           }}
              mode="gsl"
