@@ -1,8 +1,24 @@
+var path = require('path');
+
+var AUTOPREFIXER_BROWSERS = [
+  'Android 2.3',
+  'Android >= 4',
+  'Chrome >= 35',
+  'Firefox >= 31',
+  'Explorer >= 9',
+  'iOS >= 7',
+  'Opera >= 12',
+  'Safari >= 7.1',
+];
+
 module.exports = {
-  extry: './main.js',
+  entry: './main.js',
+
   output: {
-    filename: 'index.js',
+    path: path.join(__dirname, 'dist'),
+    filename: 'client.js',
   },
+
   module: {
     loaders: [
       {
@@ -24,9 +40,9 @@ module.exports = {
     ],
     postcss: function plugins(bundler) {
       return [
-        require('postcss-import')({addDependencyTo: bundler}),
+        require('postcss-import')({ addDependencyTo: bundler }),
         require('postcss-nested')(),
-        require('postcss-cssnext')({autoprefixer: AUTOPREFIXER_BROWSERS})
+        require('postcss-cssnext')({ autoprefixer: AUTOPREFIXER_BROWSERS })
       ];
     },
     devtool: 'inline-source-map',
