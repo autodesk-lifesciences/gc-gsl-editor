@@ -64,8 +64,8 @@
         },
         "flat" : {
             "fileName": "gslOutFlat.txt",
-            "contentType": "application",
-            "contentExt": ".json"
+            "contentType": "text/plain",
+            "contentExt": ".txt"
         }
     }
 }

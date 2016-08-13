@@ -5,13 +5,84 @@ import path from 'path'
 import fs from 'fs';
 import { exec, spawn } from 'child_process';
 var JSZip = require("jszip");
+import invariant from 'invariant';
 
-import { createProjectFilePath, createProjectFilesDirectoryPath } from '../../../server/utils/filePaths';
-var argConfig = require('./config.json');
+// TODO: Separate json on moving to webpack
+//var argConfig = require('./config.json');
+var argConfig = {
+  "fileArguments" : {
+      "--flat": {
+        "arguments" : [ "<filePath>" ],
+        "fileName" : "gslOutFlat.txt" 
+      },
+      "--json" : {
+        "arguments": [ "<filePath>" ],
+        "fileName": "gslOut.json"
+      },
+      "--ape" : {
+        "arguments" : [ "<outDir>", "<prefix>" ],
+        "fileName": "gslOut"
+      },
+      "--cm" : {
+        "arguments" : [ "<outDir>", "<prefix>"],
+        "fileName": "gslOut.cm"
+      },
+      "--primers" : {
+        "arguments" : ["<filePath>"],
+        "fileName": "gslOut.primers.txt"
+      },
+      "--docstring" : {
+        "arguments" : ["<filePath>"],
+        "fileName": "gslOut.doc"
+      },
+      "--name2id" : {
+        "arguments" : ["<filePath>"],
+        "fileName": "gslOut.name2id.txt"
+      },
+        "--thumper" : {
+            "arguments" : ["<prefix>"],
+            "fileName": "thumperOut"
+        }
+  },
+  "gslFile" : {
+    "fileName" : "project.run.gsl"
+  },
+    "downloadableFileTypes" : {
+        "ape" : {
+            "fileName": "gslOutApe.zip",
+            "contentType": "application/zip",
+            "contentExt": ".ape"
+        },
+        "cm" : {
+            "fileName": "gslOutCm.zip",
+            "contentType": "application/zip",
+            "contentExt": ".cm"
+        },
+        "thumper" : {
+            "fileName" :"gslOutThumper.zip",
+            "contentType": "application/zip",
+            "contentExt": ".xml|.csv"
+        },
+        "gsl" : {
+            "fileName": "project.gsl",
+            "contentType": "text/plain",
+            "contentExt": ".gsl"
+        },
+        "json" : {
+            "fileName": "gslOut.json",
+            "contentType": "application/json",
+            "contentExt": ".json"
+        },
+        "flat" : {
+            "fileName": "gslOutFlat.txt",
+            "contentType": "text/plain",
+            "contentExt": ".txt"
+        }
+    }
+};
 
-// read the environment variables and set the GSL directory.
-// Note: It is mandatory to specify the GSL_EXE path as the path of 
-// the binary file could change based on the project settings.
+/* Note: It is mandatory to specify the GSL_DIR and GSL_EXE path as the path of 
+ the binary file could change based on the project settings. */
 let gslDir, gslBinary;
 if (process.env.GSL_DIR)
   gslDir = process.env.GSL_DIR;
@@ -25,7 +96,43 @@ const jsonParser = bodyParser.json({
 }); 
 
 
-/***** HELPER FUNCTIONS *****/
+/* PROJECT FILE PATH RELATED FUNCTIONS */ 
+const projectPath = 'projects';
+const projectDataPath = 'data';
+const projectFilesPath = 'files';
+
+const makePath = (...paths) => {
+  if (process.env.STORAGE) {
+    return path.resolve(process.env.STORAGE, ...paths);
+  }
+  return path.resolve(__dirname, '../../../storage/', ...paths);
+};
+ 
+const createStorageUrl = (...urls) => {
+  const dev = ((process.env.NODE_ENV === 'test') ? 'test/' : '');
+  return makePath(dev, ...urls);
+};
+
+const createProjectPath = (projectId, ...rest) => {
+  invariant(projectId, 'Project ID required');
+  return createStorageUrl(projectPath, projectId, ...rest);
+};
+
+const createProjectDataPath = (projectId, ...rest) => {
+  return createProjectPath(projectId, projectDataPath, ...rest);
+};
+
+const createProjectFilesDirectoryPath = (projectId, ...rest) => {
+  return createProjectDataPath(projectId, projectFilesPath, ...rest);
+};
+
+const createProjectFilePath = (projectId, extension, fileName) => {
+  invariant(extension, 'must pass a directory name (extension key)');
+  return createProjectFilesDirectoryPath(projectId, extension, fileName);
+};
+
+
+/* HELPER FUNCTIONS */ 
 
 /* Preprocess arguments to find the arguments that create files */
 const preprocessArgs = (projectId, extensionKey, args) => {
@@ -43,6 +150,7 @@ const preprocessArgs = (projectId, extensionKey, args) => {
         }
         else if (argType === '<outDir>') {
           modifiedArgs[key][argCounter] = createProjectFilesDirectoryPath(projectId, extensionKey);
+          console.log('THE DIRECTORY MADE IS ', modifiedArgs[key][argCounter]);
         }
         argCounter++;
       }
@@ -70,7 +178,8 @@ const getJsonOutFile = (args) => {
   }
 }
 
-export const fileRead = (path, jsonParse = true) => {
+/* Read a file, optionally parse Json */
+const fileRead = (path, jsonParse = true) => {
   return new Promise((resolve, reject) => {
     fs.readFile(path, 'utf8', (err, result) => {
       if (err) {
@@ -85,7 +194,7 @@ export const fileRead = (path, jsonParse = true) => {
   });
 };
 
-
+/* Return the contents of the directory */
 const directoryContents = (path, ext='') => {
   return new Promise((resolve, reject) => {
     fs.readdir(path, (err, contents) => {
@@ -102,26 +211,7 @@ const directoryContents = (path, ext='') => {
   });
 };
 
-
-const makeApeZip = (path) => {
-  var zip = new JSZip();
-  directoryContents(path, '.ape')
-  .then(contents => {
-    const promise = Promise.resolve('');
-    // read and add all the files into the zip file.
-    for (var fileName of contents) {
-      const fileContents = fileRead(path + '/' + fileName, false);
-      zip.file(fileName, fileContents);
-    }
-    zip
-    .generateNodeStream({type:'nodebuffer',streamFiles:true})
-    .pipe(fs.createWriteStream(path + '/' + argConfig.downloadableFileTypes.ape.fileName))
-    .on('finish', function () {
-      console.log('Written out the .zip file');
-    });
-  });
-};
-
+/* Make a zip package */
 const makeZip = (path, fileType) => {
   var zip = new JSZip();
   directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt)
@@ -141,14 +231,13 @@ const makeZip = (path, fileType) => {
   });
 };
 
-/***** ROUTERS *****/
+/* ROUTES */
 /* Router for running GSL programs on the server */
 router.post('/gslc', jsonParser, (req, res, next) => {
   const input = req.body;
   let content = "#refgenome S288C \n" + input.code; // TODO: Make configurable
-  //let content = input.code;
-  let argumentString = input.arguments;
 
+  let argumentString = input.arguments;
   // make sure that the server is configured with GSL before sending out
   if (!gslDir || !gslBinary || !fs.existsSync(gslDir) || !fs.existsSync(gslBinary)) {
     console.log("ERROR: Someone requested to run GSL code, "+
@@ -212,7 +301,8 @@ router.post('/gslc', jsonParser, (req, res, next) => {
               'status' : code,
             }
             res.status(200).json(result);
-          })
+          });
+          makeZip(projectFileDir, 'ape');
         }
         else {
           const result = {
@@ -222,8 +312,6 @@ router.post('/gslc', jsonParser, (req, res, next) => {
           }
           res.status(422).json(result);
         }
-        makeZip(projectFileDir, 'ape');
-        //makeApeZip(projectFileDir);
       });
     }); 
   }

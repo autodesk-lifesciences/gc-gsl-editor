@@ -1,4 +1,26 @@
 var config = require('../../../package.json');
+var gslState = require('../../../globals');
+
+const getProjectFilesDir = (projectId) => {
+  window.constructor.extensions.files.read(
+      window.constructor.api.projects.projectGetCurrentId(),
+      config.name,
+      'project.gsl')
+    .then((response) => {
+      if (response.status === 200) { 
+        loadProjectCode(response.url)
+        .then(()=> {
+              ReactDOM.render(<GSLEditorLayout/>, container);
+        });
+      }
+    })
+    .catch((err) => {
+        gslState.editorContent = '';
+        gslState.resultContent = '';
+        gslState.statusContent = '';
+        ReactDOM.render(<GSLEditorLayout/>, container);
+    });
+}
 
 // Sends the code and corresponding gslc options to run the command on the server.
 export const run = (data, args, projectId) => {
@@ -15,6 +37,7 @@ export const run = (data, args, projectId) => {
     'projectId': projectId,
     'extension': config.name,
     'args': args,
+    'projectFileDir' : '/tmp/'
   };
 
   const stringified = JSON.stringify(payload);
