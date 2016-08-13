@@ -9,8 +9,8 @@
     "client": "dist/client.js"
   },
   "scripts": {
-    "build": "webpack --progress --watch main.js",
-    "postinstall": "webpack --config webpack.config.js && webpack --config webpack.config.server.js",
+    "dev": "webpack --progress --watch main.js",
+    "build": "webpack --config webpack.config.js && babel server/router.js -o dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
