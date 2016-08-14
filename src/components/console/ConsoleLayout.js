@@ -61,6 +61,11 @@ export default class ConsoleLayout extends Component {
     this.props.onToggleConsoleVisibility(false);
   }
 
+  componentDidUpdate() {
+    // Necessary for the ace_content size to update.
+    window.dispatchEvent(new Event('resize'));
+  }
+
   titlebarItems = () => {
     return [
       {

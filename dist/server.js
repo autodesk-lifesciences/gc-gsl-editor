@@ -215,7 +215,6 @@ var preprocessArgs = function preprocessArgs(projectId, extensionKey, args) {
               modifiedArgs[key][argCounter] = argConfig.fileArguments[key].fileName;
             } else if (argType === '<outDir>') {
               modifiedArgs[key][argCounter] = createProjectFilesDirectoryPath(projectId, extensionKey);
-              console.log('THE DIRECTORY MADE IS ', modifiedArgs[key][argCounter]);
             }
             argCounter++;
           }
@@ -457,7 +456,6 @@ router.post('/gslc', jsonParser, function (req, res, next) {
 router.get('/download*', function (req, res, next) {
 
   if (argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
-    console.log("Got a request to download the type: ", argConfig.downloadableFileTypes[req.query.type]);
     var fileName = argConfig.downloadableFileTypes[req.query.type].fileName;
     var filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
     res.header("Content-Type", argConfig.downloadableFileTypes[req.query.type].contentType);
