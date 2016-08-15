@@ -122,14 +122,20 @@ var argConfig = {
   }
 };
 
-/* Note: It is mandatory to specify the GSL_DIR and GSL_EXE path as the path of 
- the binary file could change based on the project settings. */
-var gslDir = void 0,
-    gslBinary = void 0;
-if (process.env.GSL_DIR) gslDir = process.env.GSL_DIR;
-if (process.env.GSL_EXE) gslBinary = process.env.GSL_EXE;
-
+var repoName = 'GSL';
+var gslDir = _path2.default.resolve(__dirname, repoName);
+var gslBinary = _path2.default.resolve(gslDir, 'bin/gslc/gslc.exe');
 var envVariables = 'GSL_LIB=' + gslDir + '/data/lib';
+
+console.log('\n\n\nstarting download + install of GSL');
+(0, _child_process.exec)('rm -rf ' + repoName + ' && git clone https://github.com/rupalkhilari/GSL.git && cd ' + repoName + ' && git checkout json_assembly && ./build.sh', {
+  cwd: __dirname
+}, function (err, stdout, stderr) {
+  console.log(err);
+  console.log(stdout);
+  console.log(stderr);
+});
+
 var router = _express2.default.Router();
 var jsonParser = _bodyParser2.default.json({
   strict: false
@@ -148,7 +154,7 @@ var makePath = function makePath() {
   if (process.env.STORAGE) {
     return _path2.default.resolve.apply(_path2.default, [process.env.STORAGE].concat(paths));
   }
-  return _path2.default.resolve.apply(_path2.default, [__dirname, '../../../storage/'].concat(paths));
+  return _path2.default.resolve.apply(_path2.default, [process.cwd(), 'storage'].concat(paths));
 };
 
 var createStorageUrl = function createStorageUrl() {
@@ -384,6 +390,7 @@ router.post('/gslc', jsonParser, function (req, res, next) {
   // make sure that the server is configured with GSL before sending out
   if (!gslDir || !gslBinary || !_fs2.default.existsSync(gslDir) || !_fs2.default.existsSync(gslBinary)) {
     console.log("ERROR: Someone requested to run GSL code, " + "but this has not been configured. Please set valid 'GSL_DIR' and 'GSL_EXE' environment variables.");
+    console.log(gslDir, gslBinary, _fs2.default.existsSync(gslDir), _fs2.default.existsSync(gslBinary));
     var result = {
       'result': "Failed to execute GSL code. The server has not been configured for GSL.",
       'contents': [],
@@ -456,12 +463,12 @@ router.post('/gslc', jsonParser, function (req, res, next) {
               console.log('An error occured while writing the .xls file', err);
             });
           } else {
-            var _result = {
+            var result = {
               'result': output,
               'contents': [],
               'status': code
             };
-            res.status(422).json(_result);
+            res.status(422).json(result);
           }
         });
       });

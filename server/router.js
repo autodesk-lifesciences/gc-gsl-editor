@@ -86,15 +86,20 @@ var argConfig = {
   }
 };
 
-/* Note: It is mandatory to specify the GSL_DIR and GSL_EXE path as the path of 
- the binary file could change based on the project settings. */
-let gslDir, gslBinary;
-if (process.env.GSL_DIR)
-  gslDir = process.env.GSL_DIR;
-if (process.env.GSL_EXE)
-  gslBinary = process.env.GSL_EXE;
-
+const repoName = 'GSL';
+const gslDir = path.resolve(__dirname, repoName);
+const gslBinary = path.resolve(gslDir, 'bin/gslc/gslc.exe');
 const envVariables = `GSL_LIB=${gslDir}/data/lib`;
+
+console.log('\n\n\nstarting download + install of GSL');
+exec('rm -rf ' + repoName + ' && git clone https://github.com/rupalkhilari/GSL.git && cd '+repoName+' && git checkout json_assembly && ./build.sh', {
+  cwd: __dirname,
+}, function (err, stdout, stderr) {
+  console.log(err);
+  console.log(stdout);
+  console.log(stderr);
+})
+
 const router = express.Router();
 const jsonParser = bodyParser.json({
 	strict: false,
@@ -110,7 +115,7 @@ const makePath = (...paths) => {
   if (process.env.STORAGE) {
     return path.resolve(process.env.STORAGE, ...paths);
   }
-  return path.resolve(__dirname, '../../../storage/', ...paths);
+  return path.resolve(process.cwd(), 'storage', ...paths);
 };
  
 const createStorageUrl = (...urls) => {
@@ -247,6 +252,7 @@ router.post('/gslc', jsonParser, (req, res, next) => {
   if (!gslDir || !gslBinary || !fs.existsSync(gslDir) || !fs.existsSync(gslBinary)) {
     console.log("ERROR: Someone requested to run GSL code, "+
       "but this has not been configured. Please set valid 'GSL_DIR' and 'GSL_EXE' environment variables.");
+    console.log(gslDir, gslBinary, fs.existsSync(gslDir), fs.existsSync(gslBinary));
     const result = {
       'result' : "Failed to execute GSL code. The server has not been configured for GSL.",
       'contents': [],
