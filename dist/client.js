@@ -90573,11 +90573,9 @@
 			"--json": [
 				"/tmp/placeholder.json"
 			],
+			"--noprimers": [],
 			"--ape": [
 				"/tmp/",
-				"placeholder"
-			],
-			"--thumper": [
 				"placeholder"
 			],
 			"--cm": [

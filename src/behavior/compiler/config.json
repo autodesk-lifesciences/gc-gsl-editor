@@ -2,8 +2,8 @@
 	"arguments" : {
         "--flat" : ["/tmp/placeholder.txt"],
         "--json" : ["/tmp/placeholder.json"],
+        "--noprimers" : [],
         "--ape" : ["/tmp/", "placeholder"],
-        "--thumper" : ["placeholder"],
         "--cm" : ["/tmp/", "placeholder"]
     }
 }

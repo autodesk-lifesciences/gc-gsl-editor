@@ -223,20 +223,25 @@ const makeZip = (path, fileType) => {
   return new Promise((resolve, reject) => {
     var zip = new JSZip();
     directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt)
-    .then(contents => {
-      //const promise = Promise.resolve('');
-      // read and add all the files into the zip file.
-      for (var fileName of contents) {
-        const fileContents = fileRead(path + '/' + fileName, false);
-        zip.file(fileName, fileContents);
-      }
-      zip
-      .generateNodeStream({type:'nodebuffer', streamFiles:true})
+    .then(directoryContents => Promise.all(
+      directoryContents.map(fileName => {
+        return fileRead(path + '/' + fileName, false).then(fileContents => {
+          zip.file(fileName, fileContents);
+        });
+      })
+    ))
+    .then(() => {
+      zip.generateNodeStream({type:'nodebuffer', streamFiles:true})
       .pipe(fs.createWriteStream(path + '/' + argConfig.downloadableFileTypes[fileType].fileName))
       .on('finish', function () {
         console.log(`Written out the ${fileType} .zip file`);
-        resolve();
+        resolve(zip);
       });
+    })
+    .catch((err) => {
+      console.log('error making zip for ' + fileType);
+      console.log(err);
+      reject(err);
     });
   });
 };
@@ -313,8 +318,10 @@ router.post('/gslc', jsonParser, (req, res, next) => {
             }
             res.status(200).json(result);
           });
+          //actually make the zips (assume time to click)
           makeZip(projectFileDir, 'cm');
           makeZip(projectFileDir, 'ape');
+          /*
           makeZip(projectFileDir, 'thumper')
           .then(() => {
             // create the rabit spreadsheet.
@@ -326,6 +333,7 @@ router.post('/gslc', jsonParser, (req, res, next) => {
           .catch((err) => {
             console.log('An error occured while writing the .xls file', err);
           });
+          */
         }
         else {
           const result = {

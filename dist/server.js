@@ -343,39 +343,21 @@ var directoryContents = function directoryContents(path) {
 var makeZip = function makeZip(path, fileType) {
   return new _promise2.default(function (resolve, reject) {
     var zip = new JSZip();
-    directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt).then(function (contents) {
-      //const promise = Promise.resolve('');
-      // read and add all the files into the zip file.
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
-
-      try {
-        for (var _iterator4 = (0, _getIterator3.default)(contents), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var fileName = _step4.value;
-
-          var fileContents = fileRead(path + '/' + fileName, false);
+    directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt).then(function (directoryContents) {
+      return _promise2.default.all(directoryContents.map(function (fileName) {
+        return fileRead(path + '/' + fileName, false).then(function (fileContents) {
           zip.file(fileName, fileContents);
-        }
-      } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion4 && _iterator4.return) {
-            _iterator4.return();
-          }
-        } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
-          }
-        }
-      }
-
+        });
+      }));
+    }).then(function () {
       zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true }).pipe(_fs2.default.createWriteStream(path + '/' + argConfig.downloadableFileTypes[fileType].fileName)).on('finish', function () {
         console.log('Written out the ' + fileType + ' .zip file');
-        resolve();
+        resolve(zip);
       });
+    }).catch(function (err) {
+      console.log('error making zip for ' + fileType);
+      console.log(err);
+      reject(err);
     });
   });
 };
@@ -451,17 +433,22 @@ router.post('/gslc', jsonParser, function (req, res, next) {
               };
               res.status(200).json(result);
             });
+            //actually make the zips (assume time to click)
             makeZip(projectFileDir, 'cm');
             makeZip(projectFileDir, 'ape');
-            makeZip(projectFileDir, 'thumper').then(function () {
+            /*
+            makeZip(projectFileDir, 'thumper')
+            .then(() => {
               // create the rabit spreadsheet.
-              var inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
-              var outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
-              console.log('Copying ' + inputFile + ' to ' + outputFile);
-              _fs2.default.createReadStream(inputFile).pipe(_fs2.default.createWriteStream(outputFile));
-            }).catch(function (err) {
+              const inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
+              const outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
+              console.log(`Copying ${inputFile} to ${outputFile}`);
+              fs.createReadStream(inputFile).pipe(fs.createWriteStream(outputFile));
+            })
+            .catch((err) => {
               console.log('An error occured while writing the .xls file', err);
             });
+            */
           } else {
             var result = {
               'result': output,
