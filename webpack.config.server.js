@@ -4,8 +4,8 @@ module.exports = {
   entry: './server/router.js',
 
   output: {
-    path: path.join(__dirname, 'dist'),
-    filename: 'server.js',
+    path: path.join(__dirname),
+    filename: 'serve-build.js',
   },
 
   target: 'node',

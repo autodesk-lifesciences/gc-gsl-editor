@@ -5,12 +5,13 @@
   "geneticConstructor": {
     "readable": "GSL Editor (S288C)",
     "region": "projectDetail",
-    "router": "dist/server.js",
-    "client": "dist/client.js"
+    "router": "server-build.js",
+    "client": "client-build.js"
   },
   "scripts": {
+    "postinstall": "babel-node install_gsl.js",
     "dev": "webpack --progress --watch main.js",
-    "build": "webpack --config webpack.config.js && babel server/router.js -o dist/server.js",
+    "build": "webpack --config webpack.config.js && babel server/router.js -o server-build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

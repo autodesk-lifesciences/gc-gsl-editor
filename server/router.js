@@ -91,15 +91,6 @@ const gslDir = path.resolve(__dirname, repoName);
 const gslBinary = path.resolve(gslDir, 'bin/gslc/gslc.exe');
 const envVariables = `GSL_LIB=${gslDir}/data/lib`;
 
-console.log('\n\n\nstarting download + install of GSL');
-exec('rm -rf ' + repoName + ' && git clone https://github.com/rupalkhilari/GSL.git && cd '+repoName+' && git checkout json_assembly && ./build.sh', {
-  cwd: __dirname,
-}, function (err, stdout, stderr) {
-  console.log(err);
-  console.log(stdout);
-  console.log(stderr);
-})
-
 const router = express.Router();
 const jsonParser = bodyParser.json({
 	strict: false,
