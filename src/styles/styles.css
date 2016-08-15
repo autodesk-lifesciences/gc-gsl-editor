@@ -154,12 +154,28 @@ input.StatusbarButton {
   flex-grow: 1;
 }
 
-
-.preResult {
+.divResult {
+  font-family: Courier;
   white-space: pre;
-    margin-top: 0;  
-    display: block;
-    padding-left: 9px;
-    padding-top: 2px;
-    padding-right: 9px;
+  margin-top: 0;  
+  display: block;
+  padding-left: 9px;
+  padding-top: 2px;
+  padding-right: 9px;
 }
+
+/* Scrollbar as per UI spec or default ?
+.ResultViewer.active::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.ResultViewer.active::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3); 
+} 
+
+.ResultViewer.active::-webkit-scrollbar-thumb {
+    border-radius: 6px;
+    background-color: color.lightgray;
+    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.5); 
+} */

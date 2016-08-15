@@ -13,9 +13,9 @@ export default class ResultViewer extends Component {
 
     return (
       <div className="ResultViewer active">
-         <pre className="preResult">
+         <div className="divResult">
          {this.props.resultContent}
-         </pre>
+         </div>
       </div>
     );
   }

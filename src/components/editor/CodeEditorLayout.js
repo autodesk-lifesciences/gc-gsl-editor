@@ -29,6 +29,82 @@ export default class CodeEditorLayout extends Component {
       showDownloadMenu: false,
       currentMenuPosition: {},
       consoleVisible: true,
+      toolbarItems: [
+        {
+          label: 'Run',
+          action: this.runCode,
+          imageUrl: '/images/ui/run_icon.svg',
+        },
+        {
+          label: 'Save',
+          action: this.saveCode,
+        },
+        {
+          label: 'GSL Library',
+          action: this.showGSLLibrary,
+          imageUrl: '/images/ui/add_icon.svg'
+        },
+        {
+          label: 'Comment',
+          action: this.toggleComment,
+        },
+        {
+          label: 'Download',
+          action: this.downloadFile,
+          imageUrl: '/images/ui/download_icon.svg'
+        }
+      ],
+      downloadItems: [
+        {
+          key: 'my-gsl-file',
+          type: 'gsl',
+          text: 'gsl file',
+          disabled: false,
+          action: this.doDownload,
+        },
+        {
+          key: 'my-json-file',
+          type: 'json',
+          text: 'json file',
+          disabled: false,
+          action: this.doDownload,
+        },
+        {
+          key: 'my-ape-zip-file',
+          type: 'ape',
+          text: 'ape zip file',
+          disabled: false,
+          action: this.doDownload,
+        },
+        {
+          key: 'my-cm-zip-file',
+          type: 'cm',
+          text: 'cm zip file',
+          disabled: false,
+          action: this.doDownload,
+        },
+        {
+          key: 'my-thumper-zip-file',
+          type: 'thumper',
+          text: 'thumper zip file',
+          disabled: false,
+          action: this.doDownload,
+        },
+        {
+          key: 'my-rabit-xls-file',
+          type: 'rabitXls',
+          text: 'rabit xls file',
+          disabled: false,
+          action: this.doDownload,
+        },
+        {
+          key: 'my-txt-file',
+          type: 'flat',
+          text: 'txt file',
+          disabled: false,
+          action: this.doDownload,
+        },
+      ],  
     };
   }
 
@@ -39,12 +115,12 @@ export default class CodeEditorLayout extends Component {
       this.onStatusMessageChange('Begin typing GSL code. Drag and drop blocks or GSL commands from the Inventory to use them in a script.');
     else if (this.state.statusMessage.startsWith('Begin'))
       this.onStatusMessageChange(' ');
-  };
+  }
 
   onStatusMessageChange = (message) => {
   	this.setState({ statusMessage: message });
     this.props.onStatusContentChange(message)
-  };
+  }
 
   onResultContentChange = (result) => {
     this.setState({ resultContent: result });
@@ -63,6 +139,26 @@ export default class CodeEditorLayout extends Component {
     });
   }
 
+  onDownloadMenuSettingsChange = (settings) => {
+    let tempItems = this.state.downloadItems;
+    let index = 0;
+    for (let item of this.state.downloadItems) {
+      tempItems[index].disabled = !settings[item.type];
+      index++;
+    }
+
+    this.setState( {
+      downloadItems: tempItems
+    });
+  }
+
+  refreshDownloadMenu = () => {
+    compiler.getAvailableDownloadList(window.constructor.api.projects.projectGetCurrentId())
+    .then((data) => {
+      this.onDownloadMenuSettingsChange(data);
+    });
+  }
+
   showConsole = () => {
     this.setState( { consoleVisible: true });
     this.props.onToggleConsoleVisibility(this.state.consoleVisible);
@@ -76,10 +172,12 @@ export default class CodeEditorLayout extends Component {
     compiler.run(this.state.editorContent, config.arguments, window.constructor.api.projects.projectGetCurrentId()).then((data) => {
       this.onResultContentChange(data.result);
       this.onStatusMessageChange('Program exited with status code: ' + data.status);
-      if (data.status == 0)   // attempt to render in the canvas only if all is well.
-        canvas.render(JSON.parse(data.contents))
+      if (data.status == 0) {  // attempt to render in the canvas only if all is well.
+        canvas.render(JSON.parse(data.contents));
+        this.refreshDownloadMenu();
+      }
     });
-  };
+  }
 
   saveCode = (e) => {
     window.constructor.extensions.files.write(
@@ -90,11 +188,12 @@ export default class CodeEditorLayout extends Component {
     )
     .then(()=> {
       this.onStatusMessageChange('Saved.');
+      this.refreshDownloadMenu();
     })
     .catch((err) => {
       this.onStatusMessageChange('Failed to save the GSL code on the server.');
     })
-  };
+  }
 
   downloadFile = (e) => {
     this.onMenuToggle(true);
@@ -110,7 +209,7 @@ export default class CodeEditorLayout extends Component {
   }
 
   componentDidMount() {
-
+    this.refreshDownloadMenu();
     if (gslState.hasOwnProperty('editorContent') && this.state.editorContent !== gslState.editorContent) {
       this.onEditorContentChange(gslState.editorContent);
       this.onResultContentChange(gslState.resultContent);
@@ -121,7 +220,7 @@ export default class CodeEditorLayout extends Component {
   // Toggles comments
   toggleComment = () => {
     const uncomment = function(ace, token, pattern, row) {
-      const column = token.value.indexOf(pattern) + token.start;
+      const column = token.value.indexOf(pattern); // + token.start;
       if (token.value.indexOf(pattern) != -1) {
         ace.editor.session.replace({
           start: { row: row, column: column },
@@ -137,18 +236,21 @@ export default class CodeEditorLayout extends Component {
 
       for (var token of this.codeEditor.ace.editor.session.getTokens(selectionRange.start.row)) {
         if (token.type === 'comment') {
+          uncomment(this.codeEditor.ace, token, '*)', selectionRange.start.row);
           uncomment(this.codeEditor.ace, token, '(*', selectionRange.start.row);
           uncomment(this.codeEditor.ace, token, '//', selectionRange.start.row);
-          uncomment(this.codeEditor.ace, token, '*)', selectionRange.start.row);
           addComment = false;
         }        
       }
 
       for(var token of this.codeEditor.ace.editor.session.getTokens(selectionRange.end.row)) {
         if (token.type === 'comment') {
-          uncomment(this.codeEditor.ace, token, '(*', this.codeEditor.ace.editor.getCursorPosition().end.row);
+          /*uncomment(this.codeEditor.ace, token, '(*', this.codeEditor.ace.editor.getCursorPosition().end.row);
           uncomment(this.codeEditor.ace, token, '//', this.codeEditor.ace.editor.getCursorPosition().end.row);
-          uncomment(this.codeEditor.ace, token, '*)', this.codeEditor.ace.editor.getCursorPosition().end.row);
+          uncomment(this.codeEditor.ace, token, '*)', this.codeEditor.ace.editor.getCursorPosition().end.row);*/
+          uncomment(this.codeEditor.ace, token, '(*', selectionRange.end.row);
+          uncomment(this.codeEditor.ace, token, '//', selectionRange.end.row);
+          uncomment(this.codeEditor.ace, token, '*)', selectionRange.end.row);
           addComment = false;
         }        
       }
@@ -173,36 +275,6 @@ export default class CodeEditorLayout extends Component {
       if (addComment)     
         this.codeEditor.ace.editor.env.document.insert(this.codeEditor.ace.editor.getCursorPosition(), '//'); 
     }
-  }
-
-  // Make the toolbar items.
-  getToolbarItems = () => {
-    return [
-      {
-        label: 'Run',
-        action: this.runCode,
-        imageUrl: '/images/ui/run_icon.svg',
-        enabled: this.state.editorContent === '' ? false : true, 
-      },
-      {
-        label: 'Save',
-        action: this.saveCode,
-      },
-      {
-        label: 'GSL Library',
-        action: this.showGSLLibrary,
-        imageUrl: '/images/ui/add_icon.svg'
-      },
-      {
-        label: 'Comment',
-        action: this.toggleComment,
-      },
-      {
-        label: 'Download',
-        action: this.downloadFile,
-        imageUrl: '/images/ui/download_icon.svg'
-      }
-    ]
   }
 
   downloadFileByType = (fileType, buttonType) => {
@@ -231,6 +303,9 @@ export default class CodeEditorLayout extends Component {
       'gsl file' : 'gsl',
       'json file' : 'json',
       'ape zip file' : 'ape',
+      'cm zip file' : 'cm',
+      'thumper zip file' : 'thumper',
+      'rabit xls file': 'rabitXls',
       'txt file': 'flat',
     }
     const buttonType = evt.nativeEvent.button;
@@ -248,51 +323,15 @@ export default class CodeEditorLayout extends Component {
     }
   }
 
-  downloadMenuItems = () => {
-    return [
-      {
-        key: 'my-gsl-file',
-        text: 'gsl file',
-        disabled: false,
-        action: this.doDownload,
-      },
-      {
-        key: 'my-json-file',
-        text: 'json file',
-        disabled: false,
-        action: this.doDownload,
-      },
-      /*{
-        key: 'my-ape-file',
-        text: 'ape file',
-        disabled: false,
-        action: this.downloadFileItem,
-      },*/
-      {
-        key: 'my-ape-zip-file',
-        text: 'ape zip file',
-        disabled: false,
-        action: this.doDownload,
-      },
-      {
-        key: 'my-txt-file',
-        text: 'txt file',
-        disabled: false,
-        action: this.doDownload,
-      },
-    ];
-  };
-
   render() {
-    let editorComponent;
     return (
         <div className="CodeEditorLayout">
-          <Toolbar toolbarItems={this.getToolbarItems()} />
+          <Toolbar toolbarItems={this.state.toolbarItems} />
           <ToolbarMenu
             isOpen={this.state.showDownloadMenu}
             changeState={this.onMenuToggle}
             position={this.state.currentMenuPosition}
-            toolbarMenuItems={this.downloadMenuItems()}/>
+            toolbarMenuItems={this.state.downloadItems}/>
           <CodeEditorAce 
             ref = {(el) => {
                 if (el) {

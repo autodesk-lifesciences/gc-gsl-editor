@@ -61,7 +61,7 @@ var argConfig = {
     },
     "--cm": {
       "arguments": ["<outDir>", "<prefix>"],
-      "fileName": "gslOut.cm"
+      "fileName": "gslOut"
     },
     "--primers": {
       "arguments": ["<filePath>"],
@@ -76,7 +76,7 @@ var argConfig = {
       "fileName": "gslOut.name2id.txt"
     },
     "--thumper": {
-      "arguments": ["<prefix>"],
+      "arguments": ["<filePath>"],
       "fileName": "thumperOut"
     }
   },
@@ -87,17 +87,17 @@ var argConfig = {
     "ape": {
       "fileName": "gslOutApe.zip",
       "contentType": "application/zip",
-      "contentExt": ".ape"
+      "contentExt": ".ape$"
     },
     "cm": {
       "fileName": "gslOutCm.zip",
       "contentType": "application/zip",
-      "contentExt": ".cm"
+      "contentExt": ".cx5$"
     },
     "thumper": {
       "fileName": "gslOutThumper.zip",
       "contentType": "application/zip",
-      "contentExt": ".xml|.csv"
+      "contentExt": "^thumperOut"
     },
     "gsl": {
       "fileName": "project.gsl",
@@ -113,6 +113,11 @@ var argConfig = {
       "fileName": "gslOutFlat.txt",
       "contentType": "text/plain",
       "contentExt": ".txt"
+    },
+    "rabitXls": {
+      "fileName": "thumperOut.rabits.xls",
+      "contentType": "application/vnd.ms-excel",
+      "contentExt": ".xls"
     }
   }
 };
@@ -313,56 +318,58 @@ var fileRead = function fileRead(path) {
 
 /* Return the contents of the directory */
 var directoryContents = function directoryContents(path) {
-  var ext = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+  var pattern = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
 
   return new _promise2.default(function (resolve, reject) {
     _fs2.default.readdir(path, function (err, contents) {
       if (err) {
         return reject(err);
       }
-      function checkApe(fileName) {
-        if (ext === '') return true;
-        return fileName.endsWith(ext);
-      }
-      resolve(contents.filter(checkApe));
+      var reg = new RegExp(pattern);
+      resolve(contents.filter(function (item) {
+        return reg.test(item);
+      }));
     });
   });
 };
 
 /* Make a zip package */
 var makeZip = function makeZip(path, fileType) {
-  var zip = new JSZip();
-  directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt).then(function (contents) {
-    var promise = _promise2.default.resolve('');
-    // read and add all the files into the zip file.
-    var _iteratorNormalCompletion4 = true;
-    var _didIteratorError4 = false;
-    var _iteratorError4 = undefined;
+  return new _promise2.default(function (resolve, reject) {
+    var zip = new JSZip();
+    directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt).then(function (contents) {
+      //const promise = Promise.resolve('');
+      // read and add all the files into the zip file.
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
 
-    try {
-      for (var _iterator4 = (0, _getIterator3.default)(contents), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-        var fileName = _step4.value;
-
-        var fileContents = fileRead(path + '/' + fileName, false);
-        zip.file(fileName, fileContents);
-      }
-    } catch (err) {
-      _didIteratorError4 = true;
-      _iteratorError4 = err;
-    } finally {
       try {
-        if (!_iteratorNormalCompletion4 && _iterator4.return) {
-          _iterator4.return();
+        for (var _iterator4 = (0, _getIterator3.default)(contents), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var fileName = _step4.value;
+
+          var fileContents = fileRead(path + '/' + fileName, false);
+          zip.file(fileName, fileContents);
         }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
       } finally {
-        if (_didIteratorError4) {
-          throw _iteratorError4;
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4.return) {
+            _iterator4.return();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
         }
       }
-    }
 
-    zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true }).pipe(_fs2.default.createWriteStream(path + '/' + argConfig.downloadableFileTypes[fileType].fileName)).on('finish', function () {
-      console.log('Written out the .zip file');
+      zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true }).pipe(_fs2.default.createWriteStream(path + '/' + argConfig.downloadableFileTypes[fileType].fileName)).on('finish', function () {
+        console.log('Written out the ' + fileType + ' .zip file');
+        resolve();
+      });
     });
   });
 };
@@ -437,7 +444,17 @@ router.post('/gslc', jsonParser, function (req, res, next) {
               };
               res.status(200).json(result);
             });
+            makeZip(projectFileDir, 'cm');
             makeZip(projectFileDir, 'ape');
+            makeZip(projectFileDir, 'thumper').then(function () {
+              // create the rabit spreadsheet.
+              var inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
+              var outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
+              console.log('Copying ' + inputFile + ' to ' + outputFile);
+              _fs2.default.createReadStream(inputFile).pipe(_fs2.default.createWriteStream(outputFile));
+            }).catch(function (err) {
+              console.log('An error occured while writing the .xls file', err);
+            });
           } else {
             var _result = {
               'result': output,
@@ -456,14 +473,41 @@ router.post('/gslc', jsonParser, function (req, res, next) {
 router.get('/download*', function (req, res, next) {
 
   if (argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
-    var fileName = argConfig.downloadableFileTypes[req.query.type].fileName;
-    var filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
-    res.header("Content-Type", argConfig.downloadableFileTypes[req.query.type].contentType);
-    res.download(filePath, fileName);
+    (function () {
+      var fileName = argConfig.downloadableFileTypes[req.query.type].fileName;
+      var filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
+      _fs2.default.exists(filePath, function (exists) {
+        if (exists) {
+          res.header("Content-Type", argConfig.downloadableFileTypes[req.query.type].contentType);
+          res.download(filePath, fileName);
+        } else {
+          res.send('No file of type ' + req.query.type + ' generated yet');
+          res.status(404);
+        }
+      });
+    })();
   } else {
     res.send('Could not find an appropriate file type to download.');
-    res.send(501);
+    res.status(501);
   }
+});
+
+/* Get information of available file types of downloads */
+router.post('/listDownloads', function (req, res, next) {
+  // list the available downloads.
+  var input = req.body;
+  var fileStatus = {};
+  var projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
+  (0, _keys2.default)(argConfig.downloadableFileTypes).forEach(function (key) {
+    var filePath = projectFileDir + '/' + argConfig.downloadableFileTypes[key].fileName;
+    try {
+      _fs2.default.accessSync(filePath);
+      fileStatus[key] = true;
+    } catch (e) {
+      fileStatus[key] = false;
+    }
+  });
+  res.status(200).json(fileStatus);
 });
 
 module.exports = router;

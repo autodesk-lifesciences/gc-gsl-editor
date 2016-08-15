@@ -65,7 +65,14 @@ function render(container, options) {
         'project.gsl',
         gslState.editorContent,
       )
-      console.log('Saving GSL Code.');
+      .then(() => {
+        console.log('Saved GSL Code.');
+        gslState.savedCode = gslState.editorContent;
+      })
+      .catch((err) => {
+        console.log('Failed to save GSL Code');
+        console.log(err);
+      });
     } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_OPEN) {
         // read code from the server.
         window.constructor.extensions.files.read(

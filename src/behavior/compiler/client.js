@@ -1,6 +1,7 @@
 var config = require('../../../package.json');
 var gslState = require('../../../globals');
 
+// Unused ? 
 const getProjectFilesDir = (projectId) => {
   window.constructor.extensions.files.read(
       window.constructor.api.projects.projectGetCurrentId(),
@@ -52,6 +53,27 @@ export const run = (data, args, projectId) => {
   .then(resp => resp.json())
   .then(function(data) {
     console.log(data);
+    return data;
+  });
+};
+
+/* Retrieves the file types available for download for a project */
+export const getAvailableDownloadList = (projectId) => {
+  const payload = {
+    'projectId': projectId,
+    'extension': config.name
+  };
+
+  const stringified = JSON.stringify(payload);
+  return fetch('/extensions/api/' + config.name + '/listDownloads', {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    },
+    body: stringified,    
+  })
+  .then(resp => resp.json())
+  .then(function(data) {
     return data;
   });
 };

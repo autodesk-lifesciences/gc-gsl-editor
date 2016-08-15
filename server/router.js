@@ -25,7 +25,7 @@ var argConfig = {
       },
       "--cm" : {
         "arguments" : [ "<outDir>", "<prefix>"],
-        "fileName": "gslOut.cm"
+        "fileName": "gslOut"
       },
       "--primers" : {
         "arguments" : ["<filePath>"],
@@ -39,46 +39,51 @@ var argConfig = {
         "arguments" : ["<filePath>"],
         "fileName": "gslOut.name2id.txt"
       },
-        "--thumper" : {
-            "arguments" : ["<prefix>"],
-            "fileName": "thumperOut"
-        }
+      "--thumper" : {
+        "arguments" : ["<filePath>"],
+        "fileName": "thumperOut"
+      }
   },
   "gslFile" : {
     "fileName" : "project.run.gsl"
   },
-    "downloadableFileTypes" : {
-        "ape" : {
-            "fileName": "gslOutApe.zip",
-            "contentType": "application/zip",
-            "contentExt": ".ape"
-        },
-        "cm" : {
-            "fileName": "gslOutCm.zip",
-            "contentType": "application/zip",
-            "contentExt": ".cm"
-        },
-        "thumper" : {
-            "fileName" :"gslOutThumper.zip",
-            "contentType": "application/zip",
-            "contentExt": ".xml|.csv"
-        },
-        "gsl" : {
-            "fileName": "project.gsl",
-            "contentType": "text/plain",
-            "contentExt": ".gsl"
-        },
-        "json" : {
-            "fileName": "gslOut.json",
-            "contentType": "application/json",
-            "contentExt": ".json"
-        },
-        "flat" : {
-            "fileName": "gslOutFlat.txt",
-            "contentType": "text/plain",
-            "contentExt": ".txt"
-        }
+  "downloadableFileTypes" : {
+    "ape" : {
+      "fileName": "gslOutApe.zip",
+      "contentType": "application/zip",
+      "contentExt": ".ape$"
+    },
+    "cm" : {
+      "fileName": "gslOutCm.zip",
+      "contentType": "application/zip",
+      "contentExt": ".cx5$"
+    },
+    "thumper" : {
+      "fileName" :"gslOutThumper.zip",
+      "contentType": "application/zip",
+      "contentExt": "^thumperOut"
+    },
+    "gsl" : {
+      "fileName": "project.gsl",
+      "contentType": "text/plain",
+      "contentExt": ".gsl"
+    },
+    "json" : {
+      "fileName": "gslOut.json",
+      "contentType": "application/json",
+      "contentExt": ".json"
+    },
+    "flat" : {
+      "fileName": "gslOutFlat.txt",
+      "contentType": "text/plain",
+      "contentExt": ".txt"
+    },
+    "rabitXls" : {
+      "fileName": "thumperOut.rabits.xls",
+      "contentType": "application/vnd.ms-excel",
+      "contentExt": ".xls"
     }
+  }
 };
 
 /* Note: It is mandatory to specify the GSL_DIR and GSL_EXE path as the path of 
@@ -194,38 +199,39 @@ const fileRead = (path, jsonParse = true) => {
 };
 
 /* Return the contents of the directory */
-const directoryContents = (path, ext='') => {
+const directoryContents = (path, pattern='') => {
   return new Promise((resolve, reject) => {
     fs.readdir(path, (err, contents) => {
       if (err) {
         return reject(err);
       }
-      function checkApe(fileName) {
-        if (ext === '')
-          return true;
-        return fileName.endsWith(ext);
-      }
-      resolve(contents.filter(checkApe));
+      const reg = new RegExp(pattern);
+      resolve(contents.filter((item) => {
+        return reg.test(item);
+      }));
     });
   });
-};
+}
 
 /* Make a zip package */
 const makeZip = (path, fileType) => {
-  var zip = new JSZip();
-  directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt)
-  .then(contents => {
-    const promise = Promise.resolve('');
-    // read and add all the files into the zip file.
-    for (var fileName of contents) {
-      const fileContents = fileRead(path + '/' + fileName, false);
-      zip.file(fileName, fileContents);
-    }
-    zip
-    .generateNodeStream({type:'nodebuffer', streamFiles:true})
-    .pipe(fs.createWriteStream(path + '/' + argConfig.downloadableFileTypes[fileType].fileName))
-    .on('finish', function () {
-      console.log('Written out the .zip file');
+  return new Promise((resolve, reject) => {
+    var zip = new JSZip();
+    directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt)
+    .then(contents => {
+      //const promise = Promise.resolve('');
+      // read and add all the files into the zip file.
+      for (var fileName of contents) {
+        const fileContents = fileRead(path + '/' + fileName, false);
+        zip.file(fileName, fileContents);
+      }
+      zip
+      .generateNodeStream({type:'nodebuffer', streamFiles:true})
+      .pipe(fs.createWriteStream(path + '/' + argConfig.downloadableFileTypes[fileType].fileName))
+      .on('finish', function () {
+        console.log(`Written out the ${fileType} .zip file`);
+        resolve();
+      });
     });
   });
 };
@@ -301,7 +307,19 @@ router.post('/gslc', jsonParser, (req, res, next) => {
             }
             res.status(200).json(result);
           });
+          makeZip(projectFileDir, 'cm');
           makeZip(projectFileDir, 'ape');
+          makeZip(projectFileDir, 'thumper')
+          .then(() => {
+            // create the rabit spreadsheet.
+            const inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
+            const outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
+            console.log(`Copying ${inputFile} to ${outputFile}`);
+            fs.createReadStream(inputFile).pipe(fs.createWriteStream(outputFile));
+          })
+          .catch((err) => {
+            console.log('An error occured while writing the .xls file', err);
+          });
         }
         else {
           const result = {
@@ -322,13 +340,40 @@ router.get('/download*', function(req, res, next) {
   if (argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
     const fileName = argConfig.downloadableFileTypes[req.query.type].fileName
     const filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
-    res.header("Content-Type", argConfig.downloadableFileTypes[req.query.type].contentType);
-    res.download(filePath, fileName);
+    fs.exists(filePath, function(exists) {
+      if (exists) {
+        res.header("Content-Type", argConfig.downloadableFileTypes[req.query.type].contentType);
+        res.download(filePath, fileName);
+      }
+      else {
+        res.send(`No file of type ${req.query.type} generated yet`);
+        res.status(404);
+      }
+    });
   }
   else {
     res.send('Could not find an appropriate file type to download.');
-    res.send(501);
+    res.status(501);
   }
+});
+
+/* Get information of available file types of downloads */
+router.post('/listDownloads', function(req, res, next) {
+  // list the available downloads.
+  const input = req.body;
+  let fileStatus = {};
+  const projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
+  Object.keys(argConfig.downloadableFileTypes).forEach(function(key) {
+    const filePath = projectFileDir + '/' + argConfig.downloadableFileTypes[key].fileName;
+    try {
+      fs.accessSync(filePath);
+      fileStatus[key] = true;
+    }
+    catch(e) {
+      fileStatus[key] = false;
+    }
+  });
+  res.status(200).json(fileStatus);
 });
 
 

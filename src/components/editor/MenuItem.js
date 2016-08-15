@@ -10,6 +10,7 @@ export default class MenuItem extends Component {
     shortcut: PropTypes.string,
     classes: PropTypes.string,
     data: PropTypes.object,
+    type: PropTypes.string,
   };
 
   static defaultProps = {
