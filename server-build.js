@@ -441,12 +441,12 @@ router.post('/gslc', jsonParser, function (req, res, next) {
             });
             */
           } else {
-            var result = {
+            var _result = {
               'result': output,
               'contents': [],
               'status': code
             };
-            res.status(422).json(result);
+            res.status(422).json(_result);
           }
         });
       });

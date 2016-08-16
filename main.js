@@ -48,7 +48,20 @@ function render(container, options) {
               gslState.editorContent = '';
               gslState.resultContent = '';
               gslState.statusContent = '';
-              ReactDOM.render(<GSLEditorLayout/>, container);
+              // write an empty file.
+              window.constructor.extensions.files.write(
+                window.constructor.api.projects.projectGetCurrentId(),
+                extensionConfig.name,
+                'project.run.gsl',
+                ''
+              ).then(()=> {
+                 ReactDOM.render(<GSLEditorLayout/>, container);
+               })
+              .catch((err) => {
+                console.log(err);
+                ReactDOM.render(<GSLEditorLayout/>, container);
+              });
+             
           });
         } else {
             ReactDOM.render(<GSLEditorLayout/>, container);

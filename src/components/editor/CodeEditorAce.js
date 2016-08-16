@@ -65,6 +65,7 @@ export default class CodeEditorAce extends Component {
       this.setState({editorHeight: this.getEditorHeight() });
     });
     this.setState({editorHeight: this.getEditorHeight() });
+    this.ace.editor.focus();
   }
 
   componentWillUnmount() {
@@ -73,7 +74,9 @@ export default class CodeEditorAce extends Component {
 
   getEditorHeight = () => {
     //return this.element.getBoundingClientRect().height;
-    const editorHeight =  document.querySelector('.GSLEditorLayout').getBoundingClientRect().height - document.querySelector('.ConsoleLayout').getBoundingClientRect().height - 60;
+    let editorHeight = 0;
+    if (document.querySelector('.GSLEditorLayout') !== null && document.querySelector('.ConsoleLayout') !== null)
+      editorHeight =  document.querySelector('.GSLEditorLayout').getBoundingClientRect().height - document.querySelector('.ConsoleLayout').getBoundingClientRect().height - 60;
     return editorHeight;
   }
 
