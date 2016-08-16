@@ -9,7 +9,7 @@
     "client": "client-build.js"
   },
   "scripts": {
-    "postinstall": "babel-node install_gsl.js",
+    "postinstall": "rm -rf GSL && git clone https://github.com/rupalkhilari/GSL.git && cd GSL && git checkout json_assembly && ./build.sh",
     "dev": "webpack --progress --watch main.js",
     "build": "webpack --config webpack.config.js && babel server/router.js -o server-build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
