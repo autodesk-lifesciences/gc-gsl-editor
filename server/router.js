@@ -275,6 +275,7 @@ router.post('/gslc', jsonParser, (req, res, next) => {
       // execute the code
       const command = `${envVariables} mono ${gslBinary} ${argumentString} ${filePath}`;
       console.log('Running: ', command);
+
       let process;
       try {
         process = exec(`${command}`, (err, stdout, stderr) => {
@@ -321,7 +322,8 @@ router.post('/gslc', jsonParser, (req, res, next) => {
             }
             res.status(200).json(result);
           });
-          //actually make the zips (assume time to click)
+          
+          // Create zip packages.
           if (modifiedArgs.hasOwnProperty('--cm'))
             makeZip(projectFileDir, 'cm');
 
@@ -356,8 +358,8 @@ router.post('/gslc', jsonParser, (req, res, next) => {
           res.status(422).json(result);
         }
       });
-    }
-    }); 
+     }
+   }); 
   }
 });
 

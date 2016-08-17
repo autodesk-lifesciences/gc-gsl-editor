@@ -81,6 +81,7 @@ function render(container, options) {
       .then(() => {
         console.log('Saved GSL Code.');
         gslState.savedCode = gslState.editorContent;
+        // TODO: refresh the list of code.
       })
       .catch((err) => {
         console.log('Failed to save GSL Code');
