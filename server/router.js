@@ -230,7 +230,7 @@ const makeZip = (path, fileType) => {
       });
     })
     .catch((err) => {
-      console.log('error making zip for ' + fileType);
+      console.log('Error making zip for ' + fileType);
       console.log(err);
       reject(err);
     });
@@ -246,8 +246,8 @@ router.post('/gslc', jsonParser, (req, res, next) => {
   let argumentString = input.arguments;
   // make sure that the server is configured with GSL before sending out
   if (!gslDir || !gslBinary || !fs.existsSync(gslDir) || !fs.existsSync(gslBinary)) {
-    console.log("ERROR: Someone requested to run GSL code, "+
-      "but this has not been configured. Please set valid 'GSL_DIR' and 'GSL_EXE' environment variables.");
+    console.log("ERROR: Someone requested to run GSL code, but this has not been configured.");
+    console.log(`gslDir: ${gslDir} and gslBinary: ${gslBinary}`);
     console.log(gslDir, gslBinary, fs.existsSync(gslDir), fs.existsSync(gslBinary));
     const result = {
       'result' : "Failed to execute GSL code. The server has not been configured for GSL.",
@@ -275,13 +275,26 @@ router.post('/gslc', jsonParser, (req, res, next) => {
       // execute the code
       const command = `${envVariables} mono ${gslBinary} ${argumentString} ${filePath}`;
       console.log('Running: ', command);
-      const process = exec(`${command}`, (err, stdout, stderr) => {
-        if (err) {
-          console.log('The GSL command encountered an error:');
-          console.log(err);
-        }       
-      });
+      let process;
+      try {
+        process = exec(`${command}`, (err, stdout, stderr) => {
+          if (err) {
+            console.log('Invalid GSL code.');
+            console.log(err);
+          }       
+        });
+      }
+      catch(ex) {
+        console.log('The following exception occured while running the gslc command ', ex);
+        const result = {
+          'result' : 'An exception occured while running the gslc command.',
+          'contents' : [],
+          'status' : -1,
+        }
+        res.status(500).json(result);
+      }
 
+    if (process) {
      process.stdout.on('data', function(data) {
         output += data;
       });
@@ -290,9 +303,8 @@ router.post('/gslc', jsonParser, (req, res, next) => {
         output += data;
       });
 
-      // find the exit code of the process.     
+      // find the exit code of the process.  
       process.on('exit', function(code) {
-
         // mask all server paths
         output = output.replace(new RegExp(projectFileDir, 'g'), '<Server_Path>');
         console.log('Child process exited with an exit code of ', code);
@@ -310,21 +322,30 @@ router.post('/gslc', jsonParser, (req, res, next) => {
             res.status(200).json(result);
           });
           //actually make the zips (assume time to click)
-          makeZip(projectFileDir, 'cm');
-          makeZip(projectFileDir, 'ape');
-          /*
-          makeZip(projectFileDir, 'thumper')
-          .then(() => {
-            // create the rabit spreadsheet.
-            const inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
-            const outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
-            console.log(`Copying ${inputFile} to ${outputFile}`);
-            fs.createReadStream(inputFile).pipe(fs.createWriteStream(outputFile));
-          })
-          .catch((err) => {
-            console.log('An error occured while writing the .xls file', err);
-          });
-          */
+          if (modifiedArgs.hasOwnProperty('--cm'))
+            makeZip(projectFileDir, 'cm');
+
+          if (modifiedArgs.hasOwnProperty('--ape'))
+            makeZip(projectFileDir, 'ape');
+
+          if (modifiedArgs.hasOwnProperty('--thumper')) {
+            makeZip(projectFileDir, 'thumper')
+              .then(() => {
+                // create the rabit spreadsheet.
+                const inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
+                const outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
+                console.log(`Copying ${inputFile} to ${outputFile}`);
+                try {
+                  fs.createReadStream(inputFile).pipe(fs.createWriteStream(outputFile));
+                }
+                catch(ex) {
+                  console.log(`Failed to read ${inputFile} and write to ${outputFile}.`, ex);
+                }
+              })
+              .catch((ex) => {
+                console.log('An error occured while writing the .xls file', ex);
+              });
+          }
         }
         else {
           const result = {
@@ -335,6 +356,7 @@ router.post('/gslc', jsonParser, (req, res, next) => {
           res.status(422).json(result);
         }
       });
+    }
     }); 
   }
 });
