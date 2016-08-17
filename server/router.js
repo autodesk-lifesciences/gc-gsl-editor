@@ -277,8 +277,8 @@ router.post('/gslc', jsonParser, (req, res, next) => {
       console.log('Running: ', command);
       const process = exec(`${command}`, (err, stdout, stderr) => {
         if (err) {
-          console.log('The GSL command encountered an error:');
-          console.log(err);
+          console.log('Attempted to compile invalid GSL code.');
+          //console.log(err);
         }       
       });
 
@@ -309,22 +309,27 @@ router.post('/gslc', jsonParser, (req, res, next) => {
             }
             res.status(200).json(result);
           });
-          //actually make the zips (assume time to click)
-          makeZip(projectFileDir, 'cm');
-          makeZip(projectFileDir, 'ape');
-          /*
-          makeZip(projectFileDir, 'thumper')
-          .then(() => {
-            // create the rabit spreadsheet.
-            const inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
-            const outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
-            console.log(`Copying ${inputFile} to ${outputFile}`);
-            fs.createReadStream(inputFile).pipe(fs.createWriteStream(outputFile));
-          })
-          .catch((err) => {
-            console.log('An error occured while writing the .xls file', err);
-          });
-          */
+          
+          // Create zip packages.
+          if (modifiedArgs.hasOwnProperty('--cm'))
+            makeZip(projectFileDir, 'cm');
+
+          if (modifiedArgs.hasOwnProperty('--ape'))
+            makeZip(projectFileDir, 'ape');
+          
+          if (modifiedArgs.hasOwnProperty('--thumper')) {
+            makeZip(projectFileDir, 'thumper')
+            .then(() => {
+              // create the rabit spreadsheet.
+              const inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
+              const outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
+              console.log(`Copying ${inputFile} to ${outputFile}`);
+              fs.createReadStream(inputFile).pipe(fs.createWriteStream(outputFile));
+            })
+            .catch((err) => {
+              console.log('An error occured while writing the .xls file', err);
+            });
+          }
         }
         else {
           const result = {

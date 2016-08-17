@@ -75,6 +75,7 @@ export default class CodeEditorAce extends Component {
   getEditorHeight = () => {
     //return this.element.getBoundingClientRect().height;
     let editorHeight = 0;
+    this.ace.editor.focus();
     if (document.querySelector('.GSLEditorLayout') !== null && document.querySelector('.ConsoleLayout') !== null)
       editorHeight =  document.querySelector('.GSLEditorLayout').getBoundingClientRect().height - document.querySelector('.ConsoleLayout').getBoundingClientRect().height - 60;
     return editorHeight;
@@ -104,7 +105,6 @@ export default class CodeEditorAce extends Component {
           <AceEditor ref={(el) => {
             if (el) {
               this.ace = el;
-              window.ace = el;
             }
           }}
              mode="gsl"

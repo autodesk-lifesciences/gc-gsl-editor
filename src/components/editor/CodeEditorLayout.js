@@ -144,6 +144,13 @@ export default class CodeEditorLayout extends Component {
     let index = 0;
     for (let item of this.state.downloadItems) {
       tempItems[index].disabled = !settings[item.type];
+      // If there is exiting GSL code for this project, enable gsl by default - it could have been autosaved.
+      if(item.type == 'gsl') {
+        if (gslState.hasOwnProperty(window.constructor.api.project.projectGetCurrentId()) &&
+          gslState[window.constructor.api.project.projectGetCurrentId()].hasOwnProperty('savedCode')) {
+          tempItems[index].disabled = false;
+        }
+      }
       index++;
     }
 
@@ -163,6 +170,7 @@ export default class CodeEditorLayout extends Component {
     this.setState( { consoleVisible: true });
     this.props.onToggleConsoleVisibility(this.state.consoleVisible);
     window.dispatchEvent(new Event('resize'));
+    this.codeEditor.ace.editor.focus();
   }
 
   // Runs the GSL code
@@ -189,6 +197,11 @@ export default class CodeEditorLayout extends Component {
     .then(()=> {
       this.onStatusMessageChange('Saved.');
       this.refreshDownloadMenu();
+      this.codeEditor.ace.editor.focus();
+      if (gslState.hasOwnProperty(window.constructor.api.projects.projectGetCurrentId())) {
+        if (gslState[window.constructor.api.projects.projectGetCurrentId()])
+        gslState[window.constructor.api.projects.projectGetCurrentId()] = {};
+      }
     })
     .catch((err) => {
       this.onStatusMessageChange('Failed to save the GSL code on the server.');
@@ -206,6 +219,7 @@ export default class CodeEditorLayout extends Component {
   showGSLLibrary = () => {
     window.constructor.api.ui.inventoryToggleVisibility(true);
     window.constructor.api.ui.inventorySelectTab('gsl');
+    this.codeEditor.ace.editor.focus();
   }
 
   componentDidMount() {
@@ -275,6 +289,7 @@ export default class CodeEditorLayout extends Component {
       if (addComment)     
         this.codeEditor.ace.editor.env.document.insert(this.codeEditor.ace.editor.getCursorPosition(), '//'); 
     }
+    this.codeEditor.ace.editor.focus();
   }
 
   downloadFileByType = (fileType, buttonType) => {
@@ -295,6 +310,7 @@ export default class CodeEditorLayout extends Component {
 
     hyperlink.dispatchEvent(mouseEvent);
     (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href); 
+    this.codeEditor.ace.editor.focus();
   }
 
   doDownload = (evt) => {
@@ -321,6 +337,7 @@ export default class CodeEditorLayout extends Component {
           this.downloadFileByType(fileMap[key], buttonType);
       }
     }
+    this.codeEditor.ace.editor.focus();
   }
 
   render() {
