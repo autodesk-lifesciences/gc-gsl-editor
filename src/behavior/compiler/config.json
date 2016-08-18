@@ -5,5 +5,21 @@
         "--noprimers" : [],
         "--ape" : ["/tmp/", "placeholder"],
         "--cm" : ["/tmp/", "placeholder"]
+    },
+    "breeds" : {
+        "B_PROMOTER" : "promoter",
+        "B_TERMINATOR" : "terminator",
+        "B_MARKER" : "cds",
+        "B_FUSABLEORF" : "cds",
+        "B_UPSTREAM" : null,
+        "B_DOWNSTREAM" : null,
+        "B_GST" : null,
+        "G_M" : null,
+        "G_STOP" : null,
+        "B_GS" : null,
+        "B_INLINE" : null,
+        "B_X" : null,
+        "B_VIRTUAL" : null,
+        "B_LINKER" : "structural"
     }
 }

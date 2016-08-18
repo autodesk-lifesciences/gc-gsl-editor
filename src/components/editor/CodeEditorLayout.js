@@ -144,13 +144,6 @@ export default class CodeEditorLayout extends Component {
     let index = 0;
     for (let item of this.state.downloadItems) {
       tempItems[index].disabled = !settings[item.type];
-      // If there is exiting GSL code for this project, enable gsl by default - it could have been autosaved.
-      if(item.type == 'gsl') {
-        if (gslState.hasOwnProperty(window.constructor.api.project.projectGetCurrentId()) &&
-          gslState[window.constructor.api.project.projectGetCurrentId()].hasOwnProperty('savedCode')) {
-          tempItems[index].disabled = false;
-        }
-      }
       index++;
     }
 
@@ -234,7 +227,7 @@ export default class CodeEditorLayout extends Component {
   // Toggles comments
   toggleComment = () => {
     const uncomment = function(ace, token, pattern, row) {
-      const column = token.value.indexOf(pattern); // + token.start;
+      const column = token.value.indexOf(pattern) + token.start;
       if (token.value.indexOf(pattern) != -1) {
         ace.editor.session.replace({
           start: { row: row, column: column },
@@ -259,9 +252,6 @@ export default class CodeEditorLayout extends Component {
 
       for(var token of this.codeEditor.ace.editor.session.getTokens(selectionRange.end.row)) {
         if (token.type === 'comment') {
-          /*uncomment(this.codeEditor.ace, token, '(*', this.codeEditor.ace.editor.getCursorPosition().end.row);
-          uncomment(this.codeEditor.ace, token, '//', this.codeEditor.ace.editor.getCursorPosition().end.row);
-          uncomment(this.codeEditor.ace, token, '*)', this.codeEditor.ace.editor.getCursorPosition().end.row);*/
           uncomment(this.codeEditor.ace, token, '(*', selectionRange.end.row);
           uncomment(this.codeEditor.ace, token, '//', selectionRange.end.row);
           uncomment(this.codeEditor.ace, token, '*)', selectionRange.end.row);
@@ -341,6 +331,10 @@ export default class CodeEditorLayout extends Component {
   }
 
   render() {
+    if (gslState.refreshDownloadList) {
+      this.refreshDownloadMenu();
+      gslState.refreshDownloadList = false;
+    }
     return (
         <div className="CodeEditorLayout">
           <Toolbar toolbarItems={this.state.toolbarItems} />

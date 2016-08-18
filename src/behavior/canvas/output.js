@@ -1,6 +1,6 @@
 const gslState = require('../../../globals');
 const extensionConfig = require('../../../package.json');
-let assemblyConstructMap = {}
+const compilerConfig = require('../compiler/config.json');
 
 // Removes the GSL constructs
 const removeGSLConstructs = () => {
@@ -33,21 +33,22 @@ const renderBlocks = (assemblyList) => {
       mainBlock.id
     )
 
-    // associate assembly name with the construct
-    assemblyConstructMap[assembly.name] = mainBlock.id;
     for(const dnaSlice of assembly.dnaSlices) {
       // create blocks inside the construct.
       blockModel = {
-        metadata: { name: dnaSlice.sliceName != "" ? dnaSlice.sliceName : dnaSlice.description,
-                    description: dnaSlice.description ,
-                    start: dnaSlice.destFr,
-                    end: dnaSlice.destTo
-                  },
+        metadata: { 
+          name: dnaSlice.sliceName !== "" ? dnaSlice.sliceName : dnaSlice.description,
+          description: dnaSlice.description ,
+          start: dnaSlice.destFr,
+          end: dnaSlice.destTo
+        },
+        rules: {
+          role: dnaSlice.breed !== null ? compilerConfig.breeds[dnaSlice.breed] : null
+        },
         sequence: { initialBases: dnaSlice.dna } // verify if this is needed
       }
       const block = window.constructor.api.blocks.blockCreate(blockModel);
       window.constructor.api.blocks.blockSetSequence(block.id, dnaSlice.dna);
-      // Add the block as a component to the main block
       window.constructor.api.blocks.blockAddComponent(mainBlock.id, block.id);
     }
     window.constructor.api.blocks.blockFreeze(mainBlock.id);
@@ -91,6 +92,7 @@ const reloadStateGSLConstructs = (assemblyList) => {
     .then((response) => {
       if (response.status === 200) {
         // read the file and populate the state
+        console.log('Reading the settings file.');
         readRemoteFile(response.url, assemblyList);
       }
       else {
@@ -111,5 +113,5 @@ const reloadStateGSLConstructs = (assemblyList) => {
 // Renders the blocks created through GSL code.
 export const render = (assemblyList) => {
   // Remove the old GSL constructs before adding new ones.
-  reloadStateGSLConstructs(assemblyList);
+    reloadStateGSLConstructs(assemblyList);
 }

@@ -15,6 +15,7 @@ const loadProjectCode = (url) => {
         if (xhr.status === 200) { 
           const allText = xhr.responseText;
           gslState.editorContent = allText;
+          gslState.refreshDownloadList = false;
           gslState.resultContent = '';
           gslState.statusContent = '';
           resolve();
@@ -23,6 +24,21 @@ const loadProjectCode = (url) => {
     }
     xhr.send(null);
   });
+}
+
+const loadSettings = (url) => {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", url, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) { 
+      if (xhr.status === 200) { 
+        const allText = xhr.responseText;
+        const jsonSettings =  JSON.parse(allText);
+        gslState.gslConstructs = jsonSettings.constructs;
+      }
+    }
+  }
+  xhr.send(null);
 }
 
 function render(container, options) {
@@ -42,12 +58,27 @@ function render(container, options) {
               .then(()=> {
                     ReactDOM.render(<GSLEditorLayout/>, container);
               });
+
+              // Load the GSL constructs into state
+              window.constructor.extensions.files.read(
+                window.constructor.api.projects.projectGetCurrentId(),
+                extensionConfig.name,
+                'settings.json')
+              .then((response) => {
+                if (response.status === 200) {
+                  loadSettings(response.url);
+                }
+                else {
+                  gslState.gslConstructs = [];
+                }
+              });
             }
           })
           .catch((err) => {
               gslState.editorContent = '';
               gslState.resultContent = '';
               gslState.statusContent = '';
+              gslState.refreshDownloadList = false;
               // write an empty file.
               window.constructor.extensions.files.write(
                 window.constructor.api.projects.projectGetCurrentId(),
@@ -61,7 +92,6 @@ function render(container, options) {
                 console.log(err);
                 ReactDOM.render(<GSLEditorLayout/>, container);
               });
-             
           });
         } else {
             ReactDOM.render(<GSLEditorLayout/>, container);
@@ -80,8 +110,7 @@ function render(container, options) {
       )
       .then(() => {
         console.log('Saved GSL Code.');
-        gslState.savedCode = gslState.editorContent;
-        // TODO: refresh the list of code.
+        gslState.refreshDownloadList = true;
       })
       .catch((err) => {
         console.log('Failed to save GSL Code');
