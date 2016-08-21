@@ -162,6 +162,7 @@ export default class CodeEditorLayout extends Component {
   showConsole = () => {
     this.setState( { consoleVisible: true });
     this.props.onToggleConsoleVisibility(this.state.consoleVisible);
+    gslState.isConsoleOpen = true;
     window.dispatchEvent(new Event('resize'));
     this.codeEditor.ace.editor.focus();
   }
@@ -217,6 +218,8 @@ export default class CodeEditorLayout extends Component {
 
   componentDidMount() {
     this.refreshDownloadMenu();
+    if (gslState.hasOwnProperty('isConsoleOpen'))
+          this.props.onToggleConsoleVisibility(gslState.isConsoleOpen);
     if (gslState.hasOwnProperty('editorContent') && this.state.editorContent !== gslState.editorContent) {
       this.onEditorContentChange(gslState.editorContent);
       this.onResultContentChange(gslState.resultContent);
@@ -336,27 +339,27 @@ export default class CodeEditorLayout extends Component {
       gslState.refreshDownloadList = false;
     }
     return (
-        <div className="CodeEditorLayout">
-          <Toolbar toolbarItems={this.state.toolbarItems} />
-          <ToolbarMenu
-            isOpen={this.state.showDownloadMenu}
-            changeState={this.onMenuToggle}
-            position={this.state.currentMenuPosition}
-            toolbarMenuItems={this.state.downloadItems}/>
-          <CodeEditorAce 
-            ref = {(el) => {
-                if (el) {
-                  this.codeEditor = el;
-                }
+      <div className="CodeEditorLayout">
+        <Toolbar toolbarItems={this.state.toolbarItems} />
+        <ToolbarMenu
+          isOpen={this.state.showDownloadMenu}
+          changeState={this.onMenuToggle}
+          position={this.state.currentMenuPosition}
+          toolbarMenuItems={this.state.downloadItems}/>
+        <CodeEditorAce
+          ref = {(el) => {
+              if (el) {
+                this.codeEditor = el;
               }
             }
-          	callbackParent={this.onEditorContentChange} 
-          	value={this.state.editorContent}/>
-          <Statusbar
-            message={this.state.statusMessage}
-            showConsole={this.showConsole}
-            isConsoleVisible={this.props.isConsoleOpen}/>
-        </div>
+          }
+          callbackParent={this.onEditorContentChange} 
+          value={this.state.editorContent}/>
+        <Statusbar
+          message={this.state.statusMessage}
+          showConsole={this.showConsole}
+          isConsoleVisible={this.props.isConsoleOpen}/>
+      </div>
     );
   }
 }

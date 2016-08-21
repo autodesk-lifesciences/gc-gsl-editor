@@ -31,10 +31,9 @@ export default class GSLEditorLayout extends Component {
 
   onConsoleStateChange = (value) => {
     this.setState({ isConsoleOpen: value });
-    gslState.onConsoleStatusChange = value;
+    gslState.isConsoleOpen = value;
     setTimeout(() => {window.dispatchEvent(new Event('resize'))}, 40);
   };
-
 
   render() {
     return (

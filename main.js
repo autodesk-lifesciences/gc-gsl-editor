@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import GSLEditorLayout from './src/components/GSLEditorLayout';
@@ -42,39 +41,68 @@ const loadSettings = (url) => {
 }
 
 function render(container, options) {
-
   var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
     var current = state.focus.blockIds;
     if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
           if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
-          // read code from the server.
-          window.constructor.extensions.files.read(
+          // read the list of files on present on the server
+          let fileList = [];
+          window.constructor.extensions.files.list(
             window.constructor.api.projects.projectGetCurrentId(),
-            extensionConfig.name,
-            'project.gsl')
+            extensionConfig.name)
           .then((response) => {
-            if (response.status === 200) { 
-              loadProjectCode(response.url)
-              .then(()=> {
-                    ReactDOM.render(<GSLEditorLayout/>, container);
-              });
-
-              // Load the GSL constructs into state
+            fileList = response;
+            if (fileList.indexOf('project.gsl') >= 0) {
+              // read code from the server.
               window.constructor.extensions.files.read(
                 window.constructor.api.projects.projectGetCurrentId(),
                 extensionConfig.name,
-                'settings.json')
+                'project.gsl')
               .then((response) => {
                 if (response.status === 200) {
-                  loadSettings(response.url);
+                  loadProjectCode(response.url)
+                  .then(()=> {
+                        ReactDOM.render(<GSLEditorLayout/>, container);
+                  });
+                  if (fileList.indexOf('settings.json') >= 0) {
+                  // Load the GSL constructs into state
+                  window.constructor.extensions.files.read(
+                    window.constructor.api.projects.projectGetCurrentId(),
+                    extensionConfig.name,
+                    'settings.json')
+                  .then((response) => {
+                    if (response.status === 200) {
+                      loadSettings(response.url);
+                    }
+                    else {
+                      gslState.gslConstructs = [];
+                    }
+                  })
+                  .catch((err) => {
+                  });
                 }
-                else {
-                  gslState.gslConstructs = [];
-                }
+              }
+              })
+              .catch((err) => {
+                gslState.editorContent = '';
+                gslState.resultContent = '';
+                gslState.statusContent = '';
+                gslState.refreshDownloadList = false;
+                // write an empty file.
+                window.constructor.extensions.files.write(
+                  window.constructor.api.projects.projectGetCurrentId(),
+                  extensionConfig.name,
+                  'project.run.gsl',
+                  ''
+                ).then(()=> {
+                   ReactDOM.render(<GSLEditorLayout/>, container);
+                 })
+                .catch((err) => {
+                  console.log(err);
+                  ReactDOM.render(<GSLEditorLayout/>, container);
+                });
               });
-            }
-          })
-          .catch((err) => {
+            } else {
               gslState.editorContent = '';
               gslState.resultContent = '';
               gslState.statusContent = '';
@@ -92,6 +120,7 @@ function render(container, options) {
                 console.log(err);
                 ReactDOM.render(<GSLEditorLayout/>, container);
               });
+            }
           });
         } else {
             ReactDOM.render(<GSLEditorLayout/>, container);
