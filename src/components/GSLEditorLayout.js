@@ -11,12 +11,12 @@ export default class GSLEditorLayout extends Component {
       resultContent: '',
       statusContent: '',
       isConsoleOpen: true,
-    }
+    };
   }
 
   onEditorContentChange = (content) => {
     this.setState({ editorContent: content });
-    gslState.editorContent= content;
+    gslState.editorContent = content;
   };
 
   onResultContentChange = (content) => {

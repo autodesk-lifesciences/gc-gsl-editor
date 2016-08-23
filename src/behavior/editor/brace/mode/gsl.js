@@ -13,7 +13,7 @@ var GslHighlightRules = function() {
     );
 
     var builtinConstants = (
-        "test"
+        "S288C"
     );
 
     var builtinFunctions = (

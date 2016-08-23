@@ -1,36 +1,13 @@
-var config = require('../../../package.json');
-var gslState = require('../../../globals');
-
-// Unused ? 
-const getProjectFilesDir = (projectId) => {
-  window.constructor.extensions.files.read(
-      window.constructor.api.projects.projectGetCurrentId(),
-      config.name,
-      'project.gsl')
-    .then((response) => {
-      if (response.status === 200) { 
-        loadProjectCode(response.url)
-        .then(()=> {
-              ReactDOM.render(<GSLEditorLayout/>, container);
-        });
-      }
-    })
-    .catch((err) => {
-        gslState.editorContent = '';
-        gslState.resultContent = '';
-        gslState.statusContent = '';
-        ReactDOM.render(<GSLEditorLayout/>, container);
-    });
-}
+const config = require('../../../package.json');
 
 // Sends the code and corresponding gslc options to run the command on the server.
 export const run = (data, args, projectId) => {
   // concatenate arguments
   let argumentString = '';
-  for (let key of Object.keys(args)){
+  for (const key of Object.keys(args)) {
     // create the option string.
-    argumentString += " " + key + " ";
-    argumentString += args[key].join(" ");
+    argumentString += ' ' + key + ' ';
+    argumentString += args[key].join(' ');
   }
   const payload = {
     'code': data,
@@ -38,7 +15,7 @@ export const run = (data, args, projectId) => {
     'projectId': projectId,
     'extension': config.name,
     'args': args,
-    'projectFileDir' : '/tmp/'
+    'projectFileDir' : '/tmp/',
   };
 
   const stringified = JSON.stringify(payload);
@@ -70,7 +47,7 @@ export const getAvailableDownloadList = (projectId) => {
     headers: {
       'Content-type': 'application/json; charset=UTF-8'
     },
-    body: stringified,    
+    body: stringified,
   })
   .then(resp => resp.json())
   .then(function(data) {

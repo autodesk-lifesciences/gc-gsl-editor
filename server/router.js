@@ -1,7 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import crypto from 'crypto';
-import path from 'path'
+import path from 'path';
 import fs from 'fs';
 import { exec, spawn } from 'child_process';
 var JSZip = require("jszip");
@@ -94,10 +93,10 @@ const envVariables = `GSL_LIB=${gslDir}/data/lib`;
 const router = express.Router();
 const jsonParser = bodyParser.json({
 	strict: false,
-}); 
+});
 
 
-/* PROJECT FILE PATH RELATED FUNCTIONS */ 
+/* PROJECT FILE PATH RELATED FUNCTIONS */
 const projectPath = 'projects';
 const projectDataPath = 'data';
 const projectFilesPath = 'files';
@@ -108,7 +107,7 @@ const makePath = (...paths) => {
   }
   return path.resolve(process.cwd(), 'storage', ...paths);
 };
- 
+
 const createStorageUrl = (...urls) => {
   const dev = ((process.env.NODE_ENV === 'test') ? 'test/' : '');
   return makePath(dev, ...urls);
@@ -133,7 +132,7 @@ const createProjectFilePath = (projectId, extension, fileName) => {
 };
 
 
-/* HELPER FUNCTIONS */ 
+/* HELPER FUNCTIONS */
 
 /* Preprocess arguments to find the arguments that create files */
 const preprocessArgs = (projectId, extensionKey, args) => {
@@ -164,8 +163,8 @@ const makeArgumentString = (args) => {
   let argumentString = '';
   for (let key of Object.keys(args)){
     // create the option string.
-    argumentString += " " + key + " ";
-    argumentString += args[key].join(" ");
+    argumentString += ' ' + key + ' ';
+    argumentString += args[key].join(' ');
   }
   return argumentString;
 }
@@ -195,7 +194,7 @@ const fileRead = (path, jsonParse = true) => {
 };
 
 /* Return the contents of the directory */
-const directoryContents = (path, pattern='') => {
+const directoryContents = (path, pattern = '') => {
   return new Promise((resolve, reject) => {
     fs.readdir(path, (err, contents) => {
       if (err) {
@@ -224,7 +223,7 @@ const makeZip = (path, fileType) => {
     .then(() => {
       zip.generateNodeStream({type:'nodebuffer', streamFiles:true})
       .pipe(fs.createWriteStream(path + '/' + argConfig.downloadableFileTypes[fileType].fileName))
-      .on('finish', function () {
+      .on('finish', function() {
         console.log(`Written out the ${fileType} .zip file`);
         resolve(zip);
       });
@@ -246,23 +245,23 @@ router.post('/gslc', jsonParser, (req, res, next) => {
   let argumentString = input.arguments;
   // make sure that the server is configured with GSL before sending out
   if (!gslDir || !gslBinary || !fs.existsSync(gslDir) || !fs.existsSync(gslBinary)) {
-    console.log("ERROR: Someone requested to run GSL code, but this has not been configured.");
+    console.log('ERROR: Someone requested to run GSL code, but this has not been configured.');
     console.log(`gslDir: ${gslDir} and gslBinary: ${gslBinary}`);
     console.log(gslDir, gslBinary, fs.existsSync(gslDir), fs.existsSync(gslBinary));
     const result = {
-      'result' : "Failed to execute GSL code. The server has not been configured for GSL.",
+      'result': 'Failed to execute GSL code. The server has not been configured for GSL.',
       'contents': [],
-      'status' : -1,
+      'status': -1,
     }
     res.status(501).json(result); // Service not implemented
-  } 
+  }
   else {
     const modifiedArgs = preprocessArgs(input.projectId, input.extension, input.args);
     const jsonOutFile =  getJsonOutFile(modifiedArgs);
     argumentString = makeArgumentString(modifiedArgs);
     const projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
     const filePath = createProjectFilePath(input.projectId, input.extension, argConfig.gslFile.fileName);
-    if (!fs.existsSync(projectFileDir)){
+    if (!fs.existsSync(projectFileDir)) {
       fs.mkdirSync(projectFileDir);
     }
 
@@ -282,15 +281,15 @@ router.post('/gslc', jsonParser, (req, res, next) => {
           if (err) {
             console.log('Invalid GSL code.');
             console.log(err);
-          }       
+          }
         });
       }
       catch(ex) {
         console.log('The following exception occured while running the gslc command ', ex);
         const result = {
-          'result' : 'An exception occured while running the gslc command.',
-          'contents' : [],
-          'status' : -1,
+          'result': 'An exception occured while running the gslc command.',
+          'contents': [],
+          'status': -1,
         }
         res.status(500).json(result);
       }
@@ -304,7 +303,7 @@ router.post('/gslc', jsonParser, (req, res, next) => {
         output += data;
       });
 
-      // find the exit code of the process.  
+      // find the exit code of the process.
       process.on('exit', function(code) {
         // mask all server paths
         output = output.replace(new RegExp(projectFileDir, 'g'), '<Server_Path>');
@@ -316,9 +315,9 @@ router.post('/gslc', jsonParser, (req, res, next) => {
               return;
             }
             const result = {
-              'result' : output,
+              'result': output,
               'contents': contents,
-              'status' : code,
+              'status': code,
             }
             res.status(200).json(result);
           });
@@ -351,9 +350,9 @@ router.post('/gslc', jsonParser, (req, res, next) => {
         }
         else {
           const result = {
-            'result' : output,
-            'contents' : [],
-            'status' : code,
+            'result': output,
+            'contents': [],
+            'status': code,
           }
           res.status(422).json(result);
         }
@@ -371,7 +370,7 @@ router.get('/download*', function(req, res, next) {
     const filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
     fs.exists(filePath, function(exists) {
       if (exists) {
-        res.header("Content-Type", argConfig.downloadableFileTypes[req.query.type].contentType);
+        res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
         res.download(filePath, fileName);
       }
       else {
@@ -398,7 +397,7 @@ router.post('/listDownloads', function(req, res, next) {
       fs.accessSync(filePath);
       fileStatus[key] = true;
     }
-    catch(e) {
+    catch (e) {
       fileStatus[key] = false;
     }
   });

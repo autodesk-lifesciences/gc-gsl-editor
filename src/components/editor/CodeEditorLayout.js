@@ -9,7 +9,6 @@ const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
 var gslState = require('../../../globals');
 
-const FileSaver = require('file-saver');
 
 export default class CodeEditorLayout extends Component {
   static propTypes = {
@@ -259,7 +258,7 @@ export default class CodeEditorLayout extends Component {
           uncomment(this.codeEditor.ace, token, '//', selectionRange.end.row);
           uncomment(this.codeEditor.ace, token, '*)', selectionRange.end.row);
           addComment = false;
-        }        
+        }
       }
 
       if (addComment) {
@@ -277,20 +276,20 @@ export default class CodeEditorLayout extends Component {
           uncomment(this.codeEditor.ace, token, '//', cursorRow);
           uncomment(this.codeEditor.ace, token, '*)', cursorRow);
           addComment = false;
-        }           
+        }
       }
-      if (addComment)     
-        this.codeEditor.ace.editor.env.document.insert(this.codeEditor.ace.editor.getCursorPosition(), '//'); 
+      if (addComment)
+        this.codeEditor.ace.editor.env.document.insert(this.codeEditor.ace.editor.getCursorPosition(), '//');
     }
     this.codeEditor.ace.editor.focus();
   }
 
   downloadFileByType = (fileType, buttonType) => {
     var hyperlink = document.createElement('a');
-    hyperlink.href = '/extensions/api/gslEditor/download?projectId='+ 
+    hyperlink.href = '/extensions/api/gslEditor/download?projectId=' +
       window.constructor.api.projects.projectGetCurrentId() +
-      '&extension=gslEditor' + 
-      '&type=' + fileType; 
+      '&extension=gslEditor' +
+      '&type=' + fileType;
 
     if (buttonType === 0)  // TODO: Create a separate route for opening the raw file in the browser.
       hyperlink.download = true;
@@ -309,17 +308,17 @@ export default class CodeEditorLayout extends Component {
   doDownload = (evt) => {
     // TODO: Associate with something other than label!
     const fileMap = {
-      'gsl file' : 'gsl',
-      'json file' : 'json',
-      'ape zip file' : 'ape',
-      'cm zip file' : 'cm',
-      'thumper zip file' : 'thumper',
+      'gsl file': 'gsl',
+      'json file': 'json',
+      'ape zip file': 'ape',
+      'cm zip file': 'cm',
+      'thumper zip file': 'thumper',
       'rabit xls file': 'rabitXls',
       'txt file': 'flat',
     }
     const buttonType = evt.nativeEvent.button;
 
-    for (let key of Object.keys(fileMap)) {
+    for (const key of Object.keys(fileMap)) {
       // TODO: Create route to check if file exists on server.
       // Disable menu options accordingly.
       if (evt.target.innerHTML.indexOf(key) !== -1) {
@@ -353,7 +352,7 @@ export default class CodeEditorLayout extends Component {
               }
             }
           }
-          callbackParent={this.onEditorContentChange} 
+          callbackParent={this.onEditorContentChange}
           value={this.state.editorContent}/>
         <Statusbar
           message={this.state.statusMessage}

@@ -14,14 +14,14 @@ export default class ToolbarMenu extends Component {
         action: PropTypes.func.isRequired,
         disabled: PropTypes.bool
       })
-    )
+    ),
   }
   constructor(props) {
     super(props);
     this.state = {
       menuPosition: { "x" : 200, "y": 200},
       isOpen: false,
-    }
+    };
   }
 
   closePopups = (arg) => {
@@ -35,6 +35,6 @@ export default class ToolbarMenu extends Component {
         position={this.props.position}
         closePopup={this.closePopups.bind(this)}
         menuItems={this.props.toolbarMenuItems}/>
-      );
+    );
   }
 }

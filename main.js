@@ -5,13 +5,12 @@ const extensionConfig = require('./package.json');
 var gslState = require('./globals');
 
 const loadProjectCode = (url) => {
-  // check in the cache for project code before making a request to the server.
   return new Promise(function(resolve, reject) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.onreadystatechange = function() {
-      if (xhr.readyState === 4) { 
-        if (xhr.status === 200) { 
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
           const allText = xhr.responseText;
           gslState.editorContent = allText;
           gslState.refreshDownloadList = false;
@@ -29,10 +28,10 @@ const loadSettings = (url) => {
   var xhr = new XMLHttpRequest();
   xhr.open("GET", url, true);
   xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4) { 
-      if (xhr.status === 200) { 
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
         const allText = xhr.responseText;
-        const jsonSettings =  JSON.parse(allText);
+        const jsonSettings = JSON.parse(allText);
         gslState.gslConstructs = jsonSettings.constructs;
       }
     }
@@ -42,7 +41,6 @@ const loadSettings = (url) => {
 
 function render(container, options) {
   var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
-    var current = state.focus.blockIds;
     if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
           if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
           // read the list of files on present on the server
@@ -121,6 +119,25 @@ function render(container, options) {
                 ReactDOM.render(<GSLEditorLayout/>, container);
               });
             }
+          })
+          .catch((err) => {
+            gslState.editorContent = '';
+            gslState.resultContent = '';
+            gslState.statusContent = '';
+            gslState.refreshDownloadList = false;
+            // write an empty file.
+            window.constructor.extensions.files.write(
+              window.constructor.api.projects.projectGetCurrentId(),
+              extensionConfig.name,
+              'project.run.gsl',
+              ''
+            ).then(()=> {
+               ReactDOM.render(<GSLEditorLayout/>, container);
+             })
+            .catch((err) => {
+              console.log(err);
+              ReactDOM.render(<GSLEditorLayout/>, container);
+            });
           });
         } else {
             ReactDOM.render(<GSLEditorLayout/>, container);
@@ -157,7 +174,7 @@ function render(container, options) {
           }
         })
         .catch((err) => {
-           console.log(err);
+          console.log(err);
         });
       }
     }, true

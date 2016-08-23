@@ -17,7 +17,7 @@ export default class ToolbarItem extends Component {
 
 	render() {
 		return (
-			<div classsName='ToolbarItem'
+			<div classsName="ToolbarItem"
         style={{
           display: 'inline-block',
           lineHeight: '30px',
@@ -31,10 +31,10 @@ export default class ToolbarItem extends Component {
         }}
         onClick = {this.props.action}
         enabled = {this.props.enabled}
-      > 
+      >
         <a id={this.props.label + '-a'}
           style={{
-            color: '#757884', //color: '#4c505f',
+            color: '#757884',
             textDecoration: 'none',
           }}
           enabled = {this.props.enabled}
@@ -43,5 +43,5 @@ export default class ToolbarItem extends Component {
         </a>
       </div>
     );
-	}       
+	}
 }

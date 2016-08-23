@@ -20,10 +20,6 @@ var _bodyParser = require('body-parser');
 
 var _bodyParser2 = _interopRequireDefault(_bodyParser);
 
-var _crypto = require('crypto');
-
-var _crypto2 = _interopRequireDefault(_crypto);
-
 var _path = require('path');
 
 var _path2 = _interopRequireDefault(_path);
@@ -266,8 +262,8 @@ var makeArgumentString = function makeArgumentString(args) {
       var key = _step3.value;
 
       // create the option string.
-      argumentString += " " + key + " ";
-      argumentString += args[key].join(" ");
+      argumentString += ' ' + key + ' ';
+      argumentString += args[key].join(' ');
     }
   } catch (err) {
     _didIteratorError3 = true;
@@ -362,11 +358,11 @@ router.post('/gslc', jsonParser, function (req, res, next) {
   var argumentString = input.arguments;
   // make sure that the server is configured with GSL before sending out
   if (!gslDir || !gslBinary || !_fs2.default.existsSync(gslDir) || !_fs2.default.existsSync(gslBinary)) {
-    console.log("ERROR: Someone requested to run GSL code, but this has not been configured.");
+    console.log('ERROR: Someone requested to run GSL code, but this has not been configured.');
     console.log('gslDir: ' + gslDir + ' and gslBinary: ' + gslBinary);
     console.log(gslDir, gslBinary, _fs2.default.existsSync(gslDir), _fs2.default.existsSync(gslBinary));
     var result = {
-      'result': "Failed to execute GSL code. The server has not been configured for GSL.",
+      'result': 'Failed to execute GSL code. The server has not been configured for GSL.',
       'contents': [],
       'status': -1
     };
@@ -419,7 +415,7 @@ router.post('/gslc', jsonParser, function (req, res, next) {
             output += data;
           });
 
-          // find the exit code of the process.  
+          // find the exit code of the process.
           process.on('exit', function (code) {
             // mask all server paths
             output = output.replace(new RegExp(projectFileDir, 'g'), '<Server_Path>');
@@ -482,7 +478,7 @@ router.get('/download*', function (req, res, next) {
       var filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
       _fs2.default.exists(filePath, function (exists) {
         if (exists) {
-          res.header("Content-Type", argConfig.downloadableFileTypes[req.query.type].contentType);
+          res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
           res.download(filePath, fileName);
         } else {
           res.send('No file of type ' + req.query.type + ' generated yet');
