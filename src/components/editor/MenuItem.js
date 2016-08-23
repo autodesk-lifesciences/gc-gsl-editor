@@ -14,6 +14,7 @@ export default class MenuItem extends Component {
   };
 
   static defaultProps = {
+    disabled: false,
     action: () => {},
   };
 

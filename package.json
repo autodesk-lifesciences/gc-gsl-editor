@@ -12,7 +12,8 @@
     "postinstall": "rm -rf GSL && git clone https://github.com/rupalkhilari/GSL.git && cd GSL && git checkout json_assembly && ./build.sh CopyBinaries",
     "dev": "webpack --progress --watch main.js",
     "build": "webpack --config webpack.config.js && babel server/router.js -o server-build.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cover": "istanbul cover tests/editor.test.js"
   },
   "author": "",
   "license": "MIT",
@@ -26,7 +27,9 @@
     "lodash.throttle": "^4.1.0",
     "react": "^0.14.8",
     "react-ace": "^3.5.0",
-    "react-dom": "0.14.2"
+    "react-addons-test-utils": "^0.14.2",
+    "react-dom": "0.14.2",
+    "skin-deep": "^0.16.0"
   },
   "devDependencies": {
     "babel-cli": "^6.9.0",
@@ -43,14 +46,19 @@
     "babel-preset-react": "^6.3.13",
     "babel-preset-stage-0": "^6.3.13",
     "babel-register": "^6.9.0",
+    "chai": "^3.5.0",
     "css-loader": "^0.23.0",
     "express": "^4.13.3",
+    "istanbul": "^0.4.5",
+    "jsdom": "^9.4.2",
     "json-loader": "^0.5.4",
+    "mocha": "^3.0.2",
     "postcss": "^5.0.10",
     "postcss-cssnext": "^2.2.0",
     "postcss-import": "^7.1.0",
     "postcss-loader": "^0.7.0",
     "postcss-nested": "^1.0.0",
+    "skin-deep": "^0.16.0",
     "source-map-support": "^0.4.0",
     "style-loader": "^0.13.0",
     "webpack": "^1.9.6",
