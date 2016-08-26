@@ -61,6 +61,7 @@ input.StatusbarButton {
   outline: none;
   border: 1px solid white;
   padding: 0.25em 0.7em;
+  color: #8b857c;
   background: #FFFFFF;
   margin-top: 0.3em;
   margin-bottom: 0.3em;

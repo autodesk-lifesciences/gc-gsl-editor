@@ -43,7 +43,7 @@ export default class PopupMenu extends Component {
             };
             return (
               (<MenuItem
-                key={item.text}
+                key={item.key}
                 disabled={item.disabled}
                 classes={item.classes}
                 text={item.text}

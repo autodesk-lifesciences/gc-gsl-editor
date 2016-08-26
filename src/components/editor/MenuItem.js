@@ -29,9 +29,8 @@ export default class MenuItem extends Component {
     if (this.props.classes) {
       classes += ` ${this.props.classes}`;
     }
-
     return (
-      <div className={classes} data-id={this.props.key}
+      <div id={this.props.key} className={classes}
            onClick={(evt) => !this.props.disabled && this.props.action(evt)}>
         {check}
         {this.props.text}

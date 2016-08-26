@@ -2,6 +2,7 @@ import React, { PropTypes, Component } from 'react';
 import CodeEditorLayout from './editor/CodeEditorLayout';
 import ConsoleLayout from './console/ConsoleLayout';
 var gslState = require('../../globals');
+
 export default class GSLEditorLayout extends Component {
 
   constructor(props) {

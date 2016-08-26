@@ -22570,43 +22570,43 @@
 	        imageUrl: '/images/ui/download_icon.svg'
 	      }],
 	      downloadItems: [{
-	        key: 'my-gsl-file',
+	        key: 'download-gsl-file',
 	        type: 'gsl',
 	        text: 'gsl file',
 	        disabled: false,
 	        action: _this.doDownload
 	      }, {
-	        key: 'my-json-file',
+	        key: 'download-json-file',
 	        type: 'json',
 	        text: 'json file',
 	        disabled: false,
 	        action: _this.doDownload
 	      }, {
-	        key: 'my-ape-zip-file',
+	        key: 'download-ape-zip-file',
 	        type: 'ape',
 	        text: 'ape zip file',
 	        disabled: false,
 	        action: _this.doDownload
 	      }, {
-	        key: 'my-cm-zip-file',
+	        key: 'download-cm-zip-file',
 	        type: 'cm',
 	        text: 'cm zip file',
 	        disabled: false,
 	        action: _this.doDownload
 	      }, {
-	        key: 'my-thumper-zip-file',
+	        key: 'download-thumper-zip-file',
 	        type: 'thumper',
 	        text: 'thumper zip file',
 	        disabled: false,
 	        action: _this.doDownload
 	      }, {
-	        key: 'my-rabit-xls-file',
+	        key: 'download-rabit-xls-file',
 	        type: 'rabitXls',
 	        text: 'rabit xls file',
 	        disabled: false,
 	        action: _this.doDownload
 	      }, {
-	        key: 'my-txt-file',
+	        key: 'download-txt-file',
 	        type: 'flat',
 	        text: 'txt file',
 	        disabled: false,
@@ -89757,7 +89757,7 @@
 
 
 	// module
-	exports.push([module.id, ".GSLEditorLayout {\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  position: relative;\n}\n\n.CodeEditorLayout {\n  width: 100%;\n  position: relative;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n}\n\n.Editor {\n  width: 100%;\n  flex-grow: 1;\n  flex-shrink: 1;\n}\n\n.Statusbar {\n  display: flex;\n  flex-shrink: 0;\n  flex-direction: row;\n  justify-content: space-between;\n  align-content: left;\n  padding: 0 1em;\n  width: 100%;\n  height: 30px;\n  align-self: flex-end;\n  text-align: left;\n  background: #EAEBF1;\n  line-height: 1rem;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;  \n}\n\n.StatusbarText {\n  display: inline-block;\n  color: #757884;\n  background: #EAEBF1;\n  font-size: 12px;\n  font-family: Helvetica, Arial, sans-serif;\n  line-height: 12px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding-top: 9px;\n}\n\ninput.StatusbarButton {\n  flex-shrink: 0;\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  outline: none;\n  border: 1px solid white;\n  padding: 0.25em 0.7em;\n  background: #FFFFFF;\n  margin-top: 0.3em;\n  margin-bottom: 0.3em;\n}\n\n.Toolbar {\n  display: flex;\n  flex-direction: row;\n  justify-content: flex-end;\n  flex-shrink: 0;\n  border: lightgrey;\n  border-width: thin;\n  border-style: none none solid none;\n}\n\n.ToolbarItems {}\n\n/* console stuff */\n\n.ConsoleLayout {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  flex-shrink: 0;\n}\n\n.ConsoleLayout-resizeHandle {\n    cursor: ns-resize;\n    height: 5px;\n    flex-shrink: 0;\n    width: 100%;\n    position: absolute;\n    top: 0;\n    z-index: 10;\n    background-color: transparent;\n}\n\n.ConsoleLayout-resizeHandle:hover {\n  background: #999FB3;\n}\n\n.ConsoleLayout-resizeHandle.dragging {\n  background: #3F82FF;\n}\n\n.Titlebar {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between;\n  flex-shrink: 0;\n\n  height: 30px;\n  width: 100%;\n  background: #6B6F7C;\n  line-height: 12px;\n}\n\n.TitlebarText {\n  display: inline-block;\n  font-family: Helvetica, Arial, sans-serif;\n  color: #EEEEEE;\n  padding-left: 10px;\n  padding-top: 9px;\n}\n\n.TitleBarItem {\n  display: inline-block;\n  background-repeat: no-repeat;\n  background-position: right bottom;\n  cursor: pointer;\n  color: #EEEEEE;\n  margin-right: 10px;\n  padding-right: 10px;\n  padding-top: 9px;\n  padding-left: 10px;\n  padding-bottom: 3px;\n}\n\n.TitleBarItem span {\n  display: inline-block;\n}\n\n.ResultViewer {\n  background: rgba(0,0,0,0.7);\n  color: white;\n  overflow:auto;\n}\n\n.ResultViewer.active {\n  min-height: 100px;\n  flex-grow: 1;\n}\n\n.divResult {\n  font-family: Courier;\n  white-space: pre;\n  margin-top: 0;  \n  display: block;\n  padding-left: 9px;\n  padding-top: 2px;\n  padding-right: 9px;\n}\n\n/* Scrollbar as per UI spec or default ?\n.ResultViewer.active::-webkit-scrollbar {\n    width: 10px;\n    height: 10px;\n}\n\n.ResultViewer.active::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3); \n} \n\n.ResultViewer.active::-webkit-scrollbar-thumb {\n    border-radius: 6px;\n    background-color: color.lightgray;\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.5); \n} */", ""]);
+	exports.push([module.id, ".GSLEditorLayout {\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  position: relative;\n}\n\n.CodeEditorLayout {\n  width: 100%;\n  position: relative;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n}\n\n.Editor {\n  width: 100%;\n  flex-grow: 1;\n  flex-shrink: 1;\n}\n\n.Statusbar {\n  display: flex;\n  flex-shrink: 0;\n  flex-direction: row;\n  justify-content: space-between;\n  align-content: left;\n  padding: 0 1em;\n  width: 100%;\n  height: 30px;\n  align-self: flex-end;\n  text-align: left;\n  background: #EAEBF1;\n  line-height: 1rem;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;  \n}\n\n.StatusbarText {\n  display: inline-block;\n  color: #757884;\n  background: #EAEBF1;\n  font-size: 12px;\n  font-family: Helvetica, Arial, sans-serif;\n  line-height: 12px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding-top: 9px;\n}\n\ninput.StatusbarButton {\n  flex-shrink: 0;\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  outline: none;\n  border: 1px solid white;\n  padding: 0.25em 0.7em;\n  color: #8b857c;\n  background: #FFFFFF;\n  margin-top: 0.3em;\n  margin-bottom: 0.3em;\n}\n\n.Toolbar {\n  display: flex;\n  flex-direction: row;\n  justify-content: flex-end;\n  flex-shrink: 0;\n  border: lightgrey;\n  border-width: thin;\n  border-style: none none solid none;\n}\n\n.ToolbarItems {}\n\n/* console stuff */\n\n.ConsoleLayout {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  flex-shrink: 0;\n}\n\n.ConsoleLayout-resizeHandle {\n    cursor: ns-resize;\n    height: 5px;\n    flex-shrink: 0;\n    width: 100%;\n    position: absolute;\n    top: 0;\n    z-index: 10;\n    background-color: transparent;\n}\n\n.ConsoleLayout-resizeHandle:hover {\n  background: #999FB3;\n}\n\n.ConsoleLayout-resizeHandle.dragging {\n  background: #3F82FF;\n}\n\n.Titlebar {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between;\n  flex-shrink: 0;\n\n  height: 30px;\n  width: 100%;\n  background: #6B6F7C;\n  line-height: 12px;\n}\n\n.TitlebarText {\n  display: inline-block;\n  font-family: Helvetica, Arial, sans-serif;\n  color: #EEEEEE;\n  padding-left: 10px;\n  padding-top: 9px;\n}\n\n.TitleBarItem {\n  display: inline-block;\n  background-repeat: no-repeat;\n  background-position: right bottom;\n  cursor: pointer;\n  color: #EEEEEE;\n  margin-right: 10px;\n  padding-right: 10px;\n  padding-top: 9px;\n  padding-left: 10px;\n  padding-bottom: 3px;\n}\n\n.TitleBarItem span {\n  display: inline-block;\n}\n\n.ResultViewer {\n  background: rgba(0,0,0,0.7);\n  color: white;\n  overflow:auto;\n}\n\n.ResultViewer.active {\n  min-height: 100px;\n  flex-grow: 1;\n}\n\n.divResult {\n  font-family: Courier;\n  white-space: pre;\n  margin-top: 0;  \n  display: block;\n  padding-left: 9px;\n  padding-top: 2px;\n  padding-right: 9px;\n}\n\n/* Scrollbar as per UI spec or default ?\n.ResultViewer.active::-webkit-scrollbar {\n    width: 10px;\n    height: 10px;\n}\n\n.ResultViewer.active::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3); \n} \n\n.ResultViewer.active::-webkit-scrollbar-thumb {\n    border-radius: 6px;\n    background-color: color.lightgray;\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.5); \n} */", ""]);
 
 	// exports
 
@@ -90142,6 +90142,7 @@
 	  position: _react.PropTypes.object.isRequired,
 	  changeState: _react.PropTypes.func,
 	  toolbarMenuItems: _react2.default.PropTypes.arrayOf(_react2.default.PropTypes.shape({
+	    key: _react.PropTypes.string,
 	    text: _react.PropTypes.string.isRequired,
 	    action: _react.PropTypes.func.isRequired,
 	    disabled: _react.PropTypes.bool
@@ -90243,7 +90244,7 @@
 	              }
 	            };
 	            return _react2.default.createElement(_MenuItem2.default, {
-	              key: item.text,
+	              key: item.key,
 	              disabled: item.disabled,
 	              classes: item.classes,
 	              text: item.text,
@@ -90326,10 +90327,9 @@
 	      if (this.props.classes) {
 	        classes += ' ' + this.props.classes;
 	      }
-
 	      return _react2.default.createElement(
 	        'div',
-	        { className: classes, 'data-id': this.props.key,
+	        { id: this.props.key, className: classes,
 	          onClick: function onClick(evt) {
 	            return !_this2.props.disabled && _this2.props.action(evt);
 	          } },
@@ -90358,6 +90358,7 @@
 	  type: _react.PropTypes.string
 	};
 	MenuItem.defaultProps = {
+	  disabled: false,
 	  action: function action() {}
 	};
 	exports.default = MenuItem;
@@ -90501,7 +90502,11 @@
 			"postinstall": "rm -rf GSL && git clone https://github.com/rupalkhilari/GSL.git && cd GSL && git checkout json_assembly && ./build.sh CopyBinaries",
 			"dev": "webpack --progress --watch main.js",
 			"build": "webpack --config webpack.config.js && babel server/router.js -o server-build.js",
-			"test": "echo \"Error: no test specified\" && exit 1"
+			"test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js tests/unit/editor.test.js",
+			"nightwatch": "node ./node_modules/nightwatch/bin/nightwatch --config ./tests/e2e/nightwatch.json",
+			"cover": "istanbul cover tests/editor.test.js",
+			"selenium": "node ./node_modules/selenium-standalone/bin/selenium-standalone install",
+			"e2e": "NODE_ENV=test node ./tests/e2e/bin/e2e.js"
 		},
 		"author": "",
 		"license": "MIT",
@@ -90515,7 +90520,9 @@
 			"lodash.throttle": "^4.1.0",
 			"react": "^0.14.8",
 			"react-ace": "^3.5.0",
-			"react-dom": "0.14.2"
+			"react-addons-test-utils": "^0.14.2",
+			"react-dom": "0.14.2",
+			"skin-deep": "^0.16.0"
 		},
 		"devDependencies": {
 			"babel-cli": "^6.9.0",
@@ -90532,14 +90539,21 @@
 			"babel-preset-react": "^6.3.13",
 			"babel-preset-stage-0": "^6.3.13",
 			"babel-register": "^6.9.0",
+			"chai": "^3.5.0",
 			"css-loader": "^0.23.0",
 			"express": "^4.13.3",
+			"istanbul": "^0.4.5",
+			"jsdom": "^9.4.2",
 			"json-loader": "^0.5.4",
+			"mocha": "^3.0.2",
+			"nightwatch": "^0.9.8",
 			"postcss": "^5.0.10",
 			"postcss-cssnext": "^2.2.0",
 			"postcss-import": "^7.1.0",
 			"postcss-loader": "^0.7.0",
 			"postcss-nested": "^1.0.0",
+			"selenium-standalone": "^5.6.0",
+			"skin-deep": "^0.16.0",
 			"source-map-support": "^0.4.0",
 			"style-loader": "^0.13.0",
 			"webpack": "^1.9.6",

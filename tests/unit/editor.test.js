@@ -3,11 +3,11 @@ import React from 'react';
 const TestUtils = require('react-addons-test-utils');
 import sd from 'skin-deep';
 
-import Toolbar from '../src/components/editor/Toolbar';
-import ToolbarItem from '../src/components/editor/ToolbarItem';
-import ToolbarMenu from '../src/components/editor/ToolbarMenu';
-import PopupMenu from '../src/components/editor/PopupMenu';
-import MenuItem from '../src/components/editor/MenuItem';
+import Toolbar from '../../src/components/editor/Toolbar';
+import ToolbarItem from '../../src/components/editor/ToolbarItem';
+import ToolbarMenu from '../../src/components/editor/ToolbarMenu';
+import PopupMenu from '../../src/components/editor/PopupMenu';
+import MenuItem from '../../src/components/editor/MenuItem';
 
 /* Testing the Toolbar component
  */
@@ -216,7 +216,7 @@ describe('Testing PopupMenu component', function() {
 });
 
 
-/* Testing the PopupMenu component
+/* Testing the MenuItem component
  */
 describe('Testing MenuItem component', function() {
   let tree;
@@ -245,17 +245,17 @@ describe('Testing MenuItem component', function() {
     expect(result).to.equal('Dummy Action');
   });
 
-  it('It contains exactly 1 div', function() {
-    const items = tree.everySubTree('div');
-    expect(items.length).to.equal(1);
-  });
-
   it('Has the assigned properties', function() {
-    const instance =  tree.getMountedInstance();
+    const instance = tree.getMountedInstance();
     expect(instance.props.type).to.equal('gsl');
     expect(instance.props.text).to.equal('gsl file');
     expect(instance.props.disabled).to.equal(false);
     expect(instance.props.action).to.equal(dummyAction);
+  });
+
+  it('It contains exactly 1 div', function() {
+    const items = tree.everySubTree('div');
+    expect(items.length).to.equal(1);
   });
 });
 
