@@ -16,9 +16,9 @@ var GslHighlightRules = function() {
         "S288C"
     );
 
-    var builtinFunctions = (
+    var builtinPragmas = (
         "push|pop|warn|linkers|refgenome|dnasrc|name|fuse|stitch|megastitch|" +
-        "rabitstart|rabitend|primerpos|warnoff|primermin|pcrparams|targettm|" +
+        "rabitstart|rabitend|primerpos|warnoff|primermin|primermax|pcrparams|targettm|" +
         "seamlesstm|seamlessoverlaptm|atpenalty"
     );
 
@@ -27,9 +27,21 @@ var GslHighlightRules = function() {
         "variable.language": "this",
         "keyword": keywords,
         "constant.language": builtinConstants,
-        "support.function": builtinFunctions,
+        "support.function": builtinPragmas,
         "gsl.gene": autocompleteList.geneListString,
     }, "identifier");
+
+    var escapedGeneList = [];
+    autocompleteList.geneListString.split('|').forEach((el) => {
+        var str = el.replace('(', '\\(');
+        str = str.replace(')', '\\)');
+        escapedGeneList.push(str);
+    });
+
+    // sort by string length.
+    escapedGeneList.sort(function(a, b){
+        return b.length - a.length;
+    });
 
     var decimalInteger = "(?:(?:[1-9]\\d*)|(?:0))";
     var octInteger = "(?:0[oO]?[0-7]+)";
@@ -84,22 +96,30 @@ var GslHighlightRules = function() {
                 token : "constant.numeric", // integer
                 regex : integer + "\\b"
             },
-            {
-                token : keywordMapper,
-                regex : "let|cut|end|for|in|open|do"
+            {   
+                token : ["constant.numeric", "keyword.operator"],
+                regex : "(" + integer + ")(S|E)" 
             },
             {
-                token : "keyword.operator",
-                regex : "g|p|t|u|d|o|f|m|!|@|~|$"
+                token : ["keyword"],
+                regex : "(let|cut|end|for|in|open|do)\\b"
+            },
+            {
+                token : ["keyword.operator", "keyword.operator", "constant.gene"],
+                regex : "(!)?(g|p|t|u|d|o|f|m|!|@|~|\\$)(" + escapedGeneList.join('|') + ")\\b"
+            },
+            {
+                token : ["keyword.operator", "keyword.operator", "identifier"],
+                regex : "(!)?(@)([a-zA-Z_$\-][a-zA-Z0-9_$\-]*)\\b"
+            },
+            {
+                token : ["keyword.operator", "keyword.operator", "gsl.inline", "keyword.operator"],
+                regex : "(\\/)(\\$)?([A|C|G|T|a|c|g|t]+)(\\/)"  // verify if we require more characters.
             },
             {
                 token : "keyword.operator",
                 regex : "\\+\\.|\\-\\.|\\*\\.|\\/\\.|#|;;|\\+|\\-|\\*|\\*\\*\\/|\\/\\/|%|<<|>>|&|\\||\\^|~|<|>|<=|=>|==|!=|<>|<-|="
             },
-            /*{
-                token : "constant.gene",
-                regex : autocompleteList.geneListString,
-            },*/
             {
                 token : keywordMapper,
                 regex : "[a-zA-Z_$\-][a-zA-Z0-9_$\-]*\\b"

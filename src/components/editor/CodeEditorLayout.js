@@ -7,7 +7,9 @@ import * as compiler from '../../behavior/compiler/client';
 import * as canvas from '../../behavior/canvas/output';
 const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
-var gslState = require('../../../globals');
+let gslState = require('../../../globals');
+
+
 
 export default class CodeEditorLayout extends Component {
   static propTypes = {
@@ -144,7 +146,13 @@ export default class CodeEditorLayout extends Component {
     let tempItems = this.state.downloadItems;
     let index = 0;
     for (let item of this.state.downloadItems) {
-      tempItems[index].disabled = !settings[item.type];
+      // special case gsl
+      if (tempItems.type === 'gsl' && this.state.editorContent !== '') {
+        tempItems[index].disabled = false;
+      }
+      else {
+        tempItems[index].disabled = !settings[item.type];
+      }
       index++;
     }
 

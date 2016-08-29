@@ -3,6 +3,12 @@ const _insertByType = (ace, dragPosition, payload, token ) => {
   let insertPosition;
   let cursorPosition;
   switch(payload.item.id) {
+    case '!':
+      insertPosition = { row: dragPosition.row, column: token.start };
+      ace.editor.env.document.insert(insertPosition, payload.item.text);
+      cursorPosition = { row: insertPosition.row, column: insertPosition.column + 1};
+      ace.editor.moveCursorToPosition(cursorPosition);
+      break;    
     default:
       // switch by position
       switch(payload.item.position) {
@@ -34,15 +40,33 @@ export const insert = (ace, position, payload, evt) => {
   // Insert the character at the position.
   const dragPosition = ace.editor.renderer.pixelToScreenCoordinates(evt.pageX, evt.pageY);
   var token = ace.editor.session.getTokenAt(dragPosition.row, dragPosition.column);
-  if (token) {
-    const priorToken = null;
-    // todo - check the previous token and see if its a prefix, and if this payload is a prefix, replace it
-    // todo - make sure we only drop the operator on a valid gene or on an empty block
-    if (payload.position === 'prefix' && priorToken && priorToken.className === 'prefix');
 
-    // we want to handle the operator based on its position.
-    ace.editor.clearSelection();
-    _insertByType(ace, dragPosition, payload, token);
+  if (token) {
+    // check the previous token and see if its a prefix, and if this payload is a prefix, replace it
+    const tokens = ace.editor.session.getTokens(dragPosition.row);
+    const tokenIndex = tokens.indexOf(token);
+    const operators = ['g', 'p', 't', 'u', 'd', 'o', 'f', 'm'];
+    if (tokenIndex > 0) {
+      const priorToken = tokens[tokenIndex-1];
+      priorToken.start = token.start - 1;
+      if (priorToken.type === 'keyword.operator' && operators.indexOf(priorToken.value) >= 0 && 
+        payload.item.text !== '!') {
+        ace.editor.session.replace({
+          start: { row: dragPosition.row, column: priorToken.start },
+          end: {row: dragPosition.row, column: priorToken.start+1}
+        }, payload.item.text);
+      }
+      else {
+        // we want to handle the operator based on its position.
+        ace.editor.clearSelection();
+        _insertByType(ace, dragPosition, payload, token);
+      }
+    } 
+    else {
+      // we want to handle the operator based on its position.
+      ace.editor.clearSelection();
+      _insertByType(ace, dragPosition, payload, token);
+    }
   }
   else {
     // The operator was dragged in a region that does not contain a symbol.

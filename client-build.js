@@ -65,8 +65,8 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var extensionConfig = __webpack_require__(299);
-	var gslState = __webpack_require__(301);
 	var defaultEditorContent = '#name NewGSLConstruct\n';
+	var gslState = __webpack_require__(301);
 
 	var loadProjectCode = function loadProjectCode(url) {
 	  return new _promise2.default(function (resolve, reject) {
@@ -106,7 +106,22 @@
 	  xhr.send(null);
 	};
 
+	var loadDefaults = function loadDefaults(container) {
+	  gslState.editorContent = defaultEditorContent;
+	  gslState.resultContent = '';
+	  gslState.statusContent = '';
+	  gslState.refreshDownloadList = true;
+	  // write an empty file.
+	  window.constructor.extensions.files.write(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'project.run.gsl', '').then(function () {
+	    _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
+	  }).catch(function (err) {
+	    console.log(err);
+	    _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
+	  });
+	};
+
 	function render(container, options) {
+
 	  var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
 	    if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
 	      if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
@@ -123,7 +138,6 @@
 	                    _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
 	                  });
 	                  if (fileList.indexOf('settings.json') >= 0) {
-	                    // Load the GSL constructs into state
 	                    window.constructor.extensions.files.read(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'settings.json').then(function (response) {
 	                      if (response.status === 200) {
 	                        loadSettings(response.url);
@@ -134,53 +148,20 @@
 	                  }
 	                }
 	              }).catch(function (err) {
-	                gslState.editorContent = defaultEditorContent;
-	                gslState.resultContent = '';
-	                gslState.statusContent = '';
-	                gslState.refreshDownloadList = false;
-	                // write an empty file.
-	                window.constructor.extensions.files.write(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'project.run.gsl', '').then(function () {
-	                  _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
-	                }).catch(function (err) {
-	                  console.log(err);
-	                  _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
-	                });
+	                loadDefaults(container);
 	              });
 	            } else {
-	              gslState.editorContent = defaultEditorContent;
-	              gslState.resultContent = '';
-	              gslState.statusContent = '';
-	              gslState.refreshDownloadList = false;
-	              // write an empty file.
-	              window.constructor.extensions.files.write(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'project.run.gsl', '').then(function () {
-	                _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
-	              }).catch(function (err) {
-	                console.log(err);
-	                _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
-	              });
+	              loadDefaults(container);
 	            }
 	          }).catch(function (err) {
-	            gslState.editorContent = defaultEditorContent;
-	            gslState.resultContent = '';
-	            gslState.statusContent = '';
-	            gslState.refreshDownloadList = false;
-	            // write an empty file.
-	            window.constructor.extensions.files.write(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'project.run.gsl', '').then(function () {
-	              _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
-	            }).catch(function (err) {
-	              console.log(err);
-	              _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
-	            });
+	            loadDefaults(container);
 	          });
 	        })();
 	      } else {
 	        _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
 	      }
 	      gslState.prevProject = window.constructor.api.projects.projectGetCurrentId();
-	    } else {
-	      _reactDom2.default.render(_react2.default.createElement(_GSLEditorLayout2.default, null), container);
-	    }
-	    if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
+	    } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
 	      // save the current content of the editor.
 	      window.constructor.extensions.files.write(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'project.gsl', gslState.editorContent).then(function () {
 	        console.log('Saved GSL Code.');
@@ -202,9 +183,7 @@
 	  }, true);
 
 	  //return an unsubscribe function to clean up when the extension unmounts
-	  return function () {
-	    subscriber();
-	  };
+	  return subscriber;
 	}
 
 	window.constructor.extensions.register(extensionConfig.name, render);
@@ -22303,7 +22282,12 @@
 	        for (var _iterator = (0, _getIterator3.default)(_this.state.downloadItems), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	          var item = _step.value;
 
-	          tempItems[index].disabled = !settings[item.type];
+	          // special case gsl
+	          if (tempItems.type === 'gsl' && _this.state.editorContent !== '') {
+	            tempItems[index].disabled = false;
+	          } else {
+	            tempItems[index].disabled = !settings[item.type];
+	          }
 	          index++;
 	        }
 	      } catch (err) {
@@ -44026,15 +44010,32 @@
 	  // Insert the character at the position.
 	  var dragPosition = ace.editor.renderer.pixelToScreenCoordinates(evt.pageX, evt.pageY);
 	  var token = ace.editor.session.getTokenAt(dragPosition.row, dragPosition.column);
-	  if (token) {
-	    var priorToken = null;
-	    // todo - check the previous token and see if its a prefix, and if this payload is a prefix, replace it
-	    // todo - make sure we only drop the operator on a valid gene or on an empty block
-	    if (payload.position === 'prefix' && priorToken && priorToken.className === 'prefix') ;
 
-	    // we want to handle the operator based on its position.
-	    ace.editor.clearSelection();
-	    _insertByType(ace, dragPosition, payload, token);
+	  if (token) {
+	    // check the previous token and see if its a prefix, and if this payload is a prefix, replace it
+	    var tokens = ace.editor.session.getTokens(dragPosition.row);
+	    var tokenIndex = tokens.indexOf(token);
+	    var operators = ['g', 'p', 't', 'u', 'd', 'o', 'f', 'm'];
+	    if (tokenIndex > 0) {
+	      var priorToken = tokens[tokenIndex - 1];
+	      console.log('token is ', token);
+	      console.log('priorToken is ', priorToken);
+	      priorToken.start = token.start - 1;
+	      if (priorToken.type === 'keyword.operator' && operators.indexOf(priorToken.value) >= 0 && payload.item.text !== '!') {
+	        ace.editor.session.replace({
+	          start: { row: dragPosition.row, column: priorToken.start },
+	          end: { row: dragPosition.row, column: priorToken.start + 1 }
+	        }, payload.item.text);
+	      } else {
+	        // we want to handle the operator based on its position.
+	        ace.editor.clearSelection();
+	        _insertByType(ace, dragPosition, payload, token);
+	      }
+	    } else {
+	      // we want to handle the operator based on its position.
+	      ace.editor.clearSelection();
+	      _insertByType(ace, dragPosition, payload, token);
+	    }
 	  } else {
 	    // The operator was dragged in a region that does not contain a symbol.
 	    ace.editor.env.document.insert(dragPosition, payload.item.text);
@@ -44062,16 +44063,28 @@
 
 	        var builtinConstants = "S288C";
 
-	        var builtinFunctions = "push|pop|warn|linkers|refgenome|dnasrc|name|fuse|stitch|megastitch|" + "rabitstart|rabitend|primerpos|warnoff|primermin|pcrparams|targettm|" + "seamlesstm|seamlessoverlaptm|atpenalty";
+	        var builtinPragmas = "push|pop|warn|linkers|refgenome|dnasrc|name|fuse|stitch|megastitch|" + "rabitstart|rabitend|primerpos|warnoff|primermin|primermax|pcrparams|targettm|" + "seamlesstm|seamlessoverlaptm|atpenalty";
 
 	        // adding GSL Genes to the wordlist.
 	        var keywordMapper = this.createKeywordMapper({
 	            "variable.language": "this",
 	            "keyword": keywords,
 	            "constant.language": builtinConstants,
-	            "support.function": builtinFunctions,
+	            "support.function": builtinPragmas,
 	            "gsl.gene": autocompleteList.geneListString
 	        }, "identifier");
+
+	        var escapedGeneList = [];
+	        autocompleteList.geneListString.split('|').forEach(function (el) {
+	            var str = el.replace('(', '\\(');
+	            str = str.replace(')', '\\)');
+	            escapedGeneList.push(str);
+	        });
+
+	        // sort by string length.
+	        escapedGeneList.sort(function (a, b) {
+	            return b.length - a.length;
+	        });
 
 	        var decimalInteger = "(?:(?:[1-9]\\d*)|(?:0))";
 	        var octInteger = "(?:0[oO]?[0-7]+)";
@@ -44117,20 +44130,24 @@
 	                token: "constant.numeric", // integer
 	                regex: integer + "\\b"
 	            }, {
-	                token: keywordMapper,
-	                regex: "let|cut|end|for|in|open|do"
+	                token: ["constant.numeric", "keyword.operator"],
+	                regex: "(" + integer + ")(S|E)"
 	            }, {
-	                token: "keyword.operator",
-	                regex: "g|p|t|u|d|o|f|m|!|@|~|$"
+	                token: ["keyword"],
+	                regex: "(let|cut|end|for|in|open|do)\\b"
+	            }, {
+	                token: ["keyword.operator", "keyword.operator", "constant.gene"],
+	                regex: "(!)?(g|p|t|u|d|o|f|m|!|@|~|\\$)(" + escapedGeneList.join('|') + ")\\b"
+	            }, {
+	                token: ["keyword.operator", "keyword.operator", "identifier"],
+	                regex: "(!)?(@)([a-zA-Z_$\-][a-zA-Z0-9_$\-]*)\\b"
+	            }, {
+	                token: ["keyword.operator", "keyword.operator", "gsl.inline", "keyword.operator"],
+	                regex: "(\\/)(\\$)?([A|C|G|T|a|c|g|t]+)(\\/)" // verify if we require more characters.
 	            }, {
 	                token: "keyword.operator",
 	                regex: "\\+\\.|\\-\\.|\\*\\.|\\/\\.|#|;;|\\+|\\-|\\*|\\*\\*\\/|\\/\\/|%|<<|>>|&|\\||\\^|~|<|>|<=|=>|==|!=|<>|<-|="
-	            },
-	            /*{
-	                token : "constant.gene",
-	                regex : autocompleteList.geneListString,
-	            },*/
-	            {
+	            }, {
 	                token: keywordMapper,
 	                regex: "[a-zA-Z_$\-][a-zA-Z0-9_$\-]*\\b"
 	            }, {
@@ -87722,6 +87739,9 @@
 	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==) right repeat-y\
 	}\
 	.ace_gene {\
+	  color: #CC3333\
+	}\
+	.ace_gsl.ace_inline {\
 	  color: #CC3333\
 	}";
 

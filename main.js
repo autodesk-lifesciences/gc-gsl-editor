@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import GSLEditorLayout from './src/components/GSLEditorLayout';
 const extensionConfig = require('./package.json');
-var gslState = require('./globals');
 const defaultEditorContent = '#name NewGSLConstruct\n';
+let gslState = require('./globals');
 
 const loadProjectCode = (url) => {
   return new Promise(function(resolve, reject) {
@@ -44,31 +44,51 @@ const loadSettings = (url) => {
   xhr.send(null);
 }
 
+const loadDefaults = (container) => {
+  gslState.editorContent = defaultEditorContent;
+  gslState.resultContent = '';
+  gslState.statusContent = '';
+  gslState.refreshDownloadList = true;
+  // write an empty file.
+  window.constructor.extensions.files.write(
+    window.constructor.api.projects.projectGetCurrentId(),
+    extensionConfig.name,
+    'project.run.gsl',
+    ''
+  ).then(()=> {
+     ReactDOM.render(<GSLEditorLayout/>, container);
+   })
+  .catch((err) => {
+    console.log(err);
+    ReactDOM.render(<GSLEditorLayout/>, container);
+  });  
+}
+
 function render(container, options) {
+
   var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
     if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
-          if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
-          // read the list of files on present on the server
-          let fileList = [];
-          window.constructor.extensions.files.list(
-            window.constructor.api.projects.projectGetCurrentId(),
-            extensionConfig.name)
-          .then((response) => {
-            fileList = response;
-            if (fileList.indexOf('project.gsl') >= 0) {
-              // read code from the server.
-              window.constructor.extensions.files.read(
-                window.constructor.api.projects.projectGetCurrentId(),
-                extensionConfig.name,
-                'project.gsl')
-              .then((response) => {
-                if (response.status === 200) {
-                  loadProjectCode(response.url)
-                  .then(()=> {
-                        ReactDOM.render(<GSLEditorLayout/>, container);
-                  });
-                  if (fileList.indexOf('settings.json') >= 0) {
-                  // Load the GSL constructs into state
+      if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
+        // read the list of files on present on the server
+        let fileList = [];
+        window.constructor.extensions.files.list(
+          window.constructor.api.projects.projectGetCurrentId(),
+          extensionConfig.name)
+        .then((response) => {
+          fileList = response;
+          if (fileList.indexOf('project.gsl') >= 0) {
+            // read code from the server.
+            window.constructor.extensions.files.read(
+              window.constructor.api.projects.projectGetCurrentId(),
+              extensionConfig.name,
+              'project.gsl')
+            .then((response) => {
+              if (response.status === 200) {
+                loadProjectCode(response.url)
+                .then(()=> {
+                  ReactDOM.render(<GSLEditorLayout/>, container);
+                });
+                if (fileList.indexOf('settings.json') >= 0) {
                   window.constructor.extensions.files.read(
                     window.constructor.api.projects.projectGetCurrentId(),
                     extensionConfig.name,
@@ -85,73 +105,23 @@ function render(container, options) {
                   });
                 }
               }
-              })
-              .catch((err) => {
-                gslState.editorContent = defaultEditorContent;
-                gslState.resultContent = '';
-                gslState.statusContent = '';
-                gslState.refreshDownloadList = false;
-                // write an empty file.
-                window.constructor.extensions.files.write(
-                  window.constructor.api.projects.projectGetCurrentId(),
-                  extensionConfig.name,
-                  'project.run.gsl',
-                  ''
-                ).then(()=> {
-                   ReactDOM.render(<GSLEditorLayout/>, container);
-                 })
-                .catch((err) => {
-                  console.log(err);
-                  ReactDOM.render(<GSLEditorLayout/>, container);
-                });
-              });
-            } else {
-              gslState.editorContent = defaultEditorContent;
-              gslState.resultContent = '';
-              gslState.statusContent = '';
-              gslState.refreshDownloadList = false;
-              // write an empty file.
-              window.constructor.extensions.files.write(
-                window.constructor.api.projects.projectGetCurrentId(),
-                extensionConfig.name,
-                'project.run.gsl',
-                ''
-              ).then(()=> {
-                 ReactDOM.render(<GSLEditorLayout/>, container);
-               })
-              .catch((err) => {
-                console.log(err);
-                ReactDOM.render(<GSLEditorLayout/>, container);
-              });
-            }
-          })
-          .catch((err) => {
-            gslState.editorContent = defaultEditorContent;
-            gslState.resultContent = '';
-            gslState.statusContent = '';
-            gslState.refreshDownloadList = false;
-            // write an empty file.
-            window.constructor.extensions.files.write(
-              window.constructor.api.projects.projectGetCurrentId(),
-              extensionConfig.name,
-              'project.run.gsl',
-              ''
-            ).then(()=> {
-               ReactDOM.render(<GSLEditorLayout/>, container);
-             })
+            })
             .catch((err) => {
-              console.log(err);
-              ReactDOM.render(<GSLEditorLayout/>, container);
+              loadDefaults(container);
             });
-          });
-        } else {
-            ReactDOM.render(<GSLEditorLayout/>, container);
-        }
+          } else {
+            loadDefaults(container);
+          }
+        })
+        .catch((err) => {
+          loadDefaults(container);
+        });
+      } else {
+          ReactDOM.render(<GSLEditorLayout/>, container);
+      }
         gslState.prevProject = window.constructor.api.projects.projectGetCurrentId();
-    } else {
-        ReactDOM.render(<GSLEditorLayout/>, container);
-    }
-    if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
+    } 
+    else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
       // save the current content of the editor.
       window.constructor.extensions.files.write(
         window.constructor.api.projects.projectGetCurrentId(),
@@ -167,28 +137,26 @@ function render(container, options) {
         console.log('Failed to save GSL Code');
         console.log(err);
       });
-    } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_OPEN) {
-        // read code from the server.
-        window.constructor.extensions.files.read(
-          window.constructor.api.projects.projectGetCurrentId(),
-          extensionConfig.name,
-          'project.gsl')
-        .then((response) => {
-          if (response.status === 200) {
-            loadProjectCode(response.url);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-      }
-    }, true
-  );
+    }
+    else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_OPEN) {
+      // read code from the server.
+      window.constructor.extensions.files.read(
+        window.constructor.api.projects.projectGetCurrentId(),
+        extensionConfig.name,
+        'project.gsl')
+      .then((response) => {
+        if (response.status === 200) {
+          loadProjectCode(response.url);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    }
+  }, true);
 
   //return an unsubscribe function to clean up when the extension unmounts
-  return function () {
-    subscriber();
-  };
+  return subscriber;
 }
 
 window.constructor.extensions.register(extensionConfig.name, render);

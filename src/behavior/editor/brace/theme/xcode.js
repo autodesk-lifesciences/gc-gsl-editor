@@ -87,6 +87,9 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
 }\
 .ace_gene {\
   color: #CC3333\
+}\
+.ace_gsl.ace_inline {\
+  color: #CC3333\
 }";
 
 var dom = acequire("../lib/dom");
