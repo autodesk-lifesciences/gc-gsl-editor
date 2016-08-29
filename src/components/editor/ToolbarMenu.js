@@ -11,8 +11,8 @@ export default class ToolbarMenu extends Component {
     toolbarMenuItems: React.PropTypes.arrayOf(
       React.PropTypes.shape({
         key: PropTypes.string,
-        text: PropTypes.string.isRequired,
-        action: PropTypes.func.isRequired,
+        text: PropTypes.string,
+        action: PropTypes.func,
         disabled: PropTypes.bool
       })
     ),

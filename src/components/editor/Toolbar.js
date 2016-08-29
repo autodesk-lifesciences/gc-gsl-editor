@@ -29,7 +29,7 @@ export default class Toolbar extends Component {
               label={item.label}
               action={item.action}
               imageUrl={item.imageUrl}
-              enabled={item.enabled}
+              disabled={item.disabled}
             />;
           })}
         </div>

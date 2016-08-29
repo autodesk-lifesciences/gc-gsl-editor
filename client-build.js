@@ -64,8 +64,9 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var extensionConfig = __webpack_require__(298);
-	var gslState = __webpack_require__(300);
+	var extensionConfig = __webpack_require__(299);
+	var gslState = __webpack_require__(301);
+	var defaultEditorContent = '#name NewGSLConstruct\n';
 
 	var loadProjectCode = function loadProjectCode(url) {
 	  return new _promise2.default(function (resolve, reject) {
@@ -79,6 +80,9 @@
 	          gslState.refreshDownloadList = false;
 	          gslState.resultContent = '';
 	          gslState.statusContent = '';
+	          var projectId = window.constructor.api.projects.projectGetCurrentId();
+	          if (!gslState.hasOwnProperty(projectId)) gslState[projectId] = {};
+	          gslState[projectId].savedCode = gslState.editorContent;
 	          resolve();
 	        }
 	      }
@@ -130,7 +134,7 @@
 	                  }
 	                }
 	              }).catch(function (err) {
-	                gslState.editorContent = '';
+	                gslState.editorContent = defaultEditorContent;
 	                gslState.resultContent = '';
 	                gslState.statusContent = '';
 	                gslState.refreshDownloadList = false;
@@ -143,7 +147,7 @@
 	                });
 	              });
 	            } else {
-	              gslState.editorContent = '';
+	              gslState.editorContent = defaultEditorContent;
 	              gslState.resultContent = '';
 	              gslState.statusContent = '';
 	              gslState.refreshDownloadList = false;
@@ -156,7 +160,7 @@
 	              });
 	            }
 	          }).catch(function (err) {
-	            gslState.editorContent = '';
+	            gslState.editorContent = defaultEditorContent;
 	            gslState.resultContent = '';
 	            gslState.statusContent = '';
 	            gslState.refreshDownloadList = false;
@@ -21391,13 +21395,13 @@
 
 	var _CodeEditorLayout2 = _interopRequireDefault(_CodeEditorLayout);
 
-	var _ConsoleLayout = __webpack_require__(302);
+	var _ConsoleLayout = __webpack_require__(303);
 
 	var _ConsoleLayout2 = _interopRequireDefault(_ConsoleLayout);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var gslState = __webpack_require__(300);
+	var gslState = __webpack_require__(301);
 
 	var GSLEditorLayout = function (_Component) {
 	  (0, _inherits3.default)(GSLEditorLayout, _Component);
@@ -21425,6 +21429,7 @@
 	    _this.onConsoleStateChange = function (value) {
 	      _this.setState({ isConsoleOpen: value });
 	      gslState.isConsoleOpen = value;
+	      // TODO: Try to get rid of this
 	      setTimeout(function () {
 	        window.dispatchEvent(new Event('resize'));
 	      }, 40);
@@ -21434,7 +21439,7 @@
 	      editorContent: '',
 	      resultContent: '',
 	      statusContent: '',
-	      isConsoleOpen: true
+	      isConsoleOpen: false
 	    };
 	    return _this;
 	  }
@@ -22217,11 +22222,11 @@
 
 	var _ToolbarMenu2 = _interopRequireDefault(_ToolbarMenu);
 
-	var _client = __webpack_require__(295);
+	var _client = __webpack_require__(296);
 
 	var compiler = _interopRequireWildcard(_client);
 
-	var _output = __webpack_require__(299);
+	var _output = __webpack_require__(300);
 
 	var canvas = _interopRequireWildcard(_output);
 
@@ -22229,9 +22234,9 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var config = __webpack_require__(301);
-	var extensionConfig = __webpack_require__(298);
-	var gslState = __webpack_require__(300);
+	var config = __webpack_require__(302);
+	var extensionConfig = __webpack_require__(299);
+	var gslState = __webpack_require__(301);
 
 	var CodeEditorLayout = function (_Component) {
 	  (0, _inherits3.default)(CodeEditorLayout, _Component);
@@ -22244,7 +22249,25 @@
 	    _this.onEditorContentChange = function (content) {
 	      _this.setState({ editorContent: content });
 	      _this.props.onEditorContentChange(content);
-	      if (content === '') _this.onStatusMessageChange('Begin typing GSL code. Drag and drop blocks or GSL commands from the Inventory to use them in a script.');else if (_this.state.statusMessage.startsWith('Begin')) _this.onStatusMessageChange(' ');
+	      if (content === '') _this.onStatusMessageChange('Begin typing GSL code. Drag and drop blocks or GSL commands from the Inventory to use them in a script.');else _this.onStatusMessageChange(' ');
+
+	      // enable/disable the 'Save' button based on the content.
+	      var projectId = window.constructor.api.projects.projectGetCurrentId();
+	      if (gslState.hasOwnProperty(projectId)) {
+	        var items = _this.state.toolbarItems;
+	        if (gslState[projectId].hasOwnProperty('savedCode')) {
+	          if (content == gslState[projectId].savedCode) {
+	            items[1].disabled = true;
+	            _this.setState({ toolbarItems: items });
+	          } else {
+	            items[1].disabled = false;
+	            _this.setState({ toolbarItems: items });
+	          }
+	        } else {
+	          items[1].disabled = false;
+	          _this.setState({ toolbarItems: items });
+	        }
+	      }
 	    };
 
 	    _this.onStatusMessageChange = function (message) {
@@ -22322,7 +22345,12 @@
 	      _this.onStatusMessageChange('Running code...');
 	      compiler.run(_this.state.editorContent, config.arguments, window.constructor.api.projects.projectGetCurrentId()).then(function (data) {
 	        _this.onResultContentChange(data.result);
-	        _this.onStatusMessageChange('Program exited with status code: ' + data.status);
+	        if (data.status === 0) {
+	          _this.onStatusMessageChange('Code executed successfully.');
+	        } else {
+	          _this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
+	          _this.showConsole();
+	        }
 	        if (data.status == 0) {
 	          // attempt to render in the canvas only if all is well.
 	          canvas.render(JSON.parse(data.contents));
@@ -22336,8 +22364,14 @@
 	        _this.onStatusMessageChange('Saved.');
 	        _this.refreshDownloadMenu();
 	        _this.codeEditor.ace.editor.focus();
-	        if (gslState.hasOwnProperty(window.constructor.api.projects.projectGetCurrentId())) {
-	          if (gslState[window.constructor.api.projects.projectGetCurrentId()]) gslState[window.constructor.api.projects.projectGetCurrentId()] = {};
+	        var projectId = window.constructor.api.projects.projectGetCurrentId();
+	        if (!gslState.hasOwnProperty(projectId)) gslState[projectId] = {};
+	        gslState[projectId].savedCode = _this.state.editorContent;
+	        // disable the 'Save' Button
+	        var items = _this.state.toolbarItems;
+	        if (gslState[projectId].hasOwnProperty('savedCode')) {
+	          items[1].disabled = true;
+	          _this.setState({ toolbarItems: items });
 	        }
 	      }).catch(function (err) {
 	        _this.onStatusMessageChange('Failed to save the GSL code on the server.');
@@ -22346,9 +22380,16 @@
 
 	    _this.downloadFile = function (e) {
 	      _this.onMenuToggle(true);
+	      //TODO: Find a better way to do this
+	      var offsetLeft = -6;
+	      var offsetBottom = 0;
+	      if (e.target.className === 'ToolbarItemLink') {
+	        offsetLeft = 10;
+	        offsetBottom = 8;
+	      }
 	      _this.onMenuPositionSet({
-	        'x': e.target.getBoundingClientRect().left - 10,
-	        'y': e.target.getBoundingClientRect().bottom + 10
+	        'x': e.target.getBoundingClientRect().left - offsetLeft,
+	        'y': e.target.getBoundingClientRect().bottom + offsetBottom
 	      });
 	    };
 
@@ -22497,13 +22538,10 @@
 	    _this.doDownload = function (evt) {
 	      // TODO: Associate with something other than label!
 	      var fileMap = {
-	        'gsl file': 'gsl',
-	        'json file': 'json',
-	        'ape zip file': 'ape',
-	        'cm zip file': 'cm',
-	        'thumper zip file': 'thumper',
-	        'rabit xls file': 'rabitXls',
-	        'txt file': 'flat'
+	        'gsl': 'GSL source code',
+	        'ape': 'ApE output zip file',
+	        'cm': 'Clone Manager output zip file',
+	        'allFormats': 'files'
 	      };
 	      var buttonType = evt.nativeEvent.button;
 
@@ -22512,18 +22550,38 @@
 	      var _iteratorError5 = undefined;
 
 	      try {
-	        for (var _iterator5 = (0, _getIterator3.default)((0, _keys2.default)(fileMap)), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	        var _loop = function _loop() {
 	          var key = _step5.value;
 
-	          // TODO: Create route to check if file exists on server.
-	          // Disable menu options accordingly.
-	          if (evt.target.innerHTML.indexOf(key) !== -1) {
-	            setTimeout(function () {
-	              _this.onStatusMessageChange('');
-	            }, 2000);
-	            _this.onStatusMessageChange('Preparing to download the ' + key + ' associated with this project...');
-	            _this.downloadFileByType(fileMap[key], buttonType);
+	          if (evt.currentTarget.id.indexOf(key) !== -1) {
+	            // Save file first if required, if the gsl file is requested.
+	            if ((key === 'gsl' || key === 'allFormats') && !_this.state.toolbarItems[1].disabled) {
+	              // save the GSL file first before downloading.
+	              window.constructor.extensions.files.write(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'project.gsl', gslState.editorContent).then(function () {
+	                // refactor this to separate the save part.
+	                console.log('Saved GSL Code.');
+	                gslState.refreshDownloadList = true;
+	                setTimeout(function () {
+	                  _this.onStatusMessageChange('');
+	                }, 2000);
+	                _this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
+	                _this.downloadFileByType(key, buttonType);
+	              }).catch(function (err) {
+	                console.log('Failed to save GSL Code');
+	                console.log(err);
+	              });
+	            } else {
+	              setTimeout(function () {
+	                _this.onStatusMessageChange('');
+	              }, 2000);
+	              _this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
+	              _this.downloadFileByType(key, buttonType);
+	            }
 	          }
+	        };
+
+	        for (var _iterator5 = (0, _getIterator3.default)((0, _keys2.default)(fileMap)), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	          _loop();
 	        }
 	      } catch (err) {
 	        _didIteratorError5 = true;
@@ -22556,8 +22614,8 @@
 	        imageUrl: '/images/ui/run_icon.svg'
 	      }, {
 	        label: 'Save',
-	        action: _this.saveCode
-	      }, {
+	        action: _this.saveCode,
+	        disabled: false }, {
 	        label: 'GSL Library',
 	        action: _this.showGSLLibrary,
 	        imageUrl: '/images/ui/add_icon.svg'
@@ -22572,43 +22630,25 @@
 	      downloadItems: [{
 	        key: 'download-gsl-file',
 	        type: 'gsl',
-	        text: 'gsl file',
+	        text: 'Source GSL',
 	        disabled: false,
 	        action: _this.doDownload
-	      }, {
-	        key: 'download-json-file',
-	        type: 'json',
-	        text: 'json file',
-	        disabled: false,
-	        action: _this.doDownload
-	      }, {
+	      }, {}, {
 	        key: 'download-ape-zip-file',
 	        type: 'ape',
-	        text: 'ape zip file',
+	        text: 'Output as ApE file archive',
 	        disabled: false,
 	        action: _this.doDownload
 	      }, {
 	        key: 'download-cm-zip-file',
 	        type: 'cm',
-	        text: 'cm zip file',
+	        text: 'Output as Clone Manager file achive',
 	        disabled: false,
 	        action: _this.doDownload
-	      }, {
-	        key: 'download-thumper-zip-file',
-	        type: 'thumper',
-	        text: 'thumper zip file',
-	        disabled: false,
-	        action: _this.doDownload
-	      }, {
-	        key: 'download-rabit-xls-file',
-	        type: 'rabitXls',
-	        text: 'rabit xls file',
-	        disabled: false,
-	        action: _this.doDownload
-	      }, {
-	        key: 'download-txt-file',
-	        type: 'flat',
-	        text: 'txt file',
+	      }, {}, {
+	        key: 'download-allFormats-zip-file',
+	        type: 'allFormats',
+	        text: 'All formats',
 	        disabled: false,
 	        action: _this.doDownload
 	      }]
@@ -22629,6 +22669,19 @@
 	        this.onResultContentChange(gslState.resultContent);
 	        this.onStatusMessageChange(gslState.statusContent);
 	      }
+
+	      if (!gslState.hasOwnProperty('action')) gslState.actions = {};
+	      gslState.actions.runCode = this.runCode;
+
+	      // Run on Command-Enter
+	      this.codeEditor.ace.editor.commands.addCommand({
+	        name: 'gslrun',
+	        bindKey: { win: 'Ctrl-Enter', mac: 'Command-Enter' },
+	        exec: function exec(editor) {
+	          gslState.actions.runCode();
+	        },
+	        readOnly: true
+	      });
 	    }
 
 	    // Toggles comments
@@ -89528,7 +89581,7 @@
 	              label: item.label,
 	              action: item.action,
 	              imageUrl: item.imageUrl,
-	              enabled: item.enabled
+	              disabled: item.disabled
 	            });
 	          })
 	        )
@@ -89598,32 +89651,17 @@
 	  (0, _createClass3.default)(ToolbarItem, [{
 	    key: 'render',
 	    value: function render() {
+
+	      var divClasses = 'ToolbarItem' + (this.props.disabled ? ' disabled' : '');
+	      var linkClass = 'ToolbarItemLink' + (this.props.disabled ? ' disabled' : '');
 	      return _react2.default.createElement(
 	        'div',
-	        { classsName: 'ToolbarItem',
-	          style: {
-	            display: 'inline-block',
-	            lineHeight: '30px',
-	            verticalAlign: 'center',
-	            margin: '0px 0px',
-	            padding: '0px 16px',
-	            backgroundRepeat: 'no-repeat',
-	            backgroundPosition: 'left',
-	            backgroundImage: 'url(' + this.props.imageUrl + ')',
-	            cursor: 'pointer'
-	          },
-	          onClick: this.props.action,
-	          enabled: this.props.enabled
-	        },
+	        { className: divClasses,
+	          style: { backgroundImage: 'url(' + this.props.imageUrl + ')' },
+	          onClick: this.props.action },
 	        _react2.default.createElement(
 	          'a',
-	          { id: this.props.label + '-a',
-	            style: {
-	              color: '#757884',
-	              textDecoration: 'none'
-	            },
-	            enabled: this.props.enabled
-	          },
+	          { className: linkClass, id: this.props.label + '-a' },
 	          this.props.label
 	        )
 	      );
@@ -89637,10 +89675,10 @@
 	  label: _react.PropTypes.string.isRequired,
 	  imageUrl: _react.PropTypes.string,
 	  action: _react.PropTypes.func.isRequired,
-	  enabled: _react.PropTypes.bool
+	  disabled: _react.PropTypes.bool
 	};
 	ToolbarItem.defaultProps = {
-	  enabled: true
+	  disabled: false
 	};
 	exports.default = ToolbarItem;
 	module.exports = exports['default'];
@@ -89757,7 +89795,7 @@
 
 
 	// module
-	exports.push([module.id, ".GSLEditorLayout {\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  position: relative;\n}\n\n.CodeEditorLayout {\n  width: 100%;\n  position: relative;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n}\n\n.Editor {\n  width: 100%;\n  flex-grow: 1;\n  flex-shrink: 1;\n}\n\n.Statusbar {\n  display: flex;\n  flex-shrink: 0;\n  flex-direction: row;\n  justify-content: space-between;\n  align-content: left;\n  padding: 0 1em;\n  width: 100%;\n  height: 30px;\n  align-self: flex-end;\n  text-align: left;\n  background: #EAEBF1;\n  line-height: 1rem;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;  \n}\n\n.StatusbarText {\n  display: inline-block;\n  color: #757884;\n  background: #EAEBF1;\n  font-size: 12px;\n  font-family: Helvetica, Arial, sans-serif;\n  line-height: 12px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding-top: 9px;\n}\n\ninput.StatusbarButton {\n  flex-shrink: 0;\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  outline: none;\n  border: 1px solid white;\n  padding: 0.25em 0.7em;\n  color: #8b857c;\n  background: #FFFFFF;\n  margin-top: 0.3em;\n  margin-bottom: 0.3em;\n}\n\n.Toolbar {\n  display: flex;\n  flex-direction: row;\n  justify-content: flex-end;\n  flex-shrink: 0;\n  border: lightgrey;\n  border-width: thin;\n  border-style: none none solid none;\n}\n\n.ToolbarItems {}\n\n/* console stuff */\n\n.ConsoleLayout {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  flex-shrink: 0;\n}\n\n.ConsoleLayout-resizeHandle {\n    cursor: ns-resize;\n    height: 5px;\n    flex-shrink: 0;\n    width: 100%;\n    position: absolute;\n    top: 0;\n    z-index: 10;\n    background-color: transparent;\n}\n\n.ConsoleLayout-resizeHandle:hover {\n  background: #999FB3;\n}\n\n.ConsoleLayout-resizeHandle.dragging {\n  background: #3F82FF;\n}\n\n.Titlebar {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between;\n  flex-shrink: 0;\n\n  height: 30px;\n  width: 100%;\n  background: #6B6F7C;\n  line-height: 12px;\n}\n\n.TitlebarText {\n  display: inline-block;\n  font-family: Helvetica, Arial, sans-serif;\n  color: #EEEEEE;\n  padding-left: 10px;\n  padding-top: 9px;\n}\n\n.TitleBarItem {\n  display: inline-block;\n  background-repeat: no-repeat;\n  background-position: right bottom;\n  cursor: pointer;\n  color: #EEEEEE;\n  margin-right: 10px;\n  padding-right: 10px;\n  padding-top: 9px;\n  padding-left: 10px;\n  padding-bottom: 3px;\n}\n\n.TitleBarItem span {\n  display: inline-block;\n}\n\n.ResultViewer {\n  background: rgba(0,0,0,0.7);\n  color: white;\n  overflow:auto;\n}\n\n.ResultViewer.active {\n  min-height: 100px;\n  flex-grow: 1;\n}\n\n.divResult {\n  font-family: Courier;\n  white-space: pre;\n  margin-top: 0;  \n  display: block;\n  padding-left: 9px;\n  padding-top: 2px;\n  padding-right: 9px;\n}\n\n/* Scrollbar as per UI spec or default ?\n.ResultViewer.active::-webkit-scrollbar {\n    width: 10px;\n    height: 10px;\n}\n\n.ResultViewer.active::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3); \n} \n\n.ResultViewer.active::-webkit-scrollbar-thumb {\n    border-radius: 6px;\n    background-color: color.lightgray;\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.5); \n} */", ""]);
+	exports.push([module.id, ".GSLEditorLayout {\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  position: relative;\n}\n\n.CodeEditorLayout {\n  width: 100%;\n  position: relative;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n}\n\n.Editor {\n  width: 100%;\n  flex-grow: 1;\n  flex-shrink: 1;\n}\n\n.Statusbar {\n  display: flex;\n  flex-shrink: 0;\n  flex-direction: row;\n  justify-content: space-between;\n  align-content: left;\n  padding: 0 1em;\n  width: 100%;\n  height: 30px;\n  align-self: flex-end;\n  text-align: left;\n  background: #EAEBF1;\n  line-height: 1rem;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;  \n}\n\n.StatusbarText {\n  display: inline-block;\n  color: #757884;\n  background: #EAEBF1;\n  font-size: 12px;\n  font-family: Helvetica, Arial, sans-serif;\n  line-height: 12px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding-top: 9px;\n}\n\ninput.StatusbarButton {\n  flex-shrink: 0;\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  outline: none;\n  border: 1px solid white;\n  padding: 0.25em 0.7em;\n  color: #8b857c;\n  background: #FFFFFF;\n  margin-top: 0.3em;\n  margin-bottom: 0.3em;\n}\n\n.Toolbar {\n  display: flex;\n  flex-direction: row;\n  justify-content: flex-end;\n  flex-shrink: 0;\n  border: lightgrey;\n  border-width: thin;\n  border-style: none none solid none;\n}\n\n.ToolbarItems {}\n\n/* console stuff */\n\n.ToolbarItem {\n  display: inline-block;\n  line-height: 30px;\n  vertical-align: center;\n  margin: 0px 0px;\n  padding: 0px 16px;\n  background-repeat: no-repeat;\n  background-position: left;\n  cursor: pointer;\n}\n\n.ToolbarItem.disabled {\n  pointer-events:none;\n  display: inline-block;\n  line-height: 30px;\n  vertical-align: center;\n  margin: 0px 0px;\n  padding: 0px 16px;\n  background-repeat: no-repeat;\n  background-position: left;\n}\n\n.ToolbarItemLink {\n  color: #757884;\n  text-decoration: none;\n}\n\n.ToolbarItemLink.disabled {\n  color: #C2C5D2;\n  text-decoration: none;\n}\n\n.ConsoleLayout {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  flex-shrink: 0;\n}\n\n.ConsoleLayout-resizeHandle {\n    cursor: ns-resize;\n    height: 5px;\n    flex-shrink: 0;\n    width: 100%;\n    position: absolute;\n    top: 0;\n    z-index: 10;\n    background-color: transparent;\n}\n\n.ConsoleLayout-resizeHandle:hover {\n  background: #999FB3;\n}\n\n.ConsoleLayout-resizeHandle.dragging {\n  background: #3F82FF;\n}\n\n.Titlebar {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between;\n  flex-shrink: 0;\n\n  height: 30px;\n  width: 100%;\n  background: #6B6F7C;\n  line-height: 12px;\n}\n\n.TitlebarText {\n  display: inline-block;\n  font-family: Helvetica, Arial, sans-serif;\n  color: #EEEEEE;\n  padding-left: 10px;\n  padding-top: 9px;\n}\n\n.TitleBarItem {\n  display: inline-block;\n  background-repeat: no-repeat;\n  background-position: right bottom;\n  cursor: pointer;\n  color: #EEEEEE;\n  margin-right: 10px;\n  padding-right: 10px;\n  padding-top: 9px;\n  padding-left: 10px;\n  padding-bottom: 3px;\n}\n\n.TitleBarItem span {\n  display: inline-block;\n}\n\n.ResultViewer {\n  background: rgba(0,0,0,0.7);\n  color: white;\n  overflow:auto;\n}\n\n.ResultViewer.active {\n  min-height: 100px;\n  flex-grow: 1;\n}\n\n.divResult {\n  font-family: Courier;\n  white-space: pre;\n  margin-top: 0;  \n  display: block;\n  padding-left: 9px;\n  padding-top: 2px;\n  padding-right: 9px;\n}\n\n.MyTextArea {\n  color: red;\n}\n/* Scrollbar as per UI spec or default ?\n.ResultViewer.active::-webkit-scrollbar {\n    width: 10px;\n    height: 10px;\n}\n\n.ResultViewer.active::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3); \n} \n\n.ResultViewer.active::-webkit-scrollbar-thumb {\n    border-radius: 6px;\n    background-color: color.lightgray;\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.5); \n} */", ""]);
 
 	// exports
 
@@ -90143,8 +90181,8 @@
 	  changeState: _react.PropTypes.func,
 	  toolbarMenuItems: _react2.default.PropTypes.arrayOf(_react2.default.PropTypes.shape({
 	    key: _react.PropTypes.string,
-	    text: _react.PropTypes.string.isRequired,
-	    action: _react.PropTypes.func.isRequired,
+	    text: _react.PropTypes.string,
+	    action: _react.PropTypes.func,
 	    disabled: _react.PropTypes.bool
 	  }))
 	};
@@ -90193,6 +90231,10 @@
 	var _MenuItem = __webpack_require__(294);
 
 	var _MenuItem2 = _interopRequireDefault(_MenuItem);
+
+	var _MenuSeparator = __webpack_require__(295);
+
+	var _MenuSeparator2 = _interopRequireDefault(_MenuSeparator);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -90243,13 +90285,14 @@
 	                item.action(evt);
 	              }
 	            };
-	            return _react2.default.createElement(_MenuItem2.default, {
+	            return item.text ? _react2.default.createElement(_MenuItem2.default, {
 	              key: item.key,
 	              disabled: item.disabled,
 	              classes: item.classes,
 	              text: item.text,
 	              action: boundAction,
-	              checked: item.checked });
+	              type: item.type,
+	              checked: item.checked }) : _react2.default.createElement(_MenuSeparator2.default, { key: index });
 	          })
 	        )
 	      );
@@ -90327,9 +90370,11 @@
 	      if (this.props.classes) {
 	        classes += ' ' + this.props.classes;
 	      }
+	      var itemId = 'download-item-type-' + this.props.type;
+
 	      return _react2.default.createElement(
 	        'div',
-	        { id: this.props.key, className: classes,
+	        { id: itemId, className: classes,
 	          onClick: function onClick(evt) {
 	            return !_this2.props.disabled && _this2.props.action(evt);
 	          } },
@@ -90348,7 +90393,7 @@
 
 	MenuItem.propTypes = {
 	  key: _react.PropTypes.string,
-	  text: _react.PropTypes.string.isRequired,
+	  text: _react.PropTypes.string,
 	  action: _react.PropTypes.func,
 	  disabled: _react.PropTypes.bool,
 	  checked: _react.PropTypes.bool,
@@ -90373,6 +90418,66 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.default = undefined;
+
+	var _getPrototypeOf = __webpack_require__(228);
+
+	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+	var _classCallCheck2 = __webpack_require__(232);
+
+	var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+	var _createClass2 = __webpack_require__(233);
+
+	var _createClass3 = _interopRequireDefault(_createClass2);
+
+	var _possibleConstructorReturn2 = __webpack_require__(237);
+
+	var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+	var _inherits2 = __webpack_require__(255);
+
+	var _inherits3 = _interopRequireDefault(_inherits2);
+
+	var _react = __webpack_require__(69);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	/**
+	 * MenuSeparator class. Renders a menu item separator line.
+	 */
+	var MenuSeparator = function (_Component) {
+	  (0, _inherits3.default)(MenuSeparator, _Component);
+
+	  function MenuSeparator() {
+	    (0, _classCallCheck3.default)(this, MenuSeparator);
+	    return (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(MenuSeparator).apply(this, arguments));
+	  }
+
+	  (0, _createClass3.default)(MenuSeparator, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement('hr', null);
+	    }
+	  }]);
+	  return MenuSeparator;
+	}(_react.Component);
+
+	exports.default = MenuSeparator;
+	module.exports = exports['default'];
+
+/***/ },
+/* 296 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 	exports.getAvailableDownloadList = exports.run = undefined;
 
 	var _keys = __webpack_require__(263);
@@ -90383,13 +90488,13 @@
 
 	var _getIterator3 = _interopRequireDefault(_getIterator2);
 
-	var _stringify = __webpack_require__(296);
+	var _stringify = __webpack_require__(297);
 
 	var _stringify2 = _interopRequireDefault(_stringify);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var config = __webpack_require__(298);
+	var config = __webpack_require__(299);
 
 	// Sends the code and corresponding gslc options to run the command on the server.
 	var run = exports.run = function run(data, args, projectId) {
@@ -90469,13 +90574,13 @@
 	};
 
 /***/ },
-/* 296 */
+/* 297 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = { "default": __webpack_require__(297), __esModule: true };
+	module.exports = { "default": __webpack_require__(298), __esModule: true };
 
 /***/ },
-/* 297 */
+/* 298 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var core  = __webpack_require__(12)
@@ -90485,7 +90590,7 @@
 	};
 
 /***/ },
-/* 298 */
+/* 299 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -90504,7 +90609,6 @@
 			"build": "webpack --config webpack.config.js && babel server/router.js -o server-build.js",
 			"test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js tests/unit/editor.test.js",
 			"nightwatch": "node ./node_modules/nightwatch/bin/nightwatch --config ./tests/e2e/nightwatch.json",
-			"cover": "istanbul cover tests/editor.test.js",
 			"selenium": "node ./node_modules/selenium-standalone/bin/selenium-standalone install",
 			"e2e": "NODE_ENV=test node ./tests/e2e/bin/e2e.js"
 		},
@@ -90513,6 +90617,7 @@
 		"dependencies": {
 			"body-parser": "^1.15.2",
 			"brace": "^0.8.0",
+			"command-exists": "^1.0.2",
 			"file-saver": "^1.3.2",
 			"invariant": "^2.2.1",
 			"jquery": "^3.1.0",
@@ -90563,7 +90668,7 @@
 	};
 
 /***/ },
-/* 299 */
+/* 300 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -90573,7 +90678,7 @@
 	});
 	exports.render = undefined;
 
-	var _stringify = __webpack_require__(296);
+	var _stringify = __webpack_require__(297);
 
 	var _stringify2 = _interopRequireDefault(_stringify);
 
@@ -90583,9 +90688,9 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var gslState = __webpack_require__(300);
-	var extensionConfig = __webpack_require__(298);
-	var compilerConfig = __webpack_require__(301);
+	var gslState = __webpack_require__(301);
+	var extensionConfig = __webpack_require__(299);
+	var compilerConfig = __webpack_require__(302);
 
 	// Removes the GSL constructs
 	var removeGSLConstructs = function removeGSLConstructs() {
@@ -90745,7 +90850,7 @@
 	};
 
 /***/ },
-/* 300 */
+/* 301 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -90753,7 +90858,7 @@
 	exports.gslState = {};
 
 /***/ },
-/* 301 */
+/* 302 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -90793,7 +90898,7 @@
 	};
 
 /***/ },
-/* 302 */
+/* 303 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -90827,15 +90932,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _lodash = __webpack_require__(303);
+	var _lodash = __webpack_require__(304);
 
 	var _lodash2 = _interopRequireDefault(_lodash);
 
-	var _ResultViewer = __webpack_require__(304);
+	var _ResultViewer = __webpack_require__(305);
 
 	var _ResultViewer2 = _interopRequireDefault(_ResultViewer);
 
-	var _Titlebar = __webpack_require__(305);
+	var _Titlebar = __webpack_require__(306);
 
 	var _Titlebar2 = _interopRequireDefault(_Titlebar);
 
@@ -90937,13 +91042,13 @@
 	};
 	ConsoleLayout.defaultProps = {
 	  resultContent: '',
-	  isOpen: true
+	  isOpen: false
 	};
 	exports.default = ConsoleLayout;
 	module.exports = exports['default'];
 
 /***/ },
-/* 303 */
+/* 304 */
 /***/ function(module, exports) {
 
 	/**
@@ -91399,7 +91504,7 @@
 
 
 /***/ },
-/* 304 */
+/* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -91471,7 +91576,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 305 */
+/* 306 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -91505,7 +91610,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _TitlebarItem = __webpack_require__(306);
+	var _TitlebarItem = __webpack_require__(307);
 
 	var _TitlebarItem2 = _interopRequireDefault(_TitlebarItem);
 
@@ -91560,7 +91665,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 306 */
+/* 307 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";

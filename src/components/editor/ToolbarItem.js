@@ -8,37 +8,22 @@ export default class ToolbarItem extends Component {
     label: PropTypes.string.isRequired,
     imageUrl: PropTypes.string,
     action: PropTypes.func.isRequired,
-    enabled: PropTypes.bool,
+    disabled: PropTypes.bool,
   };
   
   static defaultProps = {
-    enabled: true,
+    disabled: false,
   };
 
 	render() {
+
+    let divClasses = 'ToolbarItem' + (this.props.disabled ? ' disabled' : '');
+    let linkClass = 'ToolbarItemLink' + (this.props.disabled ? ' disabled' : '');
 		return (
-			<div classsName="ToolbarItem"
-        style={{
-          display: 'inline-block',
-          lineHeight: '30px',
-          verticalAlign: 'center',
-          margin: '0px 0px',
-          padding: '0px 16px',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'left',
-          backgroundImage: `url(${this.props.imageUrl})`,
-          cursor: 'pointer',
-        }}
-        onClick = {this.props.action}
-        enabled = {this.props.enabled}
-      >
-        <a id={this.props.label + '-a'}
-          style={{
-            color: '#757884',
-            textDecoration: 'none',
-          }}
-          enabled = {this.props.enabled}
-        >
+			<div className={divClasses}
+        style={{ backgroundImage: `url(${this.props.imageUrl})`}}
+        onClick = {this.props.action}>
+        <a className={linkClass} id={this.props.label + '-a'}>
           {this.props.label}
         </a>
       </div>

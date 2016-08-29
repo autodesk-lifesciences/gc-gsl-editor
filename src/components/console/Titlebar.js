@@ -18,7 +18,6 @@ export default class Titlebar extends Component {
     super(props);
   }
 
-
   render() {
     return (
       <div className="Titlebar">

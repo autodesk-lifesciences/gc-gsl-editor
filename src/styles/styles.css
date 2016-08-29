@@ -81,6 +81,38 @@ input.StatusbarButton {
 
 /* console stuff */
 
+.ToolbarItem {
+  display: inline-block;
+  line-height: 30px;
+  vertical-align: center;
+  margin: 0px 0px;
+  padding: 0px 16px;
+  background-repeat: no-repeat;
+  background-position: left;
+  cursor: pointer;
+}
+
+.ToolbarItem.disabled {
+  pointer-events:none;
+  display: inline-block;
+  line-height: 30px;
+  vertical-align: center;
+  margin: 0px 0px;
+  padding: 0px 16px;
+  background-repeat: no-repeat;
+  background-position: left;
+}
+
+.ToolbarItemLink {
+  color: #757884;
+  text-decoration: none;
+}
+
+.ToolbarItemLink.disabled {
+  color: #C2C5D2;
+  text-decoration: none;
+}
+
 .ConsoleLayout {
   display: flex;
   flex-direction: column;
@@ -165,6 +197,9 @@ input.StatusbarButton {
   padding-right: 9px;
 }
 
+.MyTextArea {
+  color: red;
+}
 /* Scrollbar as per UI spec or default ?
 .ResultViewer.active::-webkit-scrollbar {
     width: 10px;

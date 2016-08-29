@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import GSLEditorLayout from './src/components/GSLEditorLayout';
 const extensionConfig = require('./package.json');
 var gslState = require('./globals');
+const defaultEditorContent = '#name NewGSLConstruct\n';
 
 const loadProjectCode = (url) => {
   return new Promise(function(resolve, reject) {
@@ -16,6 +17,10 @@ const loadProjectCode = (url) => {
           gslState.refreshDownloadList = false;
           gslState.resultContent = '';
           gslState.statusContent = '';
+          const projectId = window.constructor.api.projects.projectGetCurrentId();
+          if (!gslState.hasOwnProperty(projectId)) 
+            gslState[projectId] = {}
+          gslState[projectId].savedCode = gslState.editorContent;
           resolve();
         }
       }
@@ -82,7 +87,7 @@ function render(container, options) {
               }
               })
               .catch((err) => {
-                gslState.editorContent = '';
+                gslState.editorContent = defaultEditorContent;
                 gslState.resultContent = '';
                 gslState.statusContent = '';
                 gslState.refreshDownloadList = false;
@@ -101,7 +106,7 @@ function render(container, options) {
                 });
               });
             } else {
-              gslState.editorContent = '';
+              gslState.editorContent = defaultEditorContent;
               gslState.resultContent = '';
               gslState.statusContent = '';
               gslState.refreshDownloadList = false;
@@ -121,7 +126,7 @@ function render(container, options) {
             }
           })
           .catch((err) => {
-            gslState.editorContent = '';
+            gslState.editorContent = defaultEditorContent;
             gslState.resultContent = '';
             gslState.statusContent = '';
             gslState.refreshDownloadList = false;

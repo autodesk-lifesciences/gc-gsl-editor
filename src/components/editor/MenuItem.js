@@ -3,7 +3,7 @@ import React, { Component, PropTypes } from 'react';
 export default class MenuItem extends Component {
   static propTypes = {
     key: PropTypes.string,
-    text: PropTypes.string.isRequired,
+    text: PropTypes.string,
     action: PropTypes.func,
     disabled: PropTypes.bool,
     checked: PropTypes.bool,
@@ -29,8 +29,10 @@ export default class MenuItem extends Component {
     if (this.props.classes) {
       classes += ` ${this.props.classes}`;
     }
+    let itemId = 'download-item-type-' + this.props.type;
+
     return (
-      <div id={this.props.key} className={classes}
+      <div id={itemId} className={classes}
            onClick={(evt) => !this.props.disabled && this.props.action(evt)}>
         {check}
         {this.props.text}

@@ -22,9 +22,8 @@ export default class ConsoleLayout extends Component {
 
   static defaultProps = {
     resultContent: '',
-    isOpen: true,
+    isOpen: false,
   }
-
 
   throttledDispatchResize = throttle(() => window.dispatchEvent(new Event('resize')), 50);
 

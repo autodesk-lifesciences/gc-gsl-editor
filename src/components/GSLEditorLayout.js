@@ -11,7 +11,7 @@ export default class GSLEditorLayout extends Component {
       editorContent: '',
       resultContent: '',
       statusContent: '',
-      isConsoleOpen: true,
+      isConsoleOpen: false,
     };
   }
 
@@ -33,6 +33,7 @@ export default class GSLEditorLayout extends Component {
   onConsoleStateChange = (value) => {
     this.setState({ isConsoleOpen: value });
     gslState.isConsoleOpen = value;
+    // TODO: Try to get rid of this
     setTimeout(() => {window.dispatchEvent(new Event('resize'))}, 40);
   };
 

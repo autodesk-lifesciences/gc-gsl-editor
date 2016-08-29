@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 
 import MenuItem from './MenuItem';
+import MenuSeparator from './MenuSeparator';
 
 export default class PopupMenu extends Component {
 
@@ -42,13 +43,16 @@ export default class PopupMenu extends Component {
               }
             };
             return (
+              item.text ?
               (<MenuItem
                 key={item.key}
                 disabled={item.disabled}
                 classes={item.classes}
                 text={item.text}
                 action={boundAction}
-                checked={item.checked}/>)
+                type={item.type}
+                checked={item.checked}/>) :
+              (<MenuSeparator key={index}/>)
             );
           })}
         </div>

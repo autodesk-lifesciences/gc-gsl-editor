@@ -9,7 +9,6 @@ const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
 var gslState = require('../../../globals');
 
-
 export default class CodeEditorLayout extends Component {
   static propTypes = {
     onEditorContentChange: PropTypes.func.isRequired,
@@ -37,6 +36,7 @@ export default class CodeEditorLayout extends Component {
         {
           label: 'Save',
           action: this.saveCode,
+          disabled: false,  // Make sure to update index references in saveCode if items are rearranged.
         },
         {
           label: 'GSL Library',
@@ -57,49 +57,32 @@ export default class CodeEditorLayout extends Component {
         {
           key: 'download-gsl-file',
           type: 'gsl',
-          text: 'gsl file',
+          text: 'Source GSL',
           disabled: false,
           action: this.doDownload,
         },
         {
-          key: 'download-json-file',
-          type: 'json',
-          text: 'json file',
-          disabled: false,
-          action: this.doDownload,
         },
         {
           key: 'download-ape-zip-file',
           type: 'ape',
-          text: 'ape zip file',
+          text: 'Output as ApE file archive',
           disabled: false,
           action: this.doDownload,
         },
         {
           key: 'download-cm-zip-file',
           type: 'cm',
-          text: 'cm zip file',
+          text: 'Output as Clone Manager file achive',
           disabled: false,
           action: this.doDownload,
         },
         {
-          key: 'download-thumper-zip-file',
-          type: 'thumper',
-          text: 'thumper zip file',
-          disabled: false,
-          action: this.doDownload,
         },
         {
-          key: 'download-rabit-xls-file',
-          type: 'rabitXls',
-          text: 'rabit xls file',
-          disabled: false,
-          action: this.doDownload,
-        },
-        {
-          key: 'download-txt-file',
-          type: 'flat',
-          text: 'txt file',
+          key: 'download-allFormats-zip-file',
+          type: 'allFormats',
+          text: 'All formats',
           disabled: false,
           action: this.doDownload,
         },
@@ -112,8 +95,27 @@ export default class CodeEditorLayout extends Component {
     this.props.onEditorContentChange(content);
     if (content === '')
       this.onStatusMessageChange('Begin typing GSL code. Drag and drop blocks or GSL commands from the Inventory to use them in a script.');
-    else if (this.state.statusMessage.startsWith('Begin'))
+    else
       this.onStatusMessageChange(' ');
+
+    // enable/disable the 'Save' button based on the content.
+    const projectId = window.constructor.api.projects.projectGetCurrentId();
+    if (gslState.hasOwnProperty(projectId)) {
+      let items = this.state.toolbarItems;
+      if (gslState[projectId].hasOwnProperty('savedCode')) {
+        if (content == gslState[projectId].savedCode) {
+            items[1].disabled = true;
+            this.setState( { toolbarItems: items});
+        } else {
+            items[1].disabled = false;
+            this.setState( { toolbarItems: items});
+        }
+      }
+      else {
+          items[1].disabled = false;
+          this.setState( { toolbarItems: items})
+      }
+    }
   }
 
   onStatusMessageChange = (message) => {
@@ -172,7 +174,12 @@ export default class CodeEditorLayout extends Component {
     this.onStatusMessageChange('Running code...');
     compiler.run(this.state.editorContent, config.arguments, window.constructor.api.projects.projectGetCurrentId()).then((data) => {
       this.onResultContentChange(data.result);
-      this.onStatusMessageChange('Program exited with status code: ' + data.status);
+      if (data.status === 0) {
+        this.onStatusMessageChange('Code executed successfully.');
+      } else {
+        this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
+        this.showConsole();
+      }
       if (data.status == 0) {  // attempt to render in the canvas only if all is well.
         canvas.render(JSON.parse(data.contents));
         this.refreshDownloadMenu();
@@ -187,13 +194,19 @@ export default class CodeEditorLayout extends Component {
       'project.gsl',
       this.state.editorContent
     )
-    .then(()=> {
+    .then(() => {
       this.onStatusMessageChange('Saved.');
       this.refreshDownloadMenu();
       this.codeEditor.ace.editor.focus();
-      if (gslState.hasOwnProperty(window.constructor.api.projects.projectGetCurrentId())) {
-        if (gslState[window.constructor.api.projects.projectGetCurrentId()])
-        gslState[window.constructor.api.projects.projectGetCurrentId()] = {};
+      let projectId = window.constructor.api.projects.projectGetCurrentId();
+      if (!gslState.hasOwnProperty(projectId))
+        gslState[projectId] = {};
+      gslState[projectId].savedCode = this.state.editorContent;
+      // disable the 'Save' Button
+      let items = this.state.toolbarItems;
+      if (gslState[projectId].hasOwnProperty('savedCode')) {
+        items[1].disabled = true;
+        this.setState( { toolbarItems: items});
       }
     })
     .catch((err) => {
@@ -203,10 +216,17 @@ export default class CodeEditorLayout extends Component {
 
   downloadFile = (e) => {
     this.onMenuToggle(true);
+    //TODO: Find a better way to do this
+    let offsetLeft = -6;
+    let offsetBottom = 0;
+    if (e.target.className === 'ToolbarItemLink') {
+      offsetLeft = 10;
+      offsetBottom = 8;
+    }
     this.onMenuPositionSet({
-      'x': e.target.getBoundingClientRect().left-10,
-      'y': e.target.getBoundingClientRect().bottom+10
-    })
+      'x': e.target.getBoundingClientRect().left-offsetLeft,
+      'y': e.target.getBoundingClientRect().bottom+offsetBottom
+    })    
   }
 
   showGSLLibrary = () => {
@@ -224,6 +244,20 @@ export default class CodeEditorLayout extends Component {
       this.onResultContentChange(gslState.resultContent);
       this.onStatusMessageChange(gslState.statusContent);
     }
+
+    if (!gslState.hasOwnProperty('action'))
+      gslState.actions = {};
+    gslState.actions.runCode = this.runCode;
+
+    // Run on Command-Enter
+    this.codeEditor.ace.editor.commands.addCommand({
+      name: 'gslrun',
+      bindKey: {win: 'Ctrl-Enter', mac: 'Command-Enter'},
+      exec: function(editor) {
+        gslState.actions.runCode();
+      },
+      readOnly: true
+    });
   }
 
   // Toggles comments
@@ -308,25 +342,44 @@ export default class CodeEditorLayout extends Component {
   doDownload = (evt) => {
     // TODO: Associate with something other than label!
     const fileMap = {
-      'gsl file': 'gsl',
-      'json file': 'json',
-      'ape zip file': 'ape',
-      'cm zip file': 'cm',
-      'thumper zip file': 'thumper',
-      'rabit xls file': 'rabitXls',
-      'txt file': 'flat',
+      'gsl': 'GSL source code',
+      'ape': 'ApE output zip file',
+      'cm': 'Clone Manager output zip file',
+      'allFormats': 'files'
     }
     const buttonType = evt.nativeEvent.button;
 
     for (const key of Object.keys(fileMap)) {
-      // TODO: Create route to check if file exists on server.
-      // Disable menu options accordingly.
-      if (evt.target.innerHTML.indexOf(key) !== -1) {
+      if (evt.currentTarget.id.indexOf(key) !== -1) {
+          // Save file first if required, if the gsl file is requested.
+        if ((key === 'gsl' || key === 'allFormats') && (!this.state.toolbarItems[1].disabled)) {
+          // save the GSL file first before downloading.
+          window.constructor.extensions.files.write(
+            window.constructor.api.projects.projectGetCurrentId(),
+            extensionConfig.name,
+            'project.gsl',
+            gslState.editorContent,
+          )
+          .then(() => {   // refactor this to separate the save part.
+            console.log('Saved GSL Code.');
+            gslState.refreshDownloadList = true;
+                        setTimeout(() => {
+              this.onStatusMessageChange('');
+            }, 2000);
+            this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
+            this.downloadFileByType(key, buttonType);
+            })
+          .catch((err) => {
+            console.log('Failed to save GSL Code');
+            console.log(err);
+          });
+        } else {
           setTimeout(() => {
             this.onStatusMessageChange('');
           }, 2000);
-          this.onStatusMessageChange('Preparing to download the ' + key + ' associated with this project...');
-          this.downloadFileByType(fileMap[key], buttonType);
+          this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
+          this.downloadFileByType(key, buttonType);
+        }
       }
     }
     this.codeEditor.ace.editor.focus();

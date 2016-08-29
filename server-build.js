@@ -34,6 +34,10 @@ var _invariant = require('invariant');
 
 var _invariant2 = _interopRequireDefault(_invariant);
 
+var _commandExists = require('command-exists');
+
+var _commandExists2 = _interopRequireDefault(_commandExists);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var JSZip = require("jszip");
@@ -114,6 +118,11 @@ var argConfig = {
       "fileName": "thumperOut.rabits.xls",
       "contentType": "application/vnd.ms-excel",
       "contentExt": ".xls"
+    },
+    "allFormats": {
+      "fileName": "gslProjectFiles.zip",
+      "contentType": "application/zip",
+      "contentExt": "project.gsl|thumperOut|gslOut.json|.xls|.txt|.ape|.cx5"
     }
   }
 };
@@ -356,117 +365,131 @@ router.post('/gslc', jsonParser, function (req, res, next) {
   var content = "#refgenome S288C \n" + input.code; // TODO: Make configurable
 
   var argumentString = input.arguments;
-  // make sure that the server is configured with GSL before sending out
-  if (!gslDir || !gslBinary || !_fs2.default.existsSync(gslDir) || !_fs2.default.existsSync(gslBinary)) {
-    console.log('ERROR: Someone requested to run GSL code, but this has not been configured.');
-    console.log('gslDir: ' + gslDir + ' and gslBinary: ' + gslBinary);
-    console.log(gslDir, gslBinary, _fs2.default.existsSync(gslDir), _fs2.default.existsSync(gslBinary));
-    var result = {
-      'result': 'Failed to execute GSL code. The server has not been configured for GSL.',
-      'contents': [],
-      'status': -1
-    };
-    res.status(501).json(result); // Service not implemented
-  } else {
-    (function () {
-      var modifiedArgs = preprocessArgs(input.projectId, input.extension, input.args);
-      var jsonOutFile = getJsonOutFile(modifiedArgs);
-      argumentString = makeArgumentString(modifiedArgs);
-      var projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
-      var filePath = createProjectFilePath(input.projectId, input.extension, argConfig.gslFile.fileName);
-      if (!_fs2.default.existsSync(projectFileDir)) {
-        _fs2.default.mkdirSync(projectFileDir);
-      }
-
-      var output = '';
-      // write out a file with the code.
-      _fs2.default.writeFile(filePath, content, function (err) {
-        if (err) {
-          console.log(err);
-        }
-        // execute the code
-        var command = envVariables + ' mono ' + gslBinary + ' ' + argumentString + ' ' + filePath;
-        console.log('Running: ', command);
-
-        var process = void 0;
-        try {
-          process = (0, _child_process.exec)('' + command, function (err, stdout, stderr) {
-            if (err) {
-              console.log('Invalid GSL code.');
-              console.log(err);
-            }
-          });
-        } catch (ex) {
-          console.log('The following exception occured while running the gslc command ', ex);
-          var _result = {
-            'result': 'An exception occured while running the gslc command.',
-            'contents': [],
-            'status': -1
-          };
-          res.status(500).json(_result);
+  // make sure that mono is installed on the server.
+  (0, _commandExists2.default)('mono', function (err, commandExists) {
+    if (err || !commandExists) {
+      console.log('ERROR: Could not find mono/fsharp installation on the server to run GSL.');
+      var result = {
+        'result': 'ERROR: Could not find a valid mono installation on the server to run GSL.',
+        'contents': [],
+        'status': -1
+      };
+      res.status(501).json(result); // Service not implemented
+    }
+    // make sure that the server is configured with GSL before sending out
+    if (!gslDir || !gslBinary || !_fs2.default.existsSync(gslDir) || !_fs2.default.existsSync(gslBinary)) {
+      console.log('ERROR: Someone requested to run GSL code, but this has not been configured.');
+      console.log('gslDir: ' + gslDir + ' and gslBinary: ' + gslBinary);
+      console.log(gslDir, gslBinary, _fs2.default.existsSync(gslDir), _fs2.default.existsSync(gslBinary));
+      var _result = {
+        'result': 'ERROR: Failed to execute GSL code. The server has not been configured for GSL.',
+        'contents': [],
+        'status': -1
+      };
+      res.status(501).json(_result); // Service not implemented
+    } else {
+      (function () {
+        var modifiedArgs = preprocessArgs(input.projectId, input.extension, input.args);
+        var jsonOutFile = getJsonOutFile(modifiedArgs);
+        argumentString = makeArgumentString(modifiedArgs);
+        var projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
+        var filePath = createProjectFilePath(input.projectId, input.extension, argConfig.gslFile.fileName);
+        if (!_fs2.default.existsSync(projectFileDir)) {
+          _fs2.default.mkdirSync(projectFileDir);
         }
 
-        if (process) {
-          process.stdout.on('data', function (data) {
-            output += data;
-          });
+        var output = '';
+        // write out a file with the code.
+        _fs2.default.writeFile(filePath, content, function (err) {
+          if (err) {
+            console.log(err);
+          }
+          // execute the code
+          var command = envVariables + ' mono ' + gslBinary + ' ' + argumentString + ' ' + filePath;
+          console.log('Running: ', command);
 
-          process.stderr.on('data', function (data) {
-            output += data;
-          });
+          var process = void 0;
+          try {
+            process = (0, _child_process.exec)('' + command, function (err, stdout, stderr) {
+              if (err) {
+                console.log('Invalid GSL code.');
+                console.log(err);
+              }
+            });
+          } catch (ex) {
+            console.log('The following exception occured while running the gslc command ', ex);
+            var _result2 = {
+              'result': 'An exception occured while running the gslc command.',
+              'contents': [],
+              'status': -1
+            };
+            res.status(500).json(_result2);
+          }
 
-          // find the exit code of the process.
-          process.on('exit', function (code) {
-            // mask all server paths
-            output = output.replace(new RegExp(projectFileDir, 'g'), '<Server_Path>');
-            console.log('Child process exited with an exit code of ', code);
-            if (code == 0) {
-              _fs2.default.readFile(jsonOutFile, 'utf8', function (err, contents) {
-                if (err) {
-                  res.status(500).send('Error reading the json file.');
-                  return;
+          if (process) {
+            process.stdout.on('data', function (data) {
+              output += data;
+            });
+
+            process.stderr.on('data', function (data) {
+              output += data;
+            });
+
+            // find the exit code of the process.
+            process.on('exit', function (code) {
+              // mask all server paths
+              output = output.replace(new RegExp(projectFileDir, 'g'), '<Server_Path>');
+              console.log('Child process exited with an exit code of ', code);
+              if (code == 0) {
+                _fs2.default.readFile(jsonOutFile, 'utf8', function (err, contents) {
+                  if (err) {
+                    res.status(500).send('Error reading the json file.');
+                    return;
+                  }
+                  var result = {
+                    'result': output,
+                    'contents': contents,
+                    'status': code
+                  };
+                  res.status(200).json(result);
+                });
+
+                // Create zip packages.
+                if (modifiedArgs.hasOwnProperty('--cm')) makeZip(projectFileDir, 'cm');
+
+                if (modifiedArgs.hasOwnProperty('--ape')) makeZip(projectFileDir, 'ape');
+
+                makeZip(projectFileDir, 'allFormats');
+
+                if (modifiedArgs.hasOwnProperty('--thumper')) {
+                  makeZip(projectFileDir, 'thumper').then(function () {
+                    // create the rabit spreadsheet.
+                    var inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
+                    var outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
+                    console.log('Copying ' + inputFile + ' to ' + outputFile);
+                    try {
+                      _fs2.default.createReadStream(inputFile).pipe(_fs2.default.createWriteStream(outputFile));
+                    } catch (ex) {
+                      console.log('Failed to read ' + inputFile + ' and write to ' + outputFile + '.', ex);
+                    }
+                  }).catch(function (ex) {
+                    console.log('An error occured while writing the .xls file', ex);
+                  });
                 }
-                var result = {
+              } else {
+                var _result3 = {
                   'result': output,
-                  'contents': contents,
+                  'contents': [],
                   'status': code
                 };
-                res.status(200).json(result);
-              });
-
-              // Create zip packages.
-              if (modifiedArgs.hasOwnProperty('--cm')) makeZip(projectFileDir, 'cm');
-
-              if (modifiedArgs.hasOwnProperty('--ape')) makeZip(projectFileDir, 'ape');
-
-              if (modifiedArgs.hasOwnProperty('--thumper')) {
-                makeZip(projectFileDir, 'thumper').then(function () {
-                  // create the rabit spreadsheet.
-                  var inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
-                  var outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
-                  console.log('Copying ' + inputFile + ' to ' + outputFile);
-                  try {
-                    _fs2.default.createReadStream(inputFile).pipe(_fs2.default.createWriteStream(outputFile));
-                  } catch (ex) {
-                    console.log('Failed to read ' + inputFile + ' and write to ' + outputFile + '.', ex);
-                  }
-                }).catch(function (ex) {
-                  console.log('An error occured while writing the .xls file', ex);
-                });
+                res.status(422).json(_result3);
               }
-            } else {
-              var _result2 = {
-                'result': output,
-                'contents': [],
-                'status': code
-              };
-              res.status(422).json(_result2);
-            }
-          });
-        }
-      });
-    })();
-  }
+            });
+          }
+        });
+      })();
+    }
+  });
 });
 
 /* Download any data file */
