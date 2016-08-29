@@ -1,6 +1,15 @@
 import React, {PropTypes, Component} from 'react';
 import ToolbarItem from './ToolbarItem';
 
+/**
+ * Toolbar represents a component to group together a set of functions
+ * as ToobarItems.
+ * 
+ * Properties:
+ *
+ * {array} toolbarItems - An array of ToolbarItems that will be rendered 
+ * in the Toolbar.
+ */
 
 export default class Toolbar extends Component {
   static propTypes = {
@@ -19,7 +28,6 @@ export default class Toolbar extends Component {
   }
 
   render() {
-
     return (
       <div className="Toolbar">
         <div className="ToolbarItems">

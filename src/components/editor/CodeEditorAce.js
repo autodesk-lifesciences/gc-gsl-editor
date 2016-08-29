@@ -6,6 +6,14 @@ import '../../behavior/editor/brace/mode/gsl';
 import '../../behavior/editor/brace/theme/xcode';
 import '../../behavior/editor/brace/ext/language_tools';
 
+/**
+ * CodeEditorAce represents the GSL Ace editor.
+ *
+ * Properties:
+ *
+ * {function} callbackParent - A function to call when editor content changes.
+ * {string} value - The editor content when set externally.
+ */
 
 export default class CodeEditorAce extends Component {
   static propTypes = {

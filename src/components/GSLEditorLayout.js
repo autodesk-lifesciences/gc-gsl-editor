@@ -3,6 +3,11 @@ import CodeEditorLayout from './editor/CodeEditorLayout';
 import ConsoleLayout from './console/ConsoleLayout';
 var gslState = require('../../globals');
 
+/**
+ * GSLEditorLayout groups together the Editor and Output Console Components 
+ * and manages communication between them.
+ */
+
 export default class GSLEditorLayout extends Component {
 
   constructor(props) {

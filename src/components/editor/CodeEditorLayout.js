@@ -9,7 +9,17 @@ const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
 let gslState = require('../../../globals');
 
-
+/**
+ * CodeEditorLayout groups together the components of the editor.
+ *
+ * Properties:
+ *
+ * {function} onEditorContentChange - A function to call when editor content changes.
+ * {function} onSubmit - A function to call when the code execution results change.
+ * {function} onToggleConsoleVisibility - A function to call when visibility of the output console is toggled.
+ * {function} onStatusContentChange - A function to call when the editor's status bar content changes.
+ * {bool} isConsoleOpen - True, if the output console is open.
+ */
 
 export default class CodeEditorLayout extends Component {
   static propTypes = {

@@ -1,6 +1,15 @@
 import React, { PropTypes, Component } from 'react';
 
-// Represents an Item on the Toolbar.
+/**
+ * TitlebarItem represents a single clickable item on the Titlebar.
+ *
+ * Properties:
+ *
+ * {string} label - Display text representing the name of the item.
+ * {string} imageUrl - A path representing a url of the image icon.
+ * {function} action - A function to call when the item is clicked.
+ */
+
 export default class TitlebarItem extends Component {
 
   static propTypes = {

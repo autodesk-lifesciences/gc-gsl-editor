@@ -21382,6 +21382,10 @@
 
 	var gslState = __webpack_require__(301);
 
+	/**
+	 * GSLEditorLayout groups together the Editor and Output Console Components.
+	 */
+
 	var GSLEditorLayout = function (_Component) {
 	  (0, _inherits3.default)(GSLEditorLayout, _Component);
 
@@ -22217,6 +22221,18 @@
 	var extensionConfig = __webpack_require__(299);
 	var gslState = __webpack_require__(301);
 
+	/**
+	 * CodeEditorLayout groups together the components of the editor.
+	 *
+	 * Properties:
+	 *
+	 * {function} onEditorContentChange - A function to call when editor content changes.
+	 * {function} onSubmit - A function to call when the code execution results change.
+	 * {function} onToggleConsoleVisibility - A function to call when visibility of the output console is toggled.
+	 * {function} onStatusContentChange - A function to call when the editor's status bar content changes.
+	 * {bool} isConsoleOpen - True, if the output console is open.
+	 */
+
 	var CodeEditorLayout = function (_Component) {
 	  (0, _inherits3.default)(CodeEditorLayout, _Component);
 
@@ -22823,6 +22839,15 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var autocompleteList = __webpack_require__(280);
+
+	/**
+	 * CodeEditorAce represents the GSL Ace editor.
+	 *
+	 * Properties:
+	 *
+	 * {function} callbackParent - A function to call when editor content changes.
+	 * {string} value - The editor content when set externally.
+	 */
 
 	var CodeEditorAce = function (_Component) {
 	  (0, _inherits3.default)(CodeEditorAce, _Component);
@@ -43980,6 +44005,12 @@
 	  var insertPosition = void 0;
 	  var cursorPosition = void 0;
 	  switch (payload.item.id) {
+	    case '!':
+	      insertPosition = { row: dragPosition.row, column: token.start };
+	      ace.editor.env.document.insert(insertPosition, payload.item.text);
+	      cursorPosition = { row: insertPosition.row, column: insertPosition.column + 1 };
+	      ace.editor.moveCursorToPosition(cursorPosition);
+	      break;
 	    default:
 	      // switch by position
 	      switch (payload.item.position) {
@@ -44018,8 +44049,6 @@
 	    var operators = ['g', 'p', 't', 'u', 'd', 'o', 'f', 'm'];
 	    if (tokenIndex > 0) {
 	      var priorToken = tokens[tokenIndex - 1];
-	      console.log('token is ', token);
-	      console.log('priorToken is ', priorToken);
 	      priorToken.start = token.start - 1;
 	      if (priorToken.type === 'keyword.operator' && operators.indexOf(priorToken.value) >= 0 && payload.item.text !== '!') {
 	        ace.editor.session.replace({
@@ -44120,6 +44149,9 @@
 	                token: "string", // " string
 	                regex: '"',
 	                next: "qstring"
+	            }, {
+	                token: "constant.numeric", // float
+	                regex: /[+-]?\d[\d_]*(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?\b/
 	            }, {
 	                token: "constant.numeric", // imaginary
 	                regex: "(?:" + floatNumber + "|\\d+)[jJ]\\b"
@@ -89577,6 +89609,16 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	/**
+	 * Toolbar represents a component to group together a set of functions
+	 * as ToobarItems.
+	 * 
+	 * Properties:
+	 *
+	 * {array} toolbarItems - An array of ToolbarItems that will be rendered 
+	 * in the Toolbar.
+	 */
+
 	var Toolbar = function (_Component) {
 	  (0, _inherits3.default)(Toolbar, _Component);
 
@@ -89588,7 +89630,6 @@
 	  (0, _createClass3.default)(Toolbar, [{
 	    key: 'render',
 	    value: function render() {
-
 	      return _react2.default.createElement(
 	        'div',
 	        { className: 'Toolbar' },
@@ -89659,7 +89700,16 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	// Represents an Item on the Toolbar.
+	/**
+	 * ToolbarItem represents an item on the Toolbar.
+	 * Properties:
+	 *
+	 * {string} label - item label
+	 * {string} imageUrl - url of the image icon
+	 * {function} action - function to be called when clicked
+	 * {bool} disabled - whether the item is disabled
+	 */
+
 	var ToolbarItem = function (_Component) {
 	  (0, _inherits3.default)(ToolbarItem, _Component);
 
@@ -89742,6 +89792,16 @@
 
 	__webpack_require__(288);
 
+	/**
+	 * Statusbar represents a component to display the current status of the Code editor.
+	 * 
+	 * Properties:
+	 *
+	 * {string} toolbarItems - An array of ToolbarItems that will be rendered 
+	 * {function} showConsole - Function that displays the console window.
+	 * {bool} isConsoleVisible - True, if the console window is visible.
+	 */
+
 	var Statusbar = function (_Component) {
 	  (0, _inherits3.default)(Statusbar, _Component);
 
@@ -89815,7 +89875,7 @@
 
 
 	// module
-	exports.push([module.id, ".GSLEditorLayout {\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  position: relative;\n}\n\n.CodeEditorLayout {\n  width: 100%;\n  position: relative;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n}\n\n.Editor {\n  width: 100%;\n  flex-grow: 1;\n  flex-shrink: 1;\n}\n\n.Statusbar {\n  display: flex;\n  flex-shrink: 0;\n  flex-direction: row;\n  justify-content: space-between;\n  align-content: left;\n  padding: 0 1em;\n  width: 100%;\n  height: 30px;\n  align-self: flex-end;\n  text-align: left;\n  background: #EAEBF1;\n  line-height: 1rem;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;  \n}\n\n.StatusbarText {\n  display: inline-block;\n  color: #757884;\n  background: #EAEBF1;\n  font-size: 12px;\n  font-family: Helvetica, Arial, sans-serif;\n  line-height: 12px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding-top: 9px;\n}\n\ninput.StatusbarButton {\n  flex-shrink: 0;\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  outline: none;\n  border: 1px solid white;\n  padding: 0.25em 0.7em;\n  color: #8b857c;\n  background: #FFFFFF;\n  margin-top: 0.3em;\n  margin-bottom: 0.3em;\n}\n\n.Toolbar {\n  display: flex;\n  flex-direction: row;\n  justify-content: flex-end;\n  flex-shrink: 0;\n  border: lightgrey;\n  border-width: thin;\n  border-style: none none solid none;\n}\n\n.ToolbarItems {}\n\n/* console stuff */\n\n.ToolbarItem {\n  display: inline-block;\n  line-height: 30px;\n  vertical-align: center;\n  margin: 0px 0px;\n  padding: 0px 16px;\n  background-repeat: no-repeat;\n  background-position: left;\n  cursor: pointer;\n}\n\n.ToolbarItem.disabled {\n  pointer-events:none;\n  display: inline-block;\n  line-height: 30px;\n  vertical-align: center;\n  margin: 0px 0px;\n  padding: 0px 16px;\n  background-repeat: no-repeat;\n  background-position: left;\n}\n\n.ToolbarItemLink {\n  color: #757884;\n  text-decoration: none;\n}\n\n.ToolbarItemLink.disabled {\n  color: #C2C5D2;\n  text-decoration: none;\n}\n\n.ConsoleLayout {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  flex-shrink: 0;\n}\n\n.ConsoleLayout-resizeHandle {\n    cursor: ns-resize;\n    height: 5px;\n    flex-shrink: 0;\n    width: 100%;\n    position: absolute;\n    top: 0;\n    z-index: 10;\n    background-color: transparent;\n}\n\n.ConsoleLayout-resizeHandle:hover {\n  background: #999FB3;\n}\n\n.ConsoleLayout-resizeHandle.dragging {\n  background: #3F82FF;\n}\n\n.Titlebar {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between;\n  flex-shrink: 0;\n\n  height: 30px;\n  width: 100%;\n  background: #6B6F7C;\n  line-height: 12px;\n}\n\n.TitlebarText {\n  display: inline-block;\n  font-family: Helvetica, Arial, sans-serif;\n  color: #EEEEEE;\n  padding-left: 10px;\n  padding-top: 9px;\n}\n\n.TitleBarItem {\n  display: inline-block;\n  background-repeat: no-repeat;\n  background-position: right bottom;\n  cursor: pointer;\n  color: #EEEEEE;\n  margin-right: 10px;\n  padding-right: 10px;\n  padding-top: 9px;\n  padding-left: 10px;\n  padding-bottom: 3px;\n}\n\n.TitleBarItem span {\n  display: inline-block;\n}\n\n.ResultViewer {\n  background: rgba(0,0,0,0.7);\n  color: white;\n  overflow:auto;\n}\n\n.ResultViewer.active {\n  min-height: 100px;\n  flex-grow: 1;\n}\n\n.divResult {\n  font-family: Courier;\n  white-space: pre;\n  margin-top: 0;  \n  display: block;\n  padding-left: 9px;\n  padding-top: 2px;\n  padding-right: 9px;\n}\n\n.MyTextArea {\n  color: red;\n}\n/* Scrollbar as per UI spec or default ?\n.ResultViewer.active::-webkit-scrollbar {\n    width: 10px;\n    height: 10px;\n}\n\n.ResultViewer.active::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3); \n} \n\n.ResultViewer.active::-webkit-scrollbar-thumb {\n    border-radius: 6px;\n    background-color: color.lightgray;\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.5); \n} */", ""]);
+	exports.push([module.id, ".GSLEditorLayout {\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  position: relative;\n}\n\n.CodeEditorLayout {\n  width: 100%;\n  position: relative;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n}\n\n.Editor {\n  width: 100%;\n  flex-grow: 1;\n  flex-shrink: 1;\n}\n\n.Statusbar {\n  display: flex;\n  flex-shrink: 0;\n  flex-direction: row;\n  justify-content: space-between;\n  align-content: left;\n  padding: 0 1em;\n  width: 100%;\n  height: 30px;\n  align-self: flex-end;\n  text-align: left;\n  background: #EAEBF1;\n  line-height: 1rem;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;  \n}\n\n.StatusbarText {\n  display: inline-block;\n  color: #757884;\n  background: #EAEBF1;\n  font-size: 12px;\n  font-family: Helvetica, Arial, sans-serif;\n  line-height: 12px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding-top: 9px;\n}\n\ninput.StatusbarButton {\n  flex-shrink: 0;\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  outline: none;\n  border: 1px solid white;\n  padding: 0.25em 0.7em;\n  color: #8b857c;\n  background: #FFFFFF;\n  margin-top: 0.3em;\n  margin-bottom: 0.3em;\n}\n\n.Toolbar {\n  display: flex;\n  flex-direction: row;\n  justify-content: flex-end;\n  flex-shrink: 0;\n  border: lightgrey;\n  border-width: thin;\n  border-style: none none solid none;\n}\n\n.ToolbarItems {}\n\n/* console stuff */\n\n.ToolbarItem {\n  display: inline-block;\n  line-height: 30px;\n  vertical-align: center;\n  margin: 0px 0px;\n  padding: 0px 16px;\n  background-repeat: no-repeat;\n  background-position: left;\n  cursor: pointer;\n}\n\n.ToolbarItem.disabled {\n  pointer-events:none;\n  display: inline-block;\n  line-height: 30px;\n  vertical-align: center;\n  margin: 0px 0px;\n  padding: 0px 16px;\n  background-repeat: no-repeat;\n  background-position: left;\n}\n\n.ToolbarItemLink {\n  color: #757884;\n  text-decoration: none;\n}\n\n.ToolbarItemLink.disabled {\n  color: #C2C5D2;\n  text-decoration: none;\n}\n\n.ConsoleLayout {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  flex-shrink: 0;\n}\n\n.ConsoleLayout-resizeHandle {\n    cursor: ns-resize;\n    height: 5px;\n    flex-shrink: 0;\n    width: 100%;\n    position: absolute;\n    top: 0;\n    z-index: 10;\n    background-color: transparent;\n}\n\n.ConsoleLayout-resizeHandle:hover {\n  background: #999FB3;\n}\n\n.ConsoleLayout-resizeHandle.dragging {\n  background: #3F82FF;\n}\n\n.Titlebar {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between;\n  flex-shrink: 0;\n\n  height: 30px;\n  width: 100%;\n  background: #6B6F7C;\n  line-height: 12px;\n}\n\n.TitlebarText {\n  display: inline-block;\n  font-family: Helvetica, Arial, sans-serif;\n  color: #EEEEEE;\n  padding-left: 10px;\n  padding-top: 9px;\n}\n\n.TitleBarItem {\n  display: inline-block;\n  background-repeat: no-repeat;\n  background-position: right bottom;\n  cursor: pointer;\n  color: #EEEEEE;\n  margin-right: 10px;\n  padding-right: 10px;\n  padding-top: 9px;\n  padding-left: 10px;\n  padding-bottom: 3px;\n}\n\n.TitleBarItem span {\n  display: inline-block;\n}\n\n.ResultViewer {\n  background: rgba(0,0,0,0.7);\n  color: white;\n  overflow:auto;\n}\n\n.ResultViewer.active {\n  min-height: 100px;\n  flex-grow: 1;\n}\n\n.divResult {\n  font-family: Courier;\n  white-space: pre;\n  margin-top: 0;  \n  display: block;\n  padding-left: 9px;\n  padding-top: 2px;\n  padding-right: 9px;\n}\n\n/* Scrollbar as per UI spec or default ?\n.ResultViewer.active::-webkit-scrollbar {\n    width: 10px;\n    height: 10px;\n}\n\n.ResultViewer.active::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3); \n} \n\n.ResultViewer.active::-webkit-scrollbar-thumb {\n    border-radius: 6px;\n    background-color: color.lightgray;\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.5); \n} */", ""]);
 
 	// exports
 
@@ -90165,6 +90225,15 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	/**
+	 * ToolbarMenu class represents an instance of a dropdown menu .
+	 * Properties:
+	 *
+	 * {bool} isOpen - true if the dropdown menu is open.
+	 * {object} position - the position at which the dropdown should be drawn.
+	 * {function} changeState - function to be called when the menu is toggled.
+	 * {array} toolbarMenuItems - array of menu items
+	 */
 	var ToolbarMenu = function (_Component) {
 	  (0, _inherits3.default)(ToolbarMenu, _Component);
 
@@ -90257,6 +90326,18 @@
 	var _MenuSeparator2 = _interopRequireDefault(_MenuSeparator);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	/**
+	 * PopupMenu represents a rectangular menu or submenu drawn as a part of the 
+	 * ToolbarMenu.
+	 *
+	 * Properties:
+	 *
+	 * {bool} open - True, if the PopupMenu is open/visible.
+	 * {function} closePopup - A function to close the PopupMenu
+	 * {array} menuItems - An array of MenuItems to be displayed in the PopupMenu
+	 * {object} position - Position at which the popup menu will be drawn. 
+	 */
 
 	var PopupMenu = function (_Component) {
 	  (0, _inherits3.default)(PopupMenu, _Component);
@@ -90367,6 +90448,20 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	/**
+	 * MenuItem represents an individual item of the PopupMenu.
+	 *
+	 * Properties:
+	 *
+	 * {string} text - The text label of the menu item.
+	 * {function} action - A function to be called when clicked.
+	 * {bool} disabled - True, if the menu item is disabled.
+	 * {bool} checked - True, if the menu item is checked.
+	 * {string} shortcut - Shortcut menu item.
+	 * {string} classes - A string of classes to be added to the menu item.
+	 * {string} type - The shorthand type of the menu item.
+	 */
+
 	var MenuItem = function (_Component) {
 	  (0, _inherits3.default)(MenuItem, _Component);
 
@@ -90380,7 +90475,6 @@
 	    value: function render() {
 	      var _this2 = this;
 
-	      // indent if checkable regardless of checked state
 	      var indent = this.props.checked === true || this.props.checked === false;
 	      var check = null;
 	      if (indent) {
@@ -90419,7 +90513,6 @@
 	  checked: _react.PropTypes.bool,
 	  shortcut: _react.PropTypes.string,
 	  classes: _react.PropTypes.string,
-	  data: _react.PropTypes.object,
 	  type: _react.PropTypes.string
 	};
 	MenuItem.defaultProps = {
@@ -90965,6 +91058,17 @@
 	var _Titlebar2 = _interopRequireDefault(_Titlebar);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	/**
+	 * ConsoleLayout groups together the components on the console window. 
+	 *
+	 * Properties:
+	 *
+	 * {function} resultChange - Result/Output text from running the GSL code.
+	 * {string} resultContent - A function to be called when the result changes.
+	 * {bool} isOpen - True, if the output console is open
+	 * {bool} onToggleConsoleVisibility - A function to be called when the console visibility is toggled.
+	 */
 
 	var ConsoleLayout = function (_Component) {
 	  (0, _inherits3.default)(ConsoleLayout, _Component);
@@ -91560,6 +91664,14 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	/**
+	 * ResultViewer represents the container holding the output results.
+	 *
+	 * Properties:
+	 *
+	 * {string} resultContent - Result/Output text after running GSL code.
+	 */
+
 	var ResultViewer = function (_Component) {
 	  (0, _inherits3.default)(ResultViewer, _Component);
 
@@ -91635,6 +91747,14 @@
 	var _TitlebarItem2 = _interopRequireDefault(_TitlebarItem);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	/**
+	 * Titlebar represents the title bar of the output console window.
+	 *
+	 * Properties:
+	 *
+	 * {array} items - An array of TitlebarItems.
+	 */
 
 	var Titlebar = function (_Component) {
 	  (0, _inherits3.default)(Titlebar, _Component);
@@ -91721,7 +91841,16 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	// Represents an Item on the Toolbar.
+	/**
+	 * TitlebarItem represents a single clickable item on the Titlebar.
+	 *
+	 * Properties:
+	 *
+	 * {string} label - Display text representing the name of the item.
+	 * {string} imageUrl - A path representing a url of the image icon.
+	 * {function} action - A function to call when the item is clicked.
+	 */
+
 	var TitlebarItem = function (_Component) {
 	  (0, _inherits3.default)(TitlebarItem, _Component);
 

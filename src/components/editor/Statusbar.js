@@ -2,6 +2,16 @@ import React, {PropTypes, Component} from 'react';
 
 require('../../styles/styles.css');
 
+/**
+ * Statusbar represents a component to display the current status of the Code editor.
+ * 
+ * Properties:
+ *
+ * {string} toolbarItems - An array of ToolbarItems that will be rendered 
+ * {function} showConsole - Function that displays the console window.
+ * {bool} isConsoleVisible - True, if the console window is visible.
+ */
+
 export default class Statusbar extends Component {
   static propTypes = {
     message: PropTypes.string,

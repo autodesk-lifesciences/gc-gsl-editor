@@ -197,9 +197,6 @@ input.StatusbarButton {
   padding-right: 9px;
 }
 
-.MyTextArea {
-  color: red;
-}
 /* Scrollbar as per UI spec or default ?
 .ResultViewer.active::-webkit-scrollbar {
     width: 10px;

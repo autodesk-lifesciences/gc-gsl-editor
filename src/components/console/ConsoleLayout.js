@@ -4,6 +4,17 @@ import throttle  from 'lodash.throttle';
 import ResultViewer from './ResultViewer';
 import Titlebar from './Titlebar';
 
+/**
+ * ConsoleLayout groups together the components on the console window. 
+ *
+ * Properties:
+ *
+ * {function} resultChange - Result/Output text from running the GSL code.
+ * {string} resultContent - A function to be called when the result changes.
+ * {bool} isOpen - True, if the output console is open
+ * {bool} onToggleConsoleVisibility - A function to be called when the console visibility is toggled.
+ */
+
 export default class ConsoleLayout extends Component {
 
   constructor(props) {

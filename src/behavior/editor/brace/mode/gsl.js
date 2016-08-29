@@ -85,6 +85,10 @@ var GslHighlightRules = function() {
                 next  : "qstring"
             },
             {
+                token : "constant.numeric", // float
+                regex : /[+-]?\d[\d_]*(?:(?:\.\d*)?(?:[eE][+-]?\d+)?)?\b/
+            },
+            {
                 token : "constant.numeric", // imaginary
                 regex : "(?:" + floatNumber + "|\\d+)[jJ]\\b"
             },

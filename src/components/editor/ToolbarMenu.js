@@ -1,7 +1,15 @@
 import React, {Component, PropTypes} from 'react';
 import PopupMenu from './PopupMenu';
 
-
+/**
+ * ToolbarMenu class represents an instance of a dropdown menu .
+ * Properties:
+ *
+ * {bool} isOpen - true if the dropdown menu is open.
+ * {object} position - the position at which the dropdown should be drawn.
+ * {function} changeState - function to be called when the menu is toggled.
+ * {array} toolbarMenuItems - array of menu items
+ */
 export default class ToolbarMenu extends Component {
 
   static propTypes = {

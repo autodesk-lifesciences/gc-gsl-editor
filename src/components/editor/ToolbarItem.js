@@ -1,6 +1,15 @@
 import React, { PropTypes, Component } from 'react';
 
-// Represents an Item on the Toolbar.
+/**
+ * ToolbarItem represents an item on the Toolbar.
+ * Properties:
+ *
+ * {string} label - item label
+ * {string} imageUrl - url of the image icon
+ * {function} action - function to be called when clicked
+ * {bool} disabled - whether the item is disabled
+ */
+
 export default class ToolbarItem extends Component {
 
   static propTypes = {

@@ -1,6 +1,14 @@
 import React, { PropTypes, Component } from 'react';
 import TitlebarItem from './TitlebarItem';
 
+/**
+ * Titlebar represents the title bar of the output console window.
+ *
+ * Properties:
+ *
+ * {array} items - An array of TitlebarItems.
+ */
+
 export default class Titlebar extends Component {
 
   static propTypes = {

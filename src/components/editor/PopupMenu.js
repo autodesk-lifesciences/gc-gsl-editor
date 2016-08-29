@@ -4,6 +4,18 @@ import ReactDOM from 'react-dom';
 import MenuItem from './MenuItem';
 import MenuSeparator from './MenuSeparator';
 
+/**
+ * PopupMenu represents a rectangular menu or submenu drawn as a part of the 
+ * ToolbarMenu.
+ *
+ * Properties:
+ *
+ * {bool} open - True, if the PopupMenu is open/visible.
+ * {function} closePopup - A function to close the PopupMenu
+ * {array} menuItems - An array of MenuItems to be displayed in the PopupMenu
+ * {object} position - Position at which the popup menu will be drawn. 
+ */
+
 export default class PopupMenu extends Component {
 
   static propTypes = {
