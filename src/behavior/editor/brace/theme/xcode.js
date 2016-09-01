@@ -1,3 +1,6 @@
+/**
+ * Extends/modifies the xcode theme to add a few more colors for new tokens.
+ */ 
 ace.define("ace/theme/xcode",["require","exports","module","ace/lib/dom"], function(acequire, exports, module) {
 
 exports.isDark = false;
@@ -16,7 +19,7 @@ background-color: #FFFFFF;\
 color: #000000\
 }\
 .ace-xcode .ace_cursor {\
-color: #777777\
+color: #888888\
 }\
 .ace-xcode .ace_marker-layer .ace_selection {\
 background: #B5D5FF\
@@ -59,10 +62,16 @@ color: #275A5E\
 .ace-xcode .ace_constant.ace_numeric {\
 color: #3A00DC\
 }\
+.ace_paren {\
+color: #777777\
+}\
+.ace_gsl.ace_pragma {\
+color: #8A2BE2\
+}\
 .ace-xcode .ace_entity.ace_other.ace_attribute-name,\
 .ace-xcode .ace_support.ace_constant,\
 .ace-xcode .ace_support.ace_function {\
-color: #450084\
+color: #990084\
 }\
 .ace-xcode .ace_fold {\
 background-color: #C800A4;\
@@ -80,7 +89,7 @@ color: #C900A4\
 color: #DF0002\
 }\
 .ace-xcode .ace_comment {\
-color: #008E00\
+color: #999999\
 }\
 .ace-xcode .ace_indent-guide {\
 background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==) right repeat-y\
@@ -89,7 +98,8 @@ background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgb
   color: #CC3333\
 }\
 .ace_gsl.ace_inline {\
-  color: #CC3333\
+  font-style: italic;\
+  color: #FD971F;\
 }";
 
 var dom = acequire("../lib/dom");

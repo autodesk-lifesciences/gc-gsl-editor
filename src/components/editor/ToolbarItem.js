@@ -9,7 +9,6 @@ import React, { PropTypes, Component } from 'react';
  * {function} action - function to be called when clicked
  * {bool} disabled - whether the item is disabled
  */
-
 export default class ToolbarItem extends Component {
 
   static propTypes = {

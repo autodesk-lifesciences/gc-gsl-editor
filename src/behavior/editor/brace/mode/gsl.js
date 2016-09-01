@@ -1,3 +1,6 @@
+/**
+ * Defines the GSL Ace mode that extends the Text mode to accomodate GSL syntax.
+ */ 
 ace.define("ace/mode/gsl_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"], function(acequire, exports, module) {
 "use strict";
 
@@ -27,7 +30,8 @@ var GslHighlightRules = function() {
         "variable.language": "this",
         "keyword": keywords,
         "constant.language": builtinConstants,
-        "support.function": builtinPragmas,
+        //"support.function": builtinPragmas,
+        "gsl.pragma": builtinPragmas,
         "gsl.gene": autocompleteList.geneListString,
     }, "identifier");
 

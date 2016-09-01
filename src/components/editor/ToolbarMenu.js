@@ -33,7 +33,11 @@ export default class ToolbarMenu extends Component {
     };
   }
 
-  closePopups = (arg) => {
+  /**
+   * Closes the popup menu.
+   * @param {ToolbarMenu} this
+   */
+  closePopups = () => {
     this.props.changeState(false);
   }
 
@@ -42,7 +46,7 @@ export default class ToolbarMenu extends Component {
       <PopupMenu
         open={this.props.isOpen}
         position={this.props.position}
-        closePopup={this.closePopups.bind(this)}
+        closePopup={this.closePopups}
         menuItems={this.props.toolbarMenuItems}/>
     );
   }

@@ -1,10 +1,11 @@
 import React, {Component, PropTypes} from 'react';
 import AceEditor from 'react-ace';
-var autocompleteList = require('../../behavior/editor/autocomplete');
+
 import * as dragDropOperator from '../../behavior/editor/dragDrop';
 import '../../behavior/editor/brace/mode/gsl';
 import '../../behavior/editor/brace/theme/xcode';
 import '../../behavior/editor/brace/ext/language_tools';
+const autocompleteList = require('../../behavior/editor/autocomplete');
 
 /**
  * CodeEditorAce represents the GSL Ace editor.
@@ -14,7 +15,6 @@ import '../../behavior/editor/brace/ext/language_tools';
  * {function} callbackParent - A function to call when editor content changes.
  * {string} value - The editor content when set externally.
  */
-
 export default class CodeEditorAce extends Component {
   static propTypes = {
     callbackParent: PropTypes.func.isRequired,

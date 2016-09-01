@@ -8,7 +8,6 @@ import TitlebarItem from './TitlebarItem';
  *
  * {array} items - An array of TitlebarItems.
  */
-
 export default class Titlebar extends Component {
 
   static propTypes = {

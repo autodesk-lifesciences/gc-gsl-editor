@@ -21374,7 +21374,7 @@
 
 	var _CodeEditorLayout2 = _interopRequireDefault(_CodeEditorLayout);
 
-	var _ConsoleLayout = __webpack_require__(303);
+	var _ConsoleLayout = __webpack_require__(305);
 
 	var _ConsoleLayout2 = _interopRequireDefault(_ConsoleLayout);
 
@@ -21383,7 +21383,8 @@
 	var gslState = __webpack_require__(301);
 
 	/**
-	 * GSLEditorLayout groups together the Editor and Output Console Components.
+	 * GSLEditorLayout groups together the Editor and Output Console Components 
+	 * and manages communication between them.
 	 */
 
 	var GSLEditorLayout = function (_Component) {
@@ -21412,7 +21413,7 @@
 	    _this.onConsoleStateChange = function (value) {
 	      _this.setState({ isConsoleOpen: value });
 	      gslState.isConsoleOpen = value;
-	      // TODO: Try to get rid of this
+	      // Needed for scrollbar resize with content.
 	      setTimeout(function () {
 	        window.dispatchEvent(new Event('resize'));
 	      }, 40);
@@ -21426,6 +21427,34 @@
 	    };
 	    return _this;
 	  }
+
+	  /**
+	   * Actions to be performed when the editor content changes.
+	   * Sets state and saves it globally to be persisted.
+	   * @param {string} content
+	   */
+
+
+	  /**
+	   * Actions to be performed when the result content changes.
+	   * Sets state and saves it globally to be persisted.
+	   * @param {string} content
+	   */
+
+
+	  /**
+	   * Actions to be performed when the status content changes.
+	   * Sets state and saves it globally to be persisted.
+	   * @param {string} content
+	   */
+
+
+	  /**
+	   * Actions to be performed when console window is expanded or hidden.
+	   * Sets state and saves it globally to be persisted.
+	   * @param {string} content
+	   */
+
 
 	  (0, _createClass3.default)(GSLEditorLayout, [{
 	    key: 'render',
@@ -22213,6 +22242,10 @@
 
 	var canvas = _interopRequireWildcard(_output);
 
+	var _comments = __webpack_require__(303);
+
+	var _keyBindings = __webpack_require__(304);
+
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -22246,7 +22279,7 @@
 	      _this.props.onEditorContentChange(content);
 	      if (content === '') _this.onStatusMessageChange('Begin typing GSL code. Drag and drop blocks or GSL commands from the Inventory to use them in a script.');else _this.onStatusMessageChange(' ');
 
-	      // enable/disable the 'Save' button based on the content.
+	      // Enable or disable the 'Save' button based on the editor content.
 	      var projectId = window.constructor.api.projects.projectGetCurrentId();
 	      if (gslState.hasOwnProperty(projectId)) {
 	        var items = _this.state.toolbarItems;
@@ -22275,20 +22308,20 @@
 	      _this.props.onSubmit(result);
 	    };
 
-	    _this.onMenuToggle = function (value) {
+	    _this.onDownloadMenuToggle = function (value) {
 	      _this.setState({
 	        showDownloadMenu: value
 	      });
 	    };
 
-	    _this.onMenuPositionSet = function (value) {
+	    _this.onDownloadMenuPositionSet = function (value) {
 	      _this.setState({
 	        currentMenuPosition: value
 	      });
 	    };
 
 	    _this.onDownloadMenuSettingsChange = function (settings) {
-	      var tempItems = _this.state.downloadItems;
+	      var items = _this.state.downloadItems;
 	      var index = 0;
 	      var _iteratorNormalCompletion = true;
 	      var _didIteratorError = false;
@@ -22299,10 +22332,10 @@
 	          var item = _step.value;
 
 	          // special case gsl
-	          if (tempItems.type === 'gsl' && _this.state.editorContent !== '') {
-	            tempItems[index].disabled = false;
+	          if (items.type === 'gsl' && _this.state.editorContent !== '') {
+	            items[index].disabled = false;
 	          } else {
-	            tempItems[index].disabled = !settings[item.type];
+	            items[index].disabled = !settings[item.type];
 	          }
 	          index++;
 	        }
@@ -22322,7 +22355,7 @@
 	      }
 
 	      _this.setState({
-	        downloadItems: tempItems
+	        downloadItems: items
 	      });
 	    };
 
@@ -22330,6 +22363,10 @@
 	      compiler.getAvailableDownloadList(window.constructor.api.projects.projectGetCurrentId()).then(function (data) {
 	        _this.onDownloadMenuSettingsChange(data);
 	      });
+	    };
+
+	    _this.toggleComment = function () {
+	      (0, _comments.toggleComments)(_this.codeEditor.ace);
 	    };
 
 	    _this.showConsole = function () {
@@ -22378,8 +22415,8 @@
 	      });
 	    };
 
-	    _this.downloadFile = function (e) {
-	      _this.onMenuToggle(true);
+	    _this.showDownloadMenu = function (e) {
+	      _this.onDownloadMenuToggle(true);
 	      //TODO: Find a better way to do this
 	      var offsetLeft = -6;
 	      var offsetBottom = 0;
@@ -22387,133 +22424,15 @@
 	        offsetLeft = 10;
 	        offsetBottom = 8;
 	      }
-	      _this.onMenuPositionSet({
+	      _this.onDownloadMenuPositionSet({
 	        'x': e.target.getBoundingClientRect().left - offsetLeft,
 	        'y': e.target.getBoundingClientRect().bottom + offsetBottom
 	      });
 	    };
 
-	    _this.showGSLLibrary = function () {
+	    _this.showGSLLibrary = function (e) {
 	      window.constructor.api.ui.inventoryToggleVisibility(true);
 	      window.constructor.api.ui.inventorySelectTab('gsl');
-	      _this.codeEditor.ace.editor.focus();
-	    };
-
-	    _this.toggleComment = function () {
-	      var uncomment = function uncomment(ace, token, pattern, row) {
-	        var column = token.value.indexOf(pattern) + token.start;
-	        if (token.value.indexOf(pattern) != -1) {
-	          ace.editor.session.replace({
-	            start: { row: row, column: column },
-	            end: { row: row, column: column + 2 }
-	          }, '');
-	        }
-	      };
-	      var selectionRange = _this.codeEditor.ace.editor.selection.getRange();
-	      if (_this.codeEditor.ace.editor.getSelectedText() !== '') {
-	        // multi-line comments
-	        var addComment = true;
-
-	        var _iteratorNormalCompletion2 = true;
-	        var _didIteratorError2 = false;
-	        var _iteratorError2 = undefined;
-
-	        try {
-	          for (var _iterator2 = (0, _getIterator3.default)(_this.codeEditor.ace.editor.session.getTokens(selectionRange.start.row)), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	            var token = _step2.value;
-
-	            if (token.type === 'comment') {
-	              uncomment(_this.codeEditor.ace, token, '*)', selectionRange.start.row);
-	              uncomment(_this.codeEditor.ace, token, '(*', selectionRange.start.row);
-	              uncomment(_this.codeEditor.ace, token, '//', selectionRange.start.row);
-	              addComment = false;
-	            }
-	          }
-	        } catch (err) {
-	          _didIteratorError2 = true;
-	          _iteratorError2 = err;
-	        } finally {
-	          try {
-	            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	              _iterator2.return();
-	            }
-	          } finally {
-	            if (_didIteratorError2) {
-	              throw _iteratorError2;
-	            }
-	          }
-	        }
-
-	        var _iteratorNormalCompletion3 = true;
-	        var _didIteratorError3 = false;
-	        var _iteratorError3 = undefined;
-
-	        try {
-	          for (var _iterator3 = (0, _getIterator3.default)(_this.codeEditor.ace.editor.session.getTokens(selectionRange.end.row)), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	            var token = _step3.value;
-
-	            if (token.type === 'comment') {
-	              uncomment(_this.codeEditor.ace, token, '(*', selectionRange.end.row);
-	              uncomment(_this.codeEditor.ace, token, '//', selectionRange.end.row);
-	              uncomment(_this.codeEditor.ace, token, '*)', selectionRange.end.row);
-	              addComment = false;
-	            }
-	          }
-	        } catch (err) {
-	          _didIteratorError3 = true;
-	          _iteratorError3 = err;
-	        } finally {
-	          try {
-	            if (!_iteratorNormalCompletion3 && _iterator3.return) {
-	              _iterator3.return();
-	            }
-	          } finally {
-	            if (_didIteratorError3) {
-	              throw _iteratorError3;
-	            }
-	          }
-	        }
-
-	        if (addComment) {
-	          _this.codeEditor.ace.editor.env.document.insert(selectionRange.start, '(*');
-	          _this.codeEditor.ace.editor.env.document.insert(_this.codeEditor.ace.editor.selection.getRange().end, '*)');
-	        }
-	      } else {
-	        // single-line comments
-	        var _addComment = true;
-	        var cursorRow = _this.codeEditor.ace.editor.getCursorPosition().row;
-	        var _iteratorNormalCompletion4 = true;
-	        var _didIteratorError4 = false;
-	        var _iteratorError4 = undefined;
-
-	        try {
-	          for (var _iterator4 = (0, _getIterator3.default)(_this.codeEditor.ace.editor.session.getTokens(cursorRow)), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-	            var token = _step4.value;
-
-	            if (token.type === 'comment') {
-	              uncomment(_this.codeEditor.ace, token, '(*', cursorRow);
-	              uncomment(_this.codeEditor.ace, token, '//', cursorRow);
-	              uncomment(_this.codeEditor.ace, token, '*)', cursorRow);
-	              _addComment = false;
-	            }
-	          }
-	        } catch (err) {
-	          _didIteratorError4 = true;
-	          _iteratorError4 = err;
-	        } finally {
-	          try {
-	            if (!_iteratorNormalCompletion4 && _iterator4.return) {
-	              _iterator4.return();
-	            }
-	          } finally {
-	            if (_didIteratorError4) {
-	              throw _iteratorError4;
-	            }
-	          }
-	        }
-
-	        if (_addComment) _this.codeEditor.ace.editor.env.document.insert(_this.codeEditor.ace.editor.getCursorPosition(), '//');
-	      }
 	      _this.codeEditor.ace.editor.focus();
 	    };
 
@@ -22535,31 +22454,29 @@
 	      _this.codeEditor.ace.editor.focus();
 	    };
 
-	    _this.doDownload = function (evt) {
-	      // TODO: Associate with something other than label!
+	    _this.doDownload = function (e) {
 	      var fileMap = {
 	        'gsl': 'GSL source code',
 	        'ape': 'ApE output zip file',
 	        'cm': 'Clone Manager output zip file',
 	        'allFormats': 'files'
 	      };
-	      var buttonType = evt.nativeEvent.button;
+	      var buttonType = e.nativeEvent.button;
 
-	      var _iteratorNormalCompletion5 = true;
-	      var _didIteratorError5 = false;
-	      var _iteratorError5 = undefined;
+	      var _iteratorNormalCompletion2 = true;
+	      var _didIteratorError2 = false;
+	      var _iteratorError2 = undefined;
 
 	      try {
 	        var _loop = function _loop() {
-	          var key = _step5.value;
+	          var key = _step2.value;
 
-	          if (evt.currentTarget.id.indexOf(key) !== -1) {
+	          if (e.currentTarget.id.indexOf(key) !== -1) {
 	            // Save file first if required, if the gsl file is requested.
 	            if ((key === 'gsl' || key === 'allFormats') && !_this.state.toolbarItems[1].disabled) {
 	              // save the GSL file first before downloading.
 	              window.constructor.extensions.files.write(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'project.gsl', gslState.editorContent).then(function () {
 	                // refactor this to separate the save part.
-	                console.log('Saved GSL Code.');
 	                gslState.refreshDownloadList = true;
 	                setTimeout(function () {
 	                  _this.onStatusMessageChange('');
@@ -22580,20 +22497,20 @@
 	          }
 	        };
 
-	        for (var _iterator5 = (0, _getIterator3.default)((0, _keys2.default)(fileMap)), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+	        for (var _iterator2 = (0, _getIterator3.default)((0, _keys2.default)(fileMap)), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 	          _loop();
 	        }
 	      } catch (err) {
-	        _didIteratorError5 = true;
-	        _iteratorError5 = err;
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
 	      } finally {
 	        try {
-	          if (!_iteratorNormalCompletion5 && _iterator5.return) {
-	            _iterator5.return();
+	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	            _iterator2.return();
 	          }
 	        } finally {
-	          if (_didIteratorError5) {
-	            throw _iteratorError5;
+	          if (_didIteratorError2) {
+	            throw _iteratorError2;
 	          }
 	        }
 	      }
@@ -22624,7 +22541,7 @@
 	        action: _this.toggleComment
 	      }, {
 	        label: 'Download',
-	        action: _this.downloadFile,
+	        action: _this.showDownloadMenu,
 	        imageUrl: '/images/ui/download_icon.svg'
 	      }],
 	      downloadItems: [{
@@ -22656,11 +22573,89 @@
 	    return _this;
 	  }
 
-	  // Runs the GSL code
+	  /**
+	   * Actions to be performed when the editor content changes
+	   * @param {string} content
+	   */
+
+
+	  /**
+	   * Actions to be performed when the status message changes
+	   * @param {string} message
+	   */
+
+
+	  /**
+	   * Actions to be performed when the result of the code execution changes
+	   * @param {string} content
+	   */
+
+
+	  /**
+	   * Actions to be performed when the download menu is toggled
+	   * @param {bool} value
+	   */
+
+
+	  /**
+	   * Sets the position of the download menu
+	   * @param {string} content
+	   */
+
+
+	  /**
+	   * Actions to be performed when the attributes of the download items change.
+	   * @param {Object} settings
+	   */
+
+
+	  /**
+	   * actions to be performed when the editor content changes
+	   * @param {string} content
+	   */
+
+
+	  /**
+	   * Toggles comments in the editor.
+	   */
+
+
+	  /**
+	   * Expands the console window.
+	   */
+
+
+	  /**
+	   * Runs GSL code present in the editor
+	   * @param {MouseEvent} click event
+	   */
+
+
+	  /**
+	   * Saves the GSL code associated with the project on the server.
+	   * @param {MouseEvent} click event
+	   */
+
+
+	  /**
+	   * Opens the download menu.
+	   * @param {MouseEvent} click event
+	   */
+
+
+	  /**
+	   * Opens the GSL Library panel in the inventory.
+	   * @param {MouseEvent} click event
+	   */
 
 
 	  (0, _createClass3.default)(CodeEditorLayout, [{
 	    key: 'componentDidMount',
+
+
+	    /**
+	     * Actions to be performed when this component mounts.
+	     */
 	    value: function componentDidMount() {
 	      this.refreshDownloadMenu();
 	      if (gslState.hasOwnProperty('isConsoleOpen')) this.props.onToggleConsoleVisibility(gslState.isConsoleOpen);
@@ -22669,22 +22664,20 @@
 	        this.onResultContentChange(gslState.resultContent);
 	        this.onStatusMessageChange(gslState.statusContent);
 	      }
-
-	      if (!gslState.hasOwnProperty('action')) gslState.actions = {};
-	      gslState.actions.runCode = this.runCode;
-
-	      // Run on Command-Enter
-	      this.codeEditor.ace.editor.commands.addCommand({
-	        name: 'gslrun',
-	        bindKey: { win: 'Ctrl-Enter', mac: 'Command-Enter' },
-	        exec: function exec(editor) {
-	          gslState.actions.runCode();
-	        },
-	        readOnly: true
-	      });
+	      (0, _keyBindings.registerKeysRunCode)(this.codeEditor.ace, this.runCode);
 	    }
 
-	    // Toggles comments
+	    /**
+	     * Downloads a file based on its type.
+	     * @param {string} The type of file as specified in downloadMenuItems
+	     * @param {int} 0 - Left Click, 1 - Middle Mouse button, 2 - Right Click  
+	     */
+
+
+	    /**
+	     * Download a file depending on the item clicked
+	     * @param {MouseEvent} click event
+	     */
 
 	  }, {
 	    key: 'render',
@@ -22701,7 +22694,7 @@
 	        _react2.default.createElement(_Toolbar2.default, { toolbarItems: this.state.toolbarItems }),
 	        _react2.default.createElement(_ToolbarMenu2.default, {
 	          isOpen: this.state.showDownloadMenu,
-	          changeState: this.onMenuToggle,
+	          changeState: this.onDownloadMenuToggle,
 	          position: this.state.currentMenuPosition,
 	          toolbarMenuItems: this.state.downloadItems }),
 	        _react2.default.createElement(_CodeEditorAce2.default, {
@@ -44000,6 +43993,18 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	/**
+	 * Defines the drag-drop behavior of the GSL operators in the editor.
+	 */
+
+	/**
+	 * Inserts the required characters on drag and dropping the GSL operators into the editor
+	 * based on the editor and the type of operator.
+	 * @param {AceEditor} ace editor
+	 * @param {Object} drag position eg.{ row: 4, column: 5}
+	 * @param {string} payload text to be inserted when dropped.
+	 * @param {token} the token on which the operator is dropped.
+	 */
 	var _insertByType = function _insertByType(ace, dragPosition, payload, token) {
 	  // switch by id first. If the id is not present, switch by position.
 	  var insertPosition = void 0;
@@ -44037,6 +44042,13 @@
 	  }
 	};
 
+	/**
+	 * Inserts the required characters on drag and dropping the GSL operators into the editor.
+	 * @param {AceEditor} ace editor
+	 * @param {Object} drag position eg.{ row: 4, column: 5}
+	 * @param {string} payload text to be inserted when dropped.
+	 * @param {MouseEvent} drag-drop event 
+	 */
 	var insert = exports.insert = function insert(ace, position, payload, evt) {
 	  // Insert the character at the position.
 	  var dragPosition = ace.editor.renderer.pixelToScreenCoordinates(evt.pageX, evt.pageY);
@@ -44078,6 +44090,9 @@
 
 	"use strict";
 
+	/**
+	 * Defines the GSL Ace mode that extends the Text mode to accomodate GSL syntax.
+	 */
 	ace.define("ace/mode/gsl_highlight_rules", ["require", "exports", "module", "ace/lib/oop", "ace/mode/text_highlight_rules"], function (acequire, exports, module) {
 	    "use strict";
 
@@ -44099,7 +44114,8 @@
 	            "variable.language": "this",
 	            "keyword": keywords,
 	            "constant.language": builtinConstants,
-	            "support.function": builtinPragmas,
+	            //"support.function": builtinPragmas,
+	            "gsl.pragma": builtinPragmas,
 	            "gsl.gene": autocompleteList.geneListString
 	        }, "identifier");
 
@@ -44350,9 +44366,14 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	/**
+	 * Defines behavior for the editor autocompletion.
+	 */
+
 	function requireAll(requireContext) {
 	  return requireContext.keys().map(requireContext);
 	}
+
 	var genomes = requireAll(__webpack_require__(281));
 	var autocompleteGeneList = [];
 	var autocompleteDocStrings = {};
@@ -87683,6 +87704,9 @@
 
 	"use strict";
 
+	/**
+	 * Extends/modifies the xcode theme to add a few more colors for new tokens.
+	 */
 	ace.define("ace/theme/xcode", ["require", "exports", "module", "ace/lib/dom"], function (acequire, exports, module) {
 
 	  exports.isDark = false;
@@ -87701,7 +87725,7 @@
 	color: #000000\
 	}\
 	.ace-xcode .ace_cursor {\
-	color: #777777\
+	color: #888888\
 	}\
 	.ace-xcode .ace_marker-layer .ace_selection {\
 	background: #B5D5FF\
@@ -87744,10 +87768,16 @@
 	.ace-xcode .ace_constant.ace_numeric {\
 	color: #3A00DC\
 	}\
+	.ace_paren {\
+	color: #777777\
+	}\
+	.ace_gsl.ace_pragma {\
+	color: #8A2BE2\
+	}\
 	.ace-xcode .ace_entity.ace_other.ace_attribute-name,\
 	.ace-xcode .ace_support.ace_constant,\
 	.ace-xcode .ace_support.ace_function {\
-	color: #450084\
+	color: #990084\
 	}\
 	.ace-xcode .ace_fold {\
 	background-color: #C800A4;\
@@ -87765,7 +87795,7 @@
 	color: #DF0002\
 	}\
 	.ace-xcode .ace_comment {\
-	color: #008E00\
+	color: #999999\
 	}\
 	.ace-xcode .ace_indent-guide {\
 	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==) right repeat-y\
@@ -87774,7 +87804,8 @@
 	  color: #CC3333\
 	}\
 	.ace_gsl.ace_inline {\
-	  color: #CC3333\
+	  font-style: italic;\
+	  color: #FD971F;\
 	}";
 
 	  var dom = acequire("../lib/dom");
@@ -89618,7 +89649,6 @@
 	 * {array} toolbarItems - An array of ToolbarItems that will be rendered 
 	 * in the Toolbar.
 	 */
-
 	var Toolbar = function (_Component) {
 	  (0, _inherits3.default)(Toolbar, _Component);
 
@@ -89709,7 +89739,6 @@
 	 * {function} action - function to be called when clicked
 	 * {bool} disabled - whether the item is disabled
 	 */
-
 	var ToolbarItem = function (_Component) {
 	  (0, _inherits3.default)(ToolbarItem, _Component);
 
@@ -89875,7 +89904,7 @@
 
 
 	// module
-	exports.push([module.id, ".GSLEditorLayout {\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  position: relative;\n}\n\n.CodeEditorLayout {\n  width: 100%;\n  position: relative;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n}\n\n.Editor {\n  width: 100%;\n  flex-grow: 1;\n  flex-shrink: 1;\n}\n\n.Statusbar {\n  display: flex;\n  flex-shrink: 0;\n  flex-direction: row;\n  justify-content: space-between;\n  align-content: left;\n  padding: 0 1em;\n  width: 100%;\n  height: 30px;\n  align-self: flex-end;\n  text-align: left;\n  background: #EAEBF1;\n  line-height: 1rem;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;  \n}\n\n.StatusbarText {\n  display: inline-block;\n  color: #757884;\n  background: #EAEBF1;\n  font-size: 12px;\n  font-family: Helvetica, Arial, sans-serif;\n  line-height: 12px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding-top: 9px;\n}\n\ninput.StatusbarButton {\n  flex-shrink: 0;\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  outline: none;\n  border: 1px solid white;\n  padding: 0.25em 0.7em;\n  color: #8b857c;\n  background: #FFFFFF;\n  margin-top: 0.3em;\n  margin-bottom: 0.3em;\n}\n\n.Toolbar {\n  display: flex;\n  flex-direction: row;\n  justify-content: flex-end;\n  flex-shrink: 0;\n  border: lightgrey;\n  border-width: thin;\n  border-style: none none solid none;\n}\n\n.ToolbarItems {}\n\n/* console stuff */\n\n.ToolbarItem {\n  display: inline-block;\n  line-height: 30px;\n  vertical-align: center;\n  margin: 0px 0px;\n  padding: 0px 16px;\n  background-repeat: no-repeat;\n  background-position: left;\n  cursor: pointer;\n}\n\n.ToolbarItem.disabled {\n  pointer-events:none;\n  display: inline-block;\n  line-height: 30px;\n  vertical-align: center;\n  margin: 0px 0px;\n  padding: 0px 16px;\n  background-repeat: no-repeat;\n  background-position: left;\n}\n\n.ToolbarItemLink {\n  color: #757884;\n  text-decoration: none;\n}\n\n.ToolbarItemLink.disabled {\n  color: #C2C5D2;\n  text-decoration: none;\n}\n\n.ConsoleLayout {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  flex-shrink: 0;\n}\n\n.ConsoleLayout-resizeHandle {\n    cursor: ns-resize;\n    height: 5px;\n    flex-shrink: 0;\n    width: 100%;\n    position: absolute;\n    top: 0;\n    z-index: 10;\n    background-color: transparent;\n}\n\n.ConsoleLayout-resizeHandle:hover {\n  background: #999FB3;\n}\n\n.ConsoleLayout-resizeHandle.dragging {\n  background: #3F82FF;\n}\n\n.Titlebar {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between;\n  flex-shrink: 0;\n\n  height: 30px;\n  width: 100%;\n  background: #6B6F7C;\n  line-height: 12px;\n}\n\n.TitlebarText {\n  display: inline-block;\n  font-family: Helvetica, Arial, sans-serif;\n  color: #EEEEEE;\n  padding-left: 10px;\n  padding-top: 9px;\n}\n\n.TitleBarItem {\n  display: inline-block;\n  background-repeat: no-repeat;\n  background-position: right bottom;\n  cursor: pointer;\n  color: #EEEEEE;\n  margin-right: 10px;\n  padding-right: 10px;\n  padding-top: 9px;\n  padding-left: 10px;\n  padding-bottom: 3px;\n}\n\n.TitleBarItem span {\n  display: inline-block;\n}\n\n.ResultViewer {\n  background: rgba(0,0,0,0.7);\n  color: white;\n  overflow:auto;\n}\n\n.ResultViewer.active {\n  min-height: 100px;\n  flex-grow: 1;\n}\n\n.divResult {\n  font-family: Courier;\n  white-space: pre;\n  margin-top: 0;  \n  display: block;\n  padding-left: 9px;\n  padding-top: 2px;\n  padding-right: 9px;\n}\n\n/* Scrollbar as per UI spec or default ?\n.ResultViewer.active::-webkit-scrollbar {\n    width: 10px;\n    height: 10px;\n}\n\n.ResultViewer.active::-webkit-scrollbar-track {\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3); \n} \n\n.ResultViewer.active::-webkit-scrollbar-thumb {\n    border-radius: 6px;\n    background-color: color.lightgray;\n    -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.5); \n} */", ""]);
+	exports.push([module.id, ".GSLEditorLayout {\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  position: relative;\n}\n\n.CodeEditorLayout {\n  width: 100%;\n  position: relative;\n  overflow: hidden;\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n}\n\n.Editor {\n  width: 100%;\n  flex-grow: 1;\n  flex-shrink: 1;\n}\n\n.Statusbar {\n  display: flex;\n  flex-shrink: 0;\n  flex-direction: row;\n  justify-content: space-between;\n  align-content: left;\n  padding: 0 1em;\n  width: 100%;\n  height: 30px;\n  align-self: flex-end;\n  text-align: left;\n  background: #EAEBF1;\n  line-height: 1rem;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;  \n}\n\n.StatusbarText {\n  display: inline-block;\n  color: #757884;\n  background: #EAEBF1;\n  font-size: 12px;\n  font-family: Helvetica, Arial, sans-serif;\n  line-height: 12px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  padding-top: 9px;\n}\n\ninput.StatusbarButton {\n  flex-shrink: 0;\n  -webkit-appearance: none;\n  -moz-appearance: none;\n  appearance: none;\n  outline: none;\n  border: 1px solid white;\n  padding: 0.25em 0.7em;\n  color: #8b857c;\n  background: #FFFFFF;\n  margin-top: 0.3em;\n  margin-bottom: 0.3em;\n}\n\n.Toolbar {\n  display: flex;\n  flex-direction: row;\n  justify-content: flex-end;\n  flex-shrink: 0;\n  border: lightgrey;\n  border-width: thin;\n  border-style: none none solid none;\n}\n\n.ToolbarItems {}\n\n/* console stuff */\n\n.ToolbarItem {\n  display: inline-block;\n  line-height: 30px;\n  vertical-align: center;\n  margin: 0px 0px;\n  padding: 0px 16px;\n  background-repeat: no-repeat;\n  background-position: left;\n  cursor: pointer;\n}\n\n.ToolbarItem.disabled {\n  pointer-events:none;\n  display: inline-block;\n  line-height: 30px;\n  vertical-align: center;\n  margin: 0px 0px;\n  padding: 0px 16px;\n  background-repeat: no-repeat;\n  background-position: left;\n}\n\n.ToolbarItemLink {\n  color: #757884;\n  text-decoration: none;\n}\n\n.ToolbarItemLink.disabled {\n  color: #C2C5D2;\n  text-decoration: none;\n}\n\n.ConsoleLayout {\n  display: flex;\n  flex-direction: column;\n  position: relative;\n  flex-shrink: 0;\n}\n\n.ConsoleLayout-resizeHandle {\n    cursor: ns-resize;\n    height: 5px;\n    flex-shrink: 0;\n    width: 100%;\n    position: absolute;\n    top: 0;\n    z-index: 10;\n    background-color: transparent;\n}\n\n.ConsoleLayout-resizeHandle:hover {\n  background: #999FB3;\n}\n\n.ConsoleLayout-resizeHandle.dragging {\n  background: #3F82FF;\n}\n\n.Titlebar {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between;\n  flex-shrink: 0;\n\n  height: 30px;\n  width: 100%;\n  background: #6B6F7C;\n  line-height: 12px;\n}\n\n.TitlebarText {\n  display: inline-block;\n  font-family: Helvetica, Arial, sans-serif;\n  color: #EEEEEE;\n  padding-left: 10px;\n  padding-top: 9px;\n}\n\n.TitleBarItem {\n  display: inline-block;\n  background-repeat: no-repeat;\n  background-position: right bottom;\n  cursor: pointer;\n  color: #EEEEEE;\n  margin-right: 10px;\n  padding-right: 10px;\n  padding-top: 9px;\n  padding-left: 10px;\n  padding-bottom: 3px;\n}\n\n.TitleBarItem span {\n  display: inline-block;\n}\n\n.ResultViewer {\n  background: rgba(0,0,0,0.7);\n  color: white;\n  overflow:auto;\n}\n\n.ResultViewer.active {\n  min-height: 100px;\n  flex-grow: 1;\n}\n\n.divResult {\n  font-family: Courier;\n  white-space: pre;\n  margin-top: 0;  \n  display: block;\n  padding-left: 9px;\n  padding-top: 2px;\n  padding-right: 9px;\n}\n", ""]);
 
 	// exports
 
@@ -90242,7 +90271,7 @@
 
 	    var _this = (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(ToolbarMenu).call(this, props));
 
-	    _this.closePopups = function (arg) {
+	    _this.closePopups = function () {
 	      _this.props.changeState(false);
 	    };
 
@@ -90250,7 +90279,7 @@
 	      return _react2.default.createElement(_PopupMenu2.default, {
 	        open: _this.props.isOpen,
 	        position: _this.props.position,
-	        closePopup: _this.closePopups.bind(_this),
+	        closePopup: _this.closePopups,
 	        menuItems: _this.props.toolbarMenuItems });
 	    };
 
@@ -90260,6 +90289,12 @@
 	    };
 	    return _this;
 	  }
+
+	  /**
+	   * Closes the popup menu.
+	   * @param {ToolbarMenu} this
+	   */
+
 
 	  return ToolbarMenu;
 	}(_react.Component);
@@ -90351,10 +90386,13 @@
 	    key: 'onMouseDown',
 
 
-	    // mouse down on the blocker closes the modal
-	    value: function onMouseDown(evt) {
+	    /**
+	     * Closes the menu on mouse down outside the menu.
+	     * @param {MouseEvent} click event
+	     */
+	    value: function onMouseDown(e) {
 	      var blockEl = _reactDom2.default.findDOMNode(this.refs.blocker);
-	      if (evt.target === blockEl) {
+	      if (e.target === blockEl) {
 	        this.props.closePopup();
 	      }
 	    }
@@ -90363,7 +90401,6 @@
 	    value: function render() {
 	      var _this2 = this;
 
-	      // set position from properties
 	      var position = {
 	        left: this.props.position.x + 'px',
 	        top: this.props.position.y + 'px'
@@ -90461,7 +90498,6 @@
 	 * {string} classes - A string of classes to be added to the menu item.
 	 * {string} type - The shorthand type of the menu item.
 	 */
-
 	var MenuItem = function (_Component) {
 	  (0, _inherits3.default)(MenuItem, _Component);
 
@@ -90593,64 +90629,35 @@
 	});
 	exports.getAvailableDownloadList = exports.run = undefined;
 
-	var _keys = __webpack_require__(263);
-
-	var _keys2 = _interopRequireDefault(_keys);
-
-	var _getIterator2 = __webpack_require__(266);
-
-	var _getIterator3 = _interopRequireDefault(_getIterator2);
-
 	var _stringify = __webpack_require__(297);
 
 	var _stringify2 = _interopRequireDefault(_stringify);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	/**
+	 * The middleware that communicates with the server.
+	 */
+
 	var config = __webpack_require__(299);
 
-	// Sends the code and corresponding gslc options to run the command on the server.
+	/**
+	 * Sends the code and corresponding gslc options to run the command on the server.
+	 * @param {string} editor content
+	 * @param {Object} gslc argument object
+	 * @param {string} projectId
+	 */
 	var run = exports.run = function run(data, args, projectId) {
-	  // concatenate arguments
-	  var argumentString = '';
-	  var _iteratorNormalCompletion = true;
-	  var _didIteratorError = false;
-	  var _iteratorError = undefined;
-
-	  try {
-	    for (var _iterator = (0, _getIterator3.default)((0, _keys2.default)(args)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	      var key = _step.value;
-
-	      // create the option string.
-	      argumentString += ' ' + key + ' ';
-	      argumentString += args[key].join(' ');
-	    }
-	  } catch (err) {
-	    _didIteratorError = true;
-	    _iteratorError = err;
-	  } finally {
-	    try {
-	      if (!_iteratorNormalCompletion && _iterator.return) {
-	        _iterator.return();
-	      }
-	    } finally {
-	      if (_didIteratorError) {
-	        throw _iteratorError;
-	      }
-	    }
-	  }
 
 	  var payload = {
 	    'code': data,
-	    'arguments': argumentString,
 	    'projectId': projectId,
 	    'extension': config.name,
-	    'args': args,
-	    'projectFileDir': '/tmp/'
+	    'args': args
 	  };
 
 	  var stringified = (0, _stringify2.default)(payload);
-	  // send a post request to the server and pring out the results in the console.
+
 	  return fetch('/extensions/api/' + config.name + '/gslc', {
 	    method: 'POST',
 	    headers: {
@@ -90665,7 +90672,10 @@
 	  });
 	};
 
-	/* Retrieves the file types available for download for a project */
+	/**
+	 * Sends the code and corresponding gslc options to run the command on the server.
+	 * @param {string} projectId
+	 */
 	var getAvailableDownloadList = exports.getAvailableDownloadList = function getAvailableDownloadList(projectId) {
 	  var payload = {
 	    'projectId': projectId,
@@ -90791,6 +90801,10 @@
 	});
 	exports.render = undefined;
 
+	var _promise = __webpack_require__(1);
+
+	var _promise2 = _interopRequireDefault(_promise);
+
 	var _stringify = __webpack_require__(297);
 
 	var _stringify2 = _interopRequireDefault(_stringify);
@@ -90801,13 +90815,18 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	/**
+	 * Defines how the GSL assemblies are rendered on the canvas.
+	 */
+
 	var gslState = __webpack_require__(301);
 	var extensionConfig = __webpack_require__(299);
 	var compilerConfig = __webpack_require__(302);
 
-	// Removes the GSL constructs
+	/**
+	 * Removes the GSL constructs from the canvas based on the output
+	 */
 	var removeGSLConstructs = function removeGSLConstructs() {
-	  // read the state and remove the blocks.
 	  var _iteratorNormalCompletion = true;
 	  var _didIteratorError = false;
 	  var _iteratorError = undefined;
@@ -90836,11 +90855,16 @@
 	  }
 	};
 
+	/**
+	 * Renders a list of GSL assemblies as Constructor constructs.
+	 * @param {array} assemblyList - List of objects describing GSL assemblies.
+	 */
 	var renderBlocks = function renderBlocks(assemblyList) {
 
 	  var blockModel = {};
 	  var gslConstructs = [];
 	  assemblyList.reverse();
+
 	  var _iteratorNormalCompletion2 = true;
 	  var _didIteratorError2 = false;
 	  var _iteratorError2 = undefined;
@@ -90919,30 +90943,46 @@
 	  window.constructor.extensions.files.write(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'settings.json', (0, _stringify2.default)({ 'constructs': gslConstructs }));
 	};
 
-	var readRemoteFile = function readRemoteFile(url, assemblyList) {
-	  var xhr = new XMLHttpRequest();
-	  xhr.open("GET", url, true);
-	  xhr.onreadystatechange = function () {
-	    if (xhr.readyState === 4) {
-	      if (xhr.status === 200) {
-	        var allText = xhr.responseText;
-	        var jsonSettings = JSON.parse(allText);
-	        gslState.gslConstructs = jsonSettings.constructs;
-	        removeGSLConstructs();
-	        renderBlocks(assemblyList);
+	/**
+	 * Reads remote settings file - containing a list of GSL constructs in the project
+	 * @param {string} file url
+	 */
+	var readRemoteFile = function readRemoteFile(url) {
+	  new _promise2.default(function (resolve, reject) {
+	    var xhr = new XMLHttpRequest();
+	    xhr.open("GET", url, true);
+	    xhr.onreadystatechange = function () {
+	      if (xhr.readyState === 4) {
+	        if (xhr.status === 200) {
+	          var allText = xhr.responseText;
+	          resolve(allText);
+	        } else {
+	          reject();
+	        }
 	      }
-	    }
-	  };
-	  xhr.send(null);
+	    };
+	    xhr.send(null);
+	  });
 	};
 
+	/**
+	 * Reload the existing contructs created by GSL in global state, to associate GSL code with blocks.
+	 * @param {array} assemblyList - List of objects describing GSL assemblies.
+	 */
 	var reloadStateGSLConstructs = function reloadStateGSLConstructs(assemblyList) {
 	  if (!gslState.hasOwnProperty('gslConstructs')) {
 	    window.constructor.extensions.files.read(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'settings.json').then(function (response) {
 	      if (response.status === 200) {
 	        // read the file and populate the state
-	        console.log('Reading the settings file.');
-	        readRemoteFile(response.url, assemblyList);
+	        readRemoteFile(response.url).then(function (allText) {
+	          var jsonSettings = JSON.parse(allText);
+	          gslState.gslConstructs = jsonSettings.constructs;
+	          removeGSLConstructs();
+	          renderBlocks(assemblyList);
+	        }).catch(function (err) {
+	          console.log('Failed to read the settings file ', err);
+	          renderBlocks(assemblyList);
+	        });
 	      } else {
 	        gslState.gslConstructs = [];
 	      }
@@ -90956,9 +90996,11 @@
 	  }
 	};
 
-	// Renders the blocks created through GSL code.
+	/**
+	 * Renders blocks created through GSL code.
+	 * @param {array} assemblyList - List of objects describing GSL assemblies.
+	 */
 	var render = exports.render = function render(assemblyList) {
-	  // Remove the old GSL constructs before adding new ones.
 	  reloadStateGSLConstructs(assemblyList);
 	};
 
@@ -91019,6 +91061,179 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.toggleComments = undefined;
+
+	var _getIterator2 = __webpack_require__(266);
+
+	var _getIterator3 = _interopRequireDefault(_getIterator2);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	/**
+	 * Defines behavior concerning editor comments.
+	 */
+
+	/**
+	 * Auto-inserts/auto-removes single line or multi-line comments based on the
+	 * selection or focus.
+	 * @param {AceEditor} ace editor
+	 */
+	var toggleComments = exports.toggleComments = function toggleComments(ace) {
+	  var uncomment = function uncomment(ace, token, pattern, row) {
+	    var column = token.value.indexOf(pattern) + token.start;
+	    if (token.value.indexOf(pattern) != -1) {
+	      ace.editor.session.replace({
+	        start: { row: row, column: column },
+	        end: { row: row, column: column + 2 }
+	      }, '');
+	    }
+	  };
+	  var selectionRange = ace.editor.selection.getRange();
+	  if (ace.editor.getSelectedText() !== '') {
+	    // multi-line comments
+	    var addComment = true;
+
+	    var _iteratorNormalCompletion = true;
+	    var _didIteratorError = false;
+	    var _iteratorError = undefined;
+
+	    try {
+	      for (var _iterator = (0, _getIterator3.default)(ace.editor.session.getTokens(selectionRange.start.row)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	        var token = _step.value;
+
+	        if (token.type === 'comment') {
+	          uncomment(ace, token, '*)', selectionRange.start.row);
+	          uncomment(ace, token, '(*', selectionRange.start.row);
+	          uncomment(ace, token, '//', selectionRange.start.row);
+	          addComment = false;
+	        }
+	      }
+	    } catch (err) {
+	      _didIteratorError = true;
+	      _iteratorError = err;
+	    } finally {
+	      try {
+	        if (!_iteratorNormalCompletion && _iterator.return) {
+	          _iterator.return();
+	        }
+	      } finally {
+	        if (_didIteratorError) {
+	          throw _iteratorError;
+	        }
+	      }
+	    }
+
+	    var _iteratorNormalCompletion2 = true;
+	    var _didIteratorError2 = false;
+	    var _iteratorError2 = undefined;
+
+	    try {
+	      for (var _iterator2 = (0, _getIterator3.default)(ace.editor.session.getTokens(selectionRange.end.row)), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	        var token = _step2.value;
+
+	        if (token.type === 'comment') {
+	          uncomment(ace, token, '(*', selectionRange.end.row);
+	          uncomment(ace, token, '//', selectionRange.end.row);
+	          uncomment(ace, token, '*)', selectionRange.end.row);
+	          addComment = false;
+	        }
+	      }
+	    } catch (err) {
+	      _didIteratorError2 = true;
+	      _iteratorError2 = err;
+	    } finally {
+	      try {
+	        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	          _iterator2.return();
+	        }
+	      } finally {
+	        if (_didIteratorError2) {
+	          throw _iteratorError2;
+	        }
+	      }
+	    }
+
+	    if (addComment) {
+	      ace.editor.env.document.insert(selectionRange.start, '(*');
+	      ace.editor.env.document.insert(ace.editor.selection.getRange().end, '*)');
+	    }
+	  } else {
+	    // single-line comments
+	    var _addComment = true;
+	    var cursorRow = ace.editor.getCursorPosition().row;
+	    var _iteratorNormalCompletion3 = true;
+	    var _didIteratorError3 = false;
+	    var _iteratorError3 = undefined;
+
+	    try {
+	      for (var _iterator3 = (0, _getIterator3.default)(ace.editor.session.getTokens(cursorRow)), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	        var token = _step3.value;
+
+	        if (token.type === 'comment') {
+	          uncomment(ace, token, '(*', cursorRow);
+	          uncomment(ace, token, '//', cursorRow);
+	          uncomment(ace, token, '*)', cursorRow);
+	          _addComment = false;
+	        }
+	      }
+	    } catch (err) {
+	      _didIteratorError3 = true;
+	      _iteratorError3 = err;
+	    } finally {
+	      try {
+	        if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	          _iterator3.return();
+	        }
+	      } finally {
+	        if (_didIteratorError3) {
+	          throw _iteratorError3;
+	        }
+	      }
+	    }
+
+	    if (_addComment) ace.editor.env.document.insert(ace.editor.getCursorPosition(), '//');
+	  }
+	  ace.editor.focus();
+	};
+
+/***/ },
+/* 304 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	/**
+	 * Groups editor-related custom key bindings.
+	 */
+
+	/**
+	 * Registers a key binding to run the GSL code.
+	 * @param {AceEditor} aceEditor
+	 * @param {function} runCode function
+	 */
+	var registerKeysRunCode = exports.registerKeysRunCode = function registerKeysRunCode(ace, func) {
+	  ace.editor.commands.addCommand({
+	    name: 'gslrun',
+	    bindKey: { win: 'Ctrl-Enter', mac: 'Command-Enter' },
+	    exec: function exec(editor) {
+	      func();
+	    },
+	    readOnly: true
+	  });
+	};
+
+/***/ },
+/* 305 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 	exports.default = undefined;
 
 	var _getPrototypeOf = __webpack_require__(228);
@@ -91045,22 +91260,22 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _lodash = __webpack_require__(304);
+	var _lodash = __webpack_require__(306);
 
 	var _lodash2 = _interopRequireDefault(_lodash);
 
-	var _ResultViewer = __webpack_require__(305);
+	var _ResultViewer = __webpack_require__(307);
 
 	var _ResultViewer2 = _interopRequireDefault(_ResultViewer);
 
-	var _Titlebar = __webpack_require__(306);
+	var _Titlebar = __webpack_require__(308);
 
 	var _Titlebar2 = _interopRequireDefault(_Titlebar);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	/**
-	 * ConsoleLayout groups together the components on the console window. 
+	 * ConsoleLayout groups together the components in the console window. 
 	 *
 	 * Properties:
 	 *
@@ -91069,7 +91284,6 @@
 	 * {bool} isOpen - True, if the output console is open
 	 * {bool} onToggleConsoleVisibility - A function to be called when the console visibility is toggled.
 	 */
-
 	var ConsoleLayout = function (_Component) {
 	  (0, _inherits3.default)(ConsoleLayout, _Component);
 
@@ -91115,42 +91329,57 @@
 	      _this.props.onToggleConsoleVisibility(false);
 	    };
 
-	    _this.titlebarItems = function () {
-	      return [{
+	    _this.clearConsole = function () {
+	      _this.props.resultChange('');
+	    };
+
+	    _this.state = {
+	      openHeight: 150,
+	      titlebarItems: [{
 	        label: 'Clear Console',
-	        action: _this.props.resultChange.bind(_this, ''),
+	        action: _this.clearConsole,
 	        enabled: true
 	      }, {
 	        label: '  ',
 	        action: _this.closeConsole,
 	        enabled: true,
 	        imageUrl: '/images/ui/close_icon.svg'
-	      }];
-	    };
-
-	    _this.state = {
-	      openHeight: 150
+	      }]
 	    };
 	    return _this;
 	  }
 
+	  /**
+	   * Handles the resize bar on the console.
+	   */
+
+
+	  /**
+	   * Hides the console.
+	   */
+
+
+	  /**
+	   * Clears the console.
+	   */
+
+
 	  (0, _createClass3.default)(ConsoleLayout, [{
 	    key: 'componentDidUpdate',
 	    value: function componentDidUpdate() {
-	      // Necessary for the ace_content size to update.
+	      // Note: This is necessary for the ace_content size to update.
 	      window.dispatchEvent(new Event('resize'));
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-
 	      return _react2.default.createElement(
 	        'div',
 	        { className: 'ConsoleLayout', style: { height: this.props.isOpen ? this.state.openHeight : 0 } },
 	        _react2.default.createElement('div', { ref: 'resizeHandle',
 	          className: 'ConsoleLayout-resizeHandle',
 	          onMouseDown: this.handleResizableMouseDown }),
-	        _react2.default.createElement(_Titlebar2.default, { items: this.titlebarItems() }),
+	        _react2.default.createElement(_Titlebar2.default, { items: this.state.titlebarItems }),
 	        _react2.default.createElement(_ResultViewer2.default, { resultContent: this.props.resultContent })
 	      );
 	    }
@@ -91172,7 +91401,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 304 */
+/* 306 */
 /***/ function(module, exports) {
 
 	/**
@@ -91628,7 +91857,7 @@
 
 
 /***/ },
-/* 305 */
+/* 307 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -91671,7 +91900,6 @@
 	 *
 	 * {string} resultContent - Result/Output text after running GSL code.
 	 */
-
 	var ResultViewer = function (_Component) {
 	  (0, _inherits3.default)(ResultViewer, _Component);
 
@@ -91683,7 +91911,6 @@
 	  (0, _createClass3.default)(ResultViewer, [{
 	    key: 'render',
 	    value: function render() {
-
 	      return _react2.default.createElement(
 	        'div',
 	        { className: 'ResultViewer active' },
@@ -91708,7 +91935,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 306 */
+/* 308 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -91742,7 +91969,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _TitlebarItem = __webpack_require__(307);
+	var _TitlebarItem = __webpack_require__(309);
 
 	var _TitlebarItem2 = _interopRequireDefault(_TitlebarItem);
 
@@ -91755,7 +91982,6 @@
 	 *
 	 * {array} items - An array of TitlebarItems.
 	 */
-
 	var Titlebar = function (_Component) {
 	  (0, _inherits3.default)(Titlebar, _Component);
 
@@ -91805,7 +92031,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 307 */
+/* 309 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -91850,7 +92076,6 @@
 	 * {string} imageUrl - A path representing a url of the image icon.
 	 * {function} action - A function to call when the item is clicked.
 	 */
-
 	var TitlebarItem = function (_Component) {
 	  (0, _inherits3.default)(TitlebarItem, _Component);
 

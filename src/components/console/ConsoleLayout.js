@@ -5,7 +5,7 @@ import ResultViewer from './ResultViewer';
 import Titlebar from './Titlebar';
 
 /**
- * ConsoleLayout groups together the components on the console window. 
+ * ConsoleLayout groups together the components in the console window. 
  *
  * Properties:
  *
@@ -14,30 +14,45 @@ import Titlebar from './Titlebar';
  * {bool} isOpen - True, if the output console is open
  * {bool} onToggleConsoleVisibility - A function to be called when the console visibility is toggled.
  */
-
 export default class ConsoleLayout extends Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      openHeight: 150,
-    };
-  }
 
   static propTypes = {
     resultChange: PropTypes.func,
     resultContent: PropTypes.string,
     isOpen: PropTypes.bool.isRequired,
     onToggleConsoleVisibility: PropTypes.func,
-  }
+  };
 
   static defaultProps = {
     resultContent: '',
     isOpen: false,
   }
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      openHeight: 150,
+      titlebarItems: [
+        {
+          label: 'Clear Console',
+          action: this.clearConsole,
+          enabled: true,
+        },
+        {
+          label: '  ',
+          action: this.closeConsole,
+          enabled: true,
+          imageUrl: '/images/ui/close_icon.svg'
+        },
+      ],
+    };
+  }
+
   throttledDispatchResize = throttle(() => window.dispatchEvent(new Event('resize')), 50);
 
+  /**
+   * Handles the resize bar on the console.
+   */
   handleResizableMouseDown = evt => {
     evt.preventDefault();
     this.refs.resizeHandle.classList.add('dragging');
@@ -67,41 +82,34 @@ export default class ConsoleLayout extends Component {
     window.dispatchEvent(new Event('resize'));
   };
 
+  /**
+   * Hides the console.
+   */
   closeConsole = () => {
     this.props.onToggleConsoleVisibility(false);
   }
 
+  /**
+   * Clears the console.
+   */
+  clearConsole = () => {
+    this.props.resultChange('');
+  }
+
   componentDidUpdate() {
-    // Necessary for the ace_content size to update.
+    // Note: This is necessary for the ace_content size to update.
     window.dispatchEvent(new Event('resize'));
   }
 
-  titlebarItems = () => {
-    return [
-      {
-        label: 'Clear Console',
-        action: this.props.resultChange.bind(this, ''),
-        enabled: true,
-      },
-      {
-        label: '  ',
-        action: this.closeConsole,
-        enabled: true,
-        imageUrl: '/images/ui/close_icon.svg'
-      },
-    ];
-  };
-
   render() {
-
     return (
       <div className="ConsoleLayout" style={{height: this.props.isOpen ? this.state.openHeight : 0 }}>
         <div ref="resizeHandle"
-             className="ConsoleLayout-resizeHandle"
-             onMouseDown={this.handleResizableMouseDown}></div>
-        <Titlebar items={this.titlebarItems()} />
+          className="ConsoleLayout-resizeHandle"
+          onMouseDown={this.handleResizableMouseDown}></div>
+        <Titlebar items={this.state.titlebarItems} />
         <ResultViewer resultContent={this.props.resultContent}/>
       </div>
-      );
+    );
   }
 }

@@ -13,7 +13,6 @@ import React, { Component, PropTypes } from 'react';
  * {string} classes - A string of classes to be added to the menu item.
  * {string} type - The shorthand type of the menu item.
  */
-
 export default class MenuItem extends Component {
   static propTypes = {
     key: PropTypes.string,

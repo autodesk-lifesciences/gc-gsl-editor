@@ -7,7 +7,6 @@ import React, { Component, PropTypes } from 'react';
  *
  * {string} resultContent - Result/Output text after running GSL code.
  */
-
 export default class ResultViewer extends Component {
   static propTypes = {
     resultContent: PropTypes.string,
@@ -18,7 +17,6 @@ export default class ResultViewer extends Component {
   };
 
   render() {
-
     return (
       <div className="ResultViewer active">
          <div className="divResult">

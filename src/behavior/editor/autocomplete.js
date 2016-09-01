@@ -1,7 +1,11 @@
+/**
+ * Defines behavior for the editor autocompletion.
+ */
 
 function requireAll(requireContext) {
   return requireContext.keys().map(requireContext);
 }
+
 const genomes = requireAll(require.context('../../../resources/genomes', false, /.json$/));
 let autocompleteGeneList = [];
 let autocompleteDocStrings = {};

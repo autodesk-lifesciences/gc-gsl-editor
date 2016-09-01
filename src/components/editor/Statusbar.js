@@ -11,7 +11,6 @@ require('../../styles/styles.css');
  * {function} showConsole - Function that displays the console window.
  * {bool} isConsoleVisible - True, if the console window is visible.
  */
-
 export default class Statusbar extends Component {
   static propTypes = {
     message: PropTypes.string,

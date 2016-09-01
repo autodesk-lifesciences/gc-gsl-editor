@@ -1,25 +1,26 @@
+/**
+ * The middleware that communicates with the server.
+ */ 
+
 const config = require('../../../package.json');
 
-// Sends the code and corresponding gslc options to run the command on the server.
+/**
+ * Sends the code and corresponding gslc options to run the command on the server.
+ * @param {string} editor content
+ * @param {Object} gslc argument object
+ * @param {string} projectId
+ */ 
 export const run = (data, args, projectId) => {
-  // concatenate arguments
-  let argumentString = '';
-  for (const key of Object.keys(args)) {
-    // create the option string.
-    argumentString += ' ' + key + ' ';
-    argumentString += args[key].join(' ');
-  }
+
   const payload = {
     'code': data,
-    'arguments': argumentString,
     'projectId': projectId,
     'extension': config.name,
     'args': args,
-    'projectFileDir' : '/tmp/',
   };
 
   const stringified = JSON.stringify(payload);
-  // send a post request to the server and pring out the results in the console.
+
   return fetch('/extensions/api/' + config.name + '/gslc', {
     method: 'POST',
     headers: {
@@ -34,7 +35,10 @@ export const run = (data, args, projectId) => {
   });
 };
 
-/* Retrieves the file types available for download for a project */
+/**
+ * Sends the code and corresponding gslc options to run the command on the server.
+ * @param {string} projectId
+ */ 
 export const getAvailableDownloadList = (projectId) => {
   const payload = {
     'projectId': projectId,

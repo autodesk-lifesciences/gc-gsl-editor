@@ -1,10 +1,15 @@
+/**
+ * Defines how the GSL assemblies are rendered on the canvas.
+ */ 
+
 const gslState = require('../../../globals');
 const extensionConfig = require('../../../package.json');
 const compilerConfig = require('../compiler/config.json');
 
-// Removes the GSL constructs
+/**
+ * Removes the GSL constructs from the canvas based on the output
+ */ 
 const removeGSLConstructs = () => {
-  // read the state and remove the blocks.
   for (var blockId of gslState.gslConstructs) {
     if (window.constructor.api.projects.projectHasComponent(
       window.constructor.api.projects.projectGetCurrentId(),
@@ -17,11 +22,16 @@ const removeGSLConstructs = () => {
   }
 }
 
+/**
+ * Renders a list of GSL assemblies as Constructor constructs.
+ * @param {array} assemblyList - List of objects describing GSL assemblies.
+ */ 
 const renderBlocks = (assemblyList) => {
 
   let blockModel = {};
   let gslConstructs = [];
   assemblyList.reverse();
+
   for (const assembly of assemblyList) {
     // Create the top level block (construct) and assign it the assembly name
     blockModel = {
@@ -65,23 +75,33 @@ const renderBlocks = (assemblyList) => {
   );
 }
 
-const readRemoteFile = (url, assemblyList) => {
-  var xhr = new XMLHttpRequest();
-  xhr.open("GET", url, true);
-  xhr.onreadystatechange = function() {
+/**
+ * Reads remote settings file - containing a list of GSL constructs in the project
+ * @param {string} file url
+ */ 
+const readRemoteFile = (url) => {
+  new Promise((resolve, reject) => {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
-      if (xhr.status === 200) {
-        const allText = xhr.responseText;
-        const jsonSettings = JSON.parse(allText);
-        gslState.gslConstructs = jsonSettings.constructs;
-        removeGSLConstructs();
-        renderBlocks(assemblyList);
+        if (xhr.status === 200) {
+          const allText = xhr.responseText;
+          resolve(allText);
+        }
+        else {
+          reject();
+        }
       }
     }
-  }
-  xhr.send(null);
+    xhr.send(null);
+  });
 }
 
+/**
+ * Reload the existing contructs created by GSL in global state, to associate GSL code with blocks.
+ * @param {array} assemblyList - List of objects describing GSL assemblies.
+ */ 
 const reloadStateGSLConstructs = (assemblyList) => {
   if (!gslState.hasOwnProperty('gslConstructs')) {
     window.constructor.extensions.files.read(
@@ -92,8 +112,17 @@ const reloadStateGSLConstructs = (assemblyList) => {
     .then((response) => {
       if (response.status === 200) {
         // read the file and populate the state
-        console.log('Reading the settings file.');
-        readRemoteFile(response.url, assemblyList);
+        readRemoteFile(response.url)
+        .then((allText) => {
+          const jsonSettings = JSON.parse(allText);
+          gslState.gslConstructs = jsonSettings.constructs;
+          removeGSLConstructs();
+          renderBlocks(assemblyList);
+        })
+        .catch((err) => {
+          console.log('Failed to read the settings file ', err);
+          renderBlocks(assemblyList);
+        });
       }
       else {
         gslState.gslConstructs = [];
@@ -110,8 +139,10 @@ const reloadStateGSLConstructs = (assemblyList) => {
   }
 }
 
-// Renders the blocks created through GSL code.
+/**
+ * Renders blocks created through GSL code.
+ * @param {array} assemblyList - List of objects describing GSL assemblies.
+ */ 
 export const render = (assemblyList) => {
-  // Remove the old GSL constructs before adding new ones.
   reloadStateGSLConstructs(assemblyList);
 }

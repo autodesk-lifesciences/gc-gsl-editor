@@ -1,16 +1,8 @@
 'use strict';
 
-var _promise = require('babel-runtime/core-js/promise');
-
-var _promise2 = _interopRequireDefault(_promise);
-
 var _keys = require('babel-runtime/core-js/object/keys');
 
 var _keys2 = _interopRequireDefault(_keys);
-
-var _getIterator2 = require('babel-runtime/core-js/get-iterator');
-
-var _getIterator3 = _interopRequireDefault(_getIterator2);
 
 var _express = require('express');
 
@@ -38,96 +30,21 @@ var _commandExists = require('command-exists');
 
 var _commandExists2 = _interopRequireDefault(_commandExists);
 
+var _project = require('./server/utils/project');
+
+var _command = require('./server/utils/command');
+
+var _fileSystem = require('./server/utils/fileSystem');
+
+var _config = require('./server/config');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var JSZip = require("jszip");
+// NOTE: Paths are relative to the directory containing the babel written output - server-build.js
+var repoName = 'GSL'; /**
+                       * Contains definitions for the GSL server end points.
+                       */
 
-
-// TODO: Separate json on moving to webpack
-//var argConfig = require('./config.json');
-var argConfig = {
-  "fileArguments": {
-    "--flat": {
-      "arguments": ["<filePath>"],
-      "fileName": "gslOutFlat.txt"
-    },
-    "--json": {
-      "arguments": ["<filePath>"],
-      "fileName": "gslOut.json"
-    },
-    "--ape": {
-      "arguments": ["<outDir>", "<prefix>"],
-      "fileName": "gslOut"
-    },
-    "--cm": {
-      "arguments": ["<outDir>", "<prefix>"],
-      "fileName": "gslOut"
-    },
-    "--primers": {
-      "arguments": ["<filePath>"],
-      "fileName": "gslOut.primers.txt"
-    },
-    "--docstring": {
-      "arguments": ["<filePath>"],
-      "fileName": "gslOut.doc"
-    },
-    "--name2id": {
-      "arguments": ["<filePath>"],
-      "fileName": "gslOut.name2id.txt"
-    },
-    "--thumper": {
-      "arguments": ["<filePath>"],
-      "fileName": "thumperOut"
-    }
-  },
-  "gslFile": {
-    "fileName": "project.run.gsl"
-  },
-  "downloadableFileTypes": {
-    "ape": {
-      "fileName": "gslOutApe.zip",
-      "contentType": "application/zip",
-      "contentExt": ".ape$"
-    },
-    "cm": {
-      "fileName": "gslOutCm.zip",
-      "contentType": "application/zip",
-      "contentExt": ".cx5$"
-    },
-    "thumper": {
-      "fileName": "gslOutThumper.zip",
-      "contentType": "application/zip",
-      "contentExt": "^thumperOut"
-    },
-    "gsl": {
-      "fileName": "project.gsl",
-      "contentType": "text/plain",
-      "contentExt": ".gsl"
-    },
-    "json": {
-      "fileName": "gslOut.json",
-      "contentType": "application/json",
-      "contentExt": ".json"
-    },
-    "flat": {
-      "fileName": "gslOutFlat.txt",
-      "contentType": "text/plain",
-      "contentExt": ".txt"
-    },
-    "rabitXls": {
-      "fileName": "thumperOut.rabits.xls",
-      "contentType": "application/vnd.ms-excel",
-      "contentExt": ".xls"
-    },
-    "allFormats": {
-      "fileName": "gslProjectFiles.zip",
-      "contentType": "application/zip",
-      "contentExt": "project.gsl|thumperOut|gslOut.json|.xls|.txt|.ape|.cx5"
-    }
-  }
-};
-
-var repoName = 'GSL';
 var gslDir = _path2.default.resolve(__dirname, repoName);
 var gslBinary = _path2.default.resolve(gslDir, 'bin/gslc/gslc.exe');
 var envVariables = 'GSL_LIB=' + gslDir + '/data/lib';
@@ -137,234 +54,21 @@ var jsonParser = _bodyParser2.default.json({
   strict: false
 });
 
-/* PROJECT FILE PATH RELATED FUNCTIONS */
-var projectPath = 'projects';
-var projectDataPath = 'data';
-var projectFilesPath = 'files';
-
-var makePath = function makePath() {
-  for (var _len = arguments.length, paths = Array(_len), _key = 0; _key < _len; _key++) {
-    paths[_key] = arguments[_key];
-  }
-
-  if (process.env.STORAGE) {
-    return _path2.default.resolve.apply(_path2.default, [process.env.STORAGE].concat(paths));
-  }
-  return _path2.default.resolve.apply(_path2.default, [process.cwd(), 'storage'].concat(paths));
-};
-
-var createStorageUrl = function createStorageUrl() {
-  for (var _len2 = arguments.length, urls = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-    urls[_key2] = arguments[_key2];
-  }
-
-  var dev = process.env.NODE_ENV === 'test' ? 'test/' : '';
-  return makePath.apply(undefined, [dev].concat(urls));
-};
-
-var createProjectPath = function createProjectPath(projectId) {
-  for (var _len3 = arguments.length, rest = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-    rest[_key3 - 1] = arguments[_key3];
-  }
-
-  (0, _invariant2.default)(projectId, 'Project ID required');
-  return createStorageUrl.apply(undefined, [projectPath, projectId].concat(rest));
-};
-
-var createProjectDataPath = function createProjectDataPath(projectId) {
-  for (var _len4 = arguments.length, rest = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
-    rest[_key4 - 1] = arguments[_key4];
-  }
-
-  return createProjectPath.apply(undefined, [projectId, projectDataPath].concat(rest));
-};
-
-var createProjectFilesDirectoryPath = function createProjectFilesDirectoryPath(projectId) {
-  for (var _len5 = arguments.length, rest = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
-    rest[_key5 - 1] = arguments[_key5];
-  }
-
-  return createProjectDataPath.apply(undefined, [projectId, projectFilesPath].concat(rest));
-};
-
-var createProjectFilePath = function createProjectFilePath(projectId, extension, fileName) {
-  (0, _invariant2.default)(extension, 'must pass a directory name (extension key)');
-  return createProjectFilesDirectoryPath(projectId, extension, fileName);
-};
-
-/* HELPER FUNCTIONS */
-
-/* Preprocess arguments to find the arguments that create files */
-var preprocessArgs = function preprocessArgs(projectId, extensionKey, args) {
-  var modifiedArgs = args;
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
-
-  try {
-    for (var _iterator = (0, _getIterator3.default)((0, _keys2.default)(modifiedArgs)), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var key = _step.value;
-
-      if (argConfig.fileArguments.hasOwnProperty(key)) {
-        // Get or create a type for this file and modify the argument string.
-        var argCounter = 0;
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-          for (var _iterator2 = (0, _getIterator3.default)(argConfig.fileArguments[key].arguments), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var argType = _step2.value;
-
-            if (argType === '<filePath>') {
-              modifiedArgs[key][argCounter] = createProjectFilePath(projectId, extensionKey, argConfig.fileArguments[key].fileName);
-            } else if (argType === '<prefix>') {
-              modifiedArgs[key][argCounter] = argConfig.fileArguments[key].fileName;
-            } else if (argType === '<outDir>') {
-              modifiedArgs[key][argCounter] = createProjectFilesDirectoryPath(projectId, extensionKey);
-            }
-            argCounter++;
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-              _iterator2.return();
-            }
-          } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
-            }
-          }
-        }
-      }
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
-  }
-
-  return modifiedArgs;
-};
-
-/* Make argument string */
-var makeArgumentString = function makeArgumentString(args) {
-  var argumentString = '';
-  var _iteratorNormalCompletion3 = true;
-  var _didIteratorError3 = false;
-  var _iteratorError3 = undefined;
-
-  try {
-    for (var _iterator3 = (0, _getIterator3.default)((0, _keys2.default)(args)), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-      var key = _step3.value;
-
-      // create the option string.
-      argumentString += ' ' + key + ' ';
-      argumentString += args[key].join(' ');
-    }
-  } catch (err) {
-    _didIteratorError3 = true;
-    _iteratorError3 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion3 && _iterator3.return) {
-        _iterator3.return();
-      }
-    } finally {
-      if (_didIteratorError3) {
-        throw _iteratorError3;
-      }
-    }
-  }
-
-  return argumentString;
-};
-
-/* Get the JSON out file path */
-var getJsonOutFile = function getJsonOutFile(args) {
-  var json = '--json';
-  if (args.hasOwnProperty(json)) {
-    return args[json][0];
-  }
-};
-
-/* Read a file, optionally parse Json */
-var fileRead = function fileRead(path) {
-  var jsonParse = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
-
-  return new _promise2.default(function (resolve, reject) {
-    _fs2.default.readFile(path, 'utf8', function (err, result) {
-      if (err) {
-        if (err.code === 'ENOENT') {
-          return reject(err);
-        }
-        return reject(err);
-      }
-      var parsed = !!jsonParse ? parser(result) : result;
-      resolve(parsed);
-    });
-  });
-};
-
-/* Return the contents of the directory */
-var directoryContents = function directoryContents(path) {
-  var pattern = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-
-  return new _promise2.default(function (resolve, reject) {
-    _fs2.default.readdir(path, function (err, contents) {
-      if (err) {
-        return reject(err);
-      }
-      var reg = new RegExp(pattern);
-      resolve(contents.filter(function (item) {
-        return reg.test(item);
-      }));
-    });
-  });
-};
-
-/* Make a zip package */
-var makeZip = function makeZip(path, fileType) {
-  return new _promise2.default(function (resolve, reject) {
-    var zip = new JSZip();
-    directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt).then(function (directoryContents) {
-      return _promise2.default.all(directoryContents.map(function (fileName) {
-        return fileRead(path + '/' + fileName, false).then(function (fileContents) {
-          zip.file(fileName, fileContents);
-        });
-      }));
-    }).then(function () {
-      zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true }).pipe(_fs2.default.createWriteStream(path + '/' + argConfig.downloadableFileTypes[fileType].fileName)).on('finish', function () {
-        console.log('Written out the ' + fileType + ' .zip file');
-        resolve(zip);
-      });
-    }).catch(function (err) {
-      console.log('Error making zip for ' + fileType);
-      console.log(err);
-      reject(err);
-    });
-  });
-};
-
-/* ROUTES */
-/* Router for running GSL programs on the server */
+/**
+ * Route for running GSL programs on the server
+ */
 router.post('/gslc', jsonParser, function (req, res, next) {
   var input = req.body;
-  var content = "#refgenome S288C \n" + input.code; // TODO: Make configurable
+  var content = '';
+  if (_config.argConfig.gslFile.hasOwnProperty('preCode')) {
+    content += _config.argConfig.gslFile.preCode;
+  }
 
-  var argumentString = input.arguments;
+  content += input.code;
+
+  var argumentString = null;
+  if (input.hasOwnProperty('arguments')) argumentString = input.arguments;
+
   // make sure that mono is installed on the server.
   (0, _commandExists2.default)('mono', function (err, commandExists) {
     if (err || !commandExists) {
@@ -389,11 +93,11 @@ router.post('/gslc', jsonParser, function (req, res, next) {
       res.status(501).json(_result); // Service not implemented
     } else {
       (function () {
-        var modifiedArgs = preprocessArgs(input.projectId, input.extension, input.args);
-        var jsonOutFile = getJsonOutFile(modifiedArgs);
-        argumentString = makeArgumentString(modifiedArgs);
-        var projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
-        var filePath = createProjectFilePath(input.projectId, input.extension, argConfig.gslFile.fileName);
+        var modifiedArgs = (0, _command.preprocessArgs)(input.projectId, input.extension, input.args);
+        var jsonOutFile = (0, _command.getJsonOutFile)(modifiedArgs);
+        if (!argumentString) argumentString = (0, _command.makeArgumentString)(modifiedArgs);
+        var projectFileDir = (0, _project.createProjectFilesDirectoryPath)(input.projectId, input.extension);
+        var filePath = (0, _project.createProjectFilePath)(input.projectId, input.extension, _config.argConfig.gslFile.fileName);
         if (!_fs2.default.existsSync(projectFileDir)) {
           _fs2.default.mkdirSync(projectFileDir);
         }
@@ -455,17 +159,17 @@ router.post('/gslc', jsonParser, function (req, res, next) {
                 });
 
                 // Create zip packages.
-                if (modifiedArgs.hasOwnProperty('--cm')) makeZip(projectFileDir, 'cm');
+                if (modifiedArgs.hasOwnProperty('--cm')) (0, _fileSystem.makeZip)(projectFileDir, _config.argConfig.downloadableFileTypes['cm'].contentExt, _config.argConfig.downloadableFileTypes['cm'].fileName);
 
-                if (modifiedArgs.hasOwnProperty('--ape')) makeZip(projectFileDir, 'ape');
+                if (modifiedArgs.hasOwnProperty('--ape')) (0, _fileSystem.makeZip)(projectFileDir, _config.argConfig.downloadableFileTypes['ape'].contentExt, _config.argConfig.downloadableFileTypes['ape'].fileName);
 
-                makeZip(projectFileDir, 'allFormats');
+                (0, _fileSystem.makeZip)(projectFileDir, _config.argConfig.downloadableFileTypes['allFormats'].contentExt, _config.argConfig.downloadableFileTypes['allFormats'].fileName);
 
                 if (modifiedArgs.hasOwnProperty('--thumper')) {
-                  makeZip(projectFileDir, 'thumper').then(function () {
+                  (0, _fileSystem.makeZip)(projectFileDir, _config.argConfig.downloadableFileTypes['thumper'].contentExt, _config.argConfig.downloadableFileTypes['thumper'].fileName).then(function () {
                     // create the rabit spreadsheet.
-                    var inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
-                    var outputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
+                    var inputFile = projectFileDir + '/' + _config.argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
+                    var outputFile = projectFileDir + '/' + _config.argConfig.fileArguments["--thumper"].fileName + '.rabits.xls';
                     console.log('Copying ' + inputFile + ' to ' + outputFile);
                     try {
                       _fs2.default.createReadStream(inputFile).pipe(_fs2.default.createWriteStream(outputFile));
@@ -492,16 +196,19 @@ router.post('/gslc', jsonParser, function (req, res, next) {
   });
 });
 
-/* Download any data file */
+/**
+ * Route for downloading any file type. 
+ * (Should be specified in 'downloadableFileTypes' in config.js)
+ */
 router.get('/download*', function (req, res, next) {
 
-  if (argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
+  if (_config.argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
     (function () {
-      var fileName = argConfig.downloadableFileTypes[req.query.type].fileName;
-      var filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
+      var fileName = _config.argConfig.downloadableFileTypes[req.query.type].fileName;
+      var filePath = (0, _project.createProjectFilePath)(req.query.projectId, req.query.extension, fileName);
       _fs2.default.exists(filePath, function (exists) {
         if (exists) {
-          res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
+          res.header('Content-Type', _config.argConfig.downloadableFileTypes[req.query.type].contentType);
           res.download(filePath, fileName);
         } else {
           res.send('No file of type ' + req.query.type + ' generated yet');
@@ -515,14 +222,16 @@ router.get('/download*', function (req, res, next) {
   }
 });
 
-/* Get information of available file types of downloads */
+/**
+ * Route to list the available file downloads.
+ */
 router.post('/listDownloads', function (req, res, next) {
   // list the available downloads.
   var input = req.body;
   var fileStatus = {};
-  var projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
-  (0, _keys2.default)(argConfig.downloadableFileTypes).forEach(function (key) {
-    var filePath = projectFileDir + '/' + argConfig.downloadableFileTypes[key].fileName;
+  var projectFileDir = (0, _project.createProjectFilesDirectoryPath)(input.projectId, input.extension);
+  (0, _keys2.default)(_config.argConfig.downloadableFileTypes).forEach(function (key) {
+    var filePath = projectFileDir + '/' + _config.argConfig.downloadableFileTypes[key].fileName;
     try {
       _fs2.default.accessSync(filePath);
       fileStatus[key] = true;

@@ -1907,6 +1907,7 @@ acequire("../config").defineOptions(Editor.prototype, "editor", {
     },
     enableLiveAutocompletion: {
         set: function(val) {
+            console.log('Autocomplete log is ', val);
             if (val) {
                 if (!this.completers)
                     this.completers = Array.isArray(val)? val: completers;
@@ -1919,6 +1920,7 @@ acequire("../config").defineOptions(Editor.prototype, "editor", {
     },
     enableSnippets: {
         set: function(val) {
+            console.log('Snippet log is', val);
             if (val) {
                 this.commands.addCommand(expandSnippet);
                 this.on("changeMode", onChangeMode);

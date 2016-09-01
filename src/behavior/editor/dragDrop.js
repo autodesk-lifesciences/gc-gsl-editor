@@ -1,3 +1,15 @@
+/**
+ * Defines the drag-drop behavior of the GSL operators in the editor.
+ */
+
+/**
+ * Inserts the required characters on drag and dropping the GSL operators into the editor
+ * based on the editor and the type of operator.
+ * @param {AceEditor} ace editor
+ * @param {Object} drag position eg.{ row: 4, column: 5}
+ * @param {string} payload text to be inserted when dropped.
+ * @param {token} the token on which the operator is dropped.
+ */
 const _insertByType = (ace, dragPosition, payload, token ) => {
   // switch by id first. If the id is not present, switch by position.
   let insertPosition;
@@ -35,7 +47,13 @@ const _insertByType = (ace, dragPosition, payload, token ) => {
   }
 }
 
-
+/**
+ * Inserts the required characters on drag and dropping the GSL operators into the editor.
+ * @param {AceEditor} ace editor
+ * @param {Object} drag position eg.{ row: 4, column: 5}
+ * @param {string} payload text to be inserted when dropped.
+ * @param {MouseEvent} drag-drop event 
+ */
 export const insert = (ace, position, payload, evt) => {
   // Insert the character at the position.
   const dragPosition = ace.editor.renderer.pixelToScreenCoordinates(evt.pageX, evt.pageY);

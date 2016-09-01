@@ -120,7 +120,7 @@ function render(container, options) {
           ReactDOM.render(<GSLEditorLayout/>, container);
       }
         gslState.prevProject = window.constructor.api.projects.projectGetCurrentId();
-    } 
+    }
     else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
       // save the current content of the editor.
       window.constructor.extensions.files.write(

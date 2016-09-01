@@ -10,7 +10,6 @@ import ToolbarItem from './ToolbarItem';
  * {array} toolbarItems - An array of ToolbarItems that will be rendered 
  * in the Toolbar.
  */
-
 export default class Toolbar extends Component {
   static propTypes = {
     toolbarItems: React.PropTypes.arrayOf(

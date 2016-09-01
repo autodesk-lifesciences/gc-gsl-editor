@@ -25,16 +25,18 @@ export default class PopupMenu extends Component {
     position: PropTypes.object.isRequired,
   };
 
-  // mouse down on the blocker closes the modal
-  onMouseDown(evt) {
+  /**
+   * Closes the menu on mouse down outside the menu.
+   * @param {MouseEvent} click event
+   */
+  onMouseDown(e) {
     const blockEl = ReactDOM.findDOMNode(this.refs.blocker);
-    if (evt.target === blockEl) {
+    if (e.target === blockEl) {
       this.props.closePopup();
     }
   }
 
   render() {
-    // set position from properties
     const position = {
       left: `${this.props.position.x}px`,
       top: `${this.props.position.y}px`,

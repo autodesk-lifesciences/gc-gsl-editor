@@ -1,95 +1,21 @@
+/**
+ * Contains definitions for the GSL server end points.
+ */
+
 import express from 'express';
 import bodyParser from 'body-parser';
 import path from 'path';
 import fs from 'fs';
 import { exec, spawn } from 'child_process';
-var JSZip = require("jszip");
 import invariant from 'invariant';
 import commandExists from 'command-exists';
 
-// TODO: Separate json on moving to webpack
-//var argConfig = require('./config.json');
-var argConfig = {
-  "fileArguments" : {
-      "--flat": {
-        "arguments" : [ "<filePath>" ],
-        "fileName" : "gslOutFlat.txt" 
-      },
-      "--json" : {
-        "arguments": [ "<filePath>" ],
-        "fileName": "gslOut.json"
-      },
-      "--ape" : {
-        "arguments" : [ "<outDir>", "<prefix>" ],
-        "fileName": "gslOut"
-      },
-      "--cm" : {
-        "arguments" : [ "<outDir>", "<prefix>"],
-        "fileName": "gslOut"
-      },
-      "--primers" : {
-        "arguments" : ["<filePath>"],
-        "fileName": "gslOut.primers.txt"
-      },
-      "--docstring" : {
-        "arguments" : ["<filePath>"],
-        "fileName": "gslOut.doc"
-      },
-      "--name2id" : {
-        "arguments" : ["<filePath>"],
-        "fileName": "gslOut.name2id.txt"
-      },
-      "--thumper" : {
-        "arguments" : ["<filePath>"],
-        "fileName": "thumperOut"
-      }
-  },
-  "gslFile" : {
-    "fileName" : "project.run.gsl"
-  },
-  "downloadableFileTypes" : {
-    "ape" : {
-      "fileName": "gslOutApe.zip",
-      "contentType": "application/zip",
-      "contentExt": ".ape$"
-    },
-    "cm" : {
-      "fileName": "gslOutCm.zip",
-      "contentType": "application/zip",
-      "contentExt": ".cx5$"
-    },
-    "thumper" : {
-      "fileName" :"gslOutThumper.zip",
-      "contentType": "application/zip",
-      "contentExt": "^thumperOut"
-    },
-    "gsl" : {
-      "fileName": "project.gsl",
-      "contentType": "text/plain",
-      "contentExt": ".gsl"
-    },
-    "json" : {
-      "fileName": "gslOut.json",
-      "contentType": "application/json",
-      "contentExt": ".json"
-    },
-    "flat" : {
-      "fileName": "gslOutFlat.txt",
-      "contentType": "text/plain",
-      "contentExt": ".txt"
-    },
-    "rabitXls" : {
-      "fileName": "thumperOut.rabits.xls",
-      "contentType": "application/vnd.ms-excel",
-      "contentExt": ".xls"
-    },
-    "allFormats" : {
-      "fileName": "gslProjectFiles.zip",
-      "contentType": "application/zip",
-      "contentExt": "project.gsl|thumperOut|gslOut.json|.xls|.txt|.ape|.cx5"
-    }
-  }
-};
+// NOTE: Paths are relative to the directory containing the babel written output - server-build.js
+import { createProjectFilePath, createProjectFilesDirectoryPath } from './server/utils/project';
+import { preprocessArgs, makeArgumentString, getJsonOutFile } from './server/utils/command';
+import { fileRead, directoryContents, makeZip } from './server/utils/fileSystem';
+import { argConfig } from './server/config';
+
 
 const repoName = 'GSL';
 const gslDir = path.resolve(__dirname, repoName);
@@ -101,154 +27,22 @@ const jsonParser = bodyParser.json({
 	strict: false,
 });
 
-
-/* PROJECT FILE PATH RELATED FUNCTIONS */
-const projectPath = 'projects';
-const projectDataPath = 'data';
-const projectFilesPath = 'files';
-
-const makePath = (...paths) => {
-  if (process.env.STORAGE) {
-    return path.resolve(process.env.STORAGE, ...paths);
-  }
-  return path.resolve(process.cwd(), 'storage', ...paths);
-};
-
-const createStorageUrl = (...urls) => {
-  const dev = ((process.env.NODE_ENV === 'test') ? 'test/' : '');
-  return makePath(dev, ...urls);
-};
-
-const createProjectPath = (projectId, ...rest) => {
-  invariant(projectId, 'Project ID required');
-  return createStorageUrl(projectPath, projectId, ...rest);
-};
-
-const createProjectDataPath = (projectId, ...rest) => {
-  return createProjectPath(projectId, projectDataPath, ...rest);
-};
-
-const createProjectFilesDirectoryPath = (projectId, ...rest) => {
-  return createProjectDataPath(projectId, projectFilesPath, ...rest);
-};
-
-const createProjectFilePath = (projectId, extension, fileName) => {
-  invariant(extension, 'must pass a directory name (extension key)');
-  return createProjectFilesDirectoryPath(projectId, extension, fileName);
-};
-
-
-/* HELPER FUNCTIONS */
-
-/* Preprocess arguments to find the arguments that create files */
-const preprocessArgs = (projectId, extensionKey, args) => {
-  let modifiedArgs = args;
-  for (let key of Object.keys(modifiedArgs)) {
-    if (argConfig.fileArguments.hasOwnProperty(key)) {
-      // Get or create a type for this file and modify the argument string.
-      let argCounter = 0;
-      for (let argType of argConfig.fileArguments[key].arguments) {
-        if (argType === '<filePath>') {
-          modifiedArgs[key][argCounter] = createProjectFilePath(projectId, extensionKey, argConfig.fileArguments[key].fileName);
-        }
-        else if (argType === '<prefix>') {
-          modifiedArgs[key][argCounter] = argConfig.fileArguments[key].fileName;
-        }
-        else if (argType === '<outDir>') {
-          modifiedArgs[key][argCounter] = createProjectFilesDirectoryPath(projectId, extensionKey);
-        }
-        argCounter++;
-      }
-    }
-  }
-  return modifiedArgs;
-}
-
-/* Make argument string */
-const makeArgumentString = (args) => {
-  let argumentString = '';
-  for (let key of Object.keys(args)){
-    // create the option string.
-    argumentString += ' ' + key + ' ';
-    argumentString += args[key].join(' ');
-  }
-  return argumentString;
-}
-
-/* Get the JSON out file path */
-const getJsonOutFile = (args) => {
-  const json = '--json';
-  if (args.hasOwnProperty(json)) {
-    return args[json][0];
-  }
-}
-
-/* Read a file, optionally parse Json */
-const fileRead = (path, jsonParse = true) => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path, 'utf8', (err, result) => {
-      if (err) {
-        if (err.code === 'ENOENT') {
-          return reject(err);
-        }
-        return reject(err);
-      }
-      const parsed = !!jsonParse ? parser(result) : result;
-      resolve(parsed);
-    });
-  });
-};
-
-/* Return the contents of the directory */
-const directoryContents = (path, pattern = '') => {
-  return new Promise((resolve, reject) => {
-    fs.readdir(path, (err, contents) => {
-      if (err) {
-        return reject(err);
-      }
-      const reg = new RegExp(pattern);
-      resolve(contents.filter((item) => {
-        return reg.test(item);
-      }));
-    });
-  });
-}
-
-/* Make a zip package */
-const makeZip = (path, fileType) => {
-  return new Promise((resolve, reject) => {
-    var zip = new JSZip();
-    directoryContents(path, argConfig.downloadableFileTypes[fileType].contentExt)
-    .then(directoryContents => Promise.all(
-      directoryContents.map(fileName => {
-        return fileRead(path + '/' + fileName, false).then(fileContents => {
-          zip.file(fileName, fileContents);
-        });
-      })
-    ))
-    .then(() => {
-      zip.generateNodeStream({type:'nodebuffer', streamFiles:true})
-      .pipe(fs.createWriteStream(path + '/' + argConfig.downloadableFileTypes[fileType].fileName))
-      .on('finish', function() {
-        console.log(`Written out the ${fileType} .zip file`);
-        resolve(zip);
-      });
-    })
-    .catch((err) => {
-      console.log('Error making zip for ' + fileType);
-      console.log(err);
-      reject(err);
-    });
-  });
-};
-
-/* ROUTES */
-/* Router for running GSL programs on the server */
+/**
+ * Route for running GSL programs on the server
+ */ 
 router.post('/gslc', jsonParser, (req, res, next) => {
   const input = req.body;
-  let content = "#refgenome S288C \n" + input.code; // TODO: Make configurable
+  let content = '';
+  if (argConfig.gslFile.hasOwnProperty('preCode')) {
+    content += argConfig.gslFile.preCode;
+  }
+  
+  content += input.code;
 
-  let argumentString = input.arguments;
+  let argumentString = null;
+  if (input.hasOwnProperty('arguments'))
+    argumentString = input.arguments;
+
   // make sure that mono is installed on the server.
   commandExists('mono', function(err, commandExists) {
     if (err || !commandExists) {
@@ -275,7 +69,8 @@ router.post('/gslc', jsonParser, (req, res, next) => {
     else {
       const modifiedArgs = preprocessArgs(input.projectId, input.extension, input.args);
       const jsonOutFile =  getJsonOutFile(modifiedArgs);
-      argumentString = makeArgumentString(modifiedArgs);
+      if (!argumentString)
+        argumentString = makeArgumentString(modifiedArgs);
       const projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
       const filePath = createProjectFilePath(input.projectId, input.extension, argConfig.gslFile.fileName);
       if (!fs.existsSync(projectFileDir)) {
@@ -341,15 +136,23 @@ router.post('/gslc', jsonParser, (req, res, next) => {
             
             // Create zip packages.
             if (modifiedArgs.hasOwnProperty('--cm'))
-              makeZip(projectFileDir, 'cm');
+              makeZip(projectFileDir, 
+                argConfig.downloadableFileTypes['cm'].contentExt, 
+                argConfig.downloadableFileTypes['cm'].fileName);
 
             if (modifiedArgs.hasOwnProperty('--ape'))
-              makeZip(projectFileDir, 'ape');
+              makeZip(projectFileDir,
+                argConfig.downloadableFileTypes['ape'].contentExt, 
+                argConfig.downloadableFileTypes['ape'].fileName);
 
-            makeZip(projectFileDir, 'allFormats');
+            makeZip(projectFileDir, 
+              argConfig.downloadableFileTypes['allFormats'].contentExt, 
+              argConfig.downloadableFileTypes['allFormats'].fileName);
 
             if (modifiedArgs.hasOwnProperty('--thumper')) {
-              makeZip(projectFileDir, 'thumper')
+              makeZip(projectFileDir, 
+                argConfig.downloadableFileTypes['thumper'].contentExt, 
+                argConfig.downloadableFileTypes['thumper'].fileName)
                 .then(() => {
                   // create the rabit spreadsheet.
                   const inputFile = projectFileDir + '/' + argConfig.fileArguments["--thumper"].fileName + '.rabits.txt';
@@ -382,7 +185,10 @@ router.post('/gslc', jsonParser, (req, res, next) => {
   });
 });
 
-/* Download any data file */
+/**
+ * Route for downloading any file type. 
+ * (Should be specified in 'downloadableFileTypes' in config.js)
+ */
 router.get('/download*', function(req, res, next) {
 
   if (argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
@@ -405,7 +211,9 @@ router.get('/download*', function(req, res, next) {
   }
 });
 
-/* Get information of available file types of downloads */
+/**
+ * Route to list the available file downloads.
+ */
 router.post('/listDownloads', function(req, res, next) {
   // list the available downloads.
   const input = req.body;
@@ -423,6 +231,5 @@ router.post('/listDownloads', function(req, res, next) {
   });
   res.status(200).json(fileStatus);
 });
-
 
 module.exports = router;
