@@ -9,6 +9,7 @@ const config = require('../../../package.json');
  * @param {string} editor content
  * @param {Object} gslc argument object
  * @param {string} projectId
+ * @return {string} resultData
  */ 
 export const run = (data, args, projectId) => {
 
@@ -32,12 +33,21 @@ export const run = (data, args, projectId) => {
   .then(function(data) {
     console.log(data);
     return data;
+  })
+  .catch((err) => {
+    console.log('Request timed out:', err);
+    return {
+      'result': 'Waited too long but could not process the request.',
+      'status': 1,
+      'contents': []
+    }
   });
 };
 
 /**
  * Sends the code and corresponding gslc options to run the command on the server.
  * @param {string} projectId
+ * @result {Object} List of downloadable file types and th
  */ 
 export const getAvailableDownloadList = (projectId) => {
   const payload = {

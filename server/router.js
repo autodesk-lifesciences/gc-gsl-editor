@@ -10,15 +10,14 @@ import { exec, spawn } from 'child_process';
 import invariant from 'invariant';
 import commandExists from 'command-exists';
 
-// NOTE: Paths are relative to the directory containing the babel written output - server-build.js
-import { createProjectFilePath, createProjectFilesDirectoryPath } from './server/utils/project';
-import { preprocessArgs, makeArgumentString, getJsonOutFile } from './server/utils/command';
-import { fileRead, directoryContents, makeZip } from './server/utils/fileSystem';
-import { argConfig } from './server/config';
+import { createProjectFilePath, createProjectFilesDirectoryPath } from './utils/project';
+import { preprocessArgs, makeArgumentString, getJsonOutFile } from './utils/command';
+import { fileRead, directoryContents, makeZip } from './utils/fileSystem';
+import { argConfig } from './config';
 
-
+// Path to the GSL repository
 const repoName = 'GSL';
-const gslDir = path.resolve(__dirname, repoName);
+const gslDir = path.resolve(__dirname, EXTENSION_DEPLOY_DIR ? EXTENSION_DEPLOY_DIR : '', repoName);
 const gslBinary = path.resolve(gslDir, 'bin/gslc/gslc.exe');
 const envVariables = `GSL_LIB=${gslDir}/data/lib`;
 
@@ -231,5 +230,6 @@ router.post('/listDownloads', function(req, res, next) {
   });
   res.status(200).json(fileStatus);
 });
+
 
 module.exports = router;

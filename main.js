@@ -127,7 +127,7 @@ function render(container, options) {
         window.constructor.api.projects.projectGetCurrentId(),
         extensionConfig.name,
         'project.gsl',
-        gslState.editorContent,
+        gslState.editorContent
       )
       .then(() => {
         console.log('Saved GSL Code.');

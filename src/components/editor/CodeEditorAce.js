@@ -5,6 +5,9 @@ import * as dragDropOperator from '../../behavior/editor/dragDrop';
 import '../../behavior/editor/brace/mode/gsl';
 import '../../behavior/editor/brace/theme/xcode';
 import '../../behavior/editor/brace/ext/language_tools';
+import 'brace/ext/searchbox';
+//import '../../behavior/editor/brace/snippets/javascript';
+import '../../behavior/editor/brace/snippets/gsl';
 const autocompleteList = require('../../behavior/editor/autocomplete');
 
 /**
@@ -30,7 +33,7 @@ export default class CodeEditorAce extends Component {
   };
 
   componentDidMount() {
-    //todo - unmount this - see if there is a dispose() funciton, ask duncan
+
     window.constructor.DnD.registerTarget(this.element, {
       drop: this.onDrop.bind(this),
       zorder: 1000,
@@ -96,7 +99,7 @@ export default class CodeEditorAce extends Component {
              theme="xcode"
              name="aceEditor"
              editorProps={{ $blockScrolling: Infinity}}
-             setOptions={{dragEnabled: true}}
+             setOptions={{dragEnabled: true, enableSnippets:true}}
              enableBasicAutocompletion={true}
              enableSnippets={true}
              enableLiveAutocompletion={true}

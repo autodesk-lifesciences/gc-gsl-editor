@@ -1783,6 +1783,9 @@ var keyWordCompleter = {
         }
         var state = editor.session.getState(pos.row);
         var completions = session.$mode.getCompletions(state, session, pos, prefix);
+        for (var i = 0; i < completions.length; i++) {
+            completions[i].meta = '';
+        }
         callback(null, completions);
     }
 };
@@ -1907,7 +1910,6 @@ acequire("../config").defineOptions(Editor.prototype, "editor", {
     },
     enableLiveAutocompletion: {
         set: function(val) {
-            console.log('Autocomplete log is ', val);
             if (val) {
                 if (!this.completers)
                     this.completers = Array.isArray(val)? val: completers;
@@ -1920,7 +1922,6 @@ acequire("../config").defineOptions(Editor.prototype, "editor", {
     },
     enableSnippets: {
         set: function(val) {
-            console.log('Snippet log is', val);
             if (val) {
                 this.commands.addCommand(expandSnippet);
                 this.on("changeMode", onChangeMode);

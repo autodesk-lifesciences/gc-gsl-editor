@@ -30,7 +30,6 @@ var GslHighlightRules = function() {
         "variable.language": "this",
         "keyword": keywords,
         "constant.language": builtinConstants,
-        //"support.function": builtinPragmas,
         "gsl.pragma": builtinPragmas,
         "gsl.gene": autocompleteList.geneListString,
     }, "identifier");
@@ -156,7 +155,6 @@ var GslHighlightRules = function() {
                 regex : ".+"
             }
         ],
-
         "qstring" : [
             {
                 token : "string",
