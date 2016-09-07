@@ -159,4 +159,4 @@ function render(container, options) {
   return subscriber;
 }
 
-window.constructor.extensions.register(extensionConfig.name, render);
+window.constructor.extensions.register(extensionConfig.name, 'projectDetail', render);

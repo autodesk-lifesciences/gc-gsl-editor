@@ -186,7 +186,7 @@
 	  return subscriber;
 	}
 
-	window.constructor.extensions.register(extensionConfig.name, render);
+	window.constructor.extensions.register(extensionConfig.name, 'projectDetail', render);
 
 /***/ },
 /* 1 */
@@ -91201,9 +91201,14 @@
 		"description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
 		"geneticConstructor": {
 			"readable": "GSL Editor (S288C)",
-			"region": "projectDetail",
-			"router": "server-build.js",
-			"client": "client-build.js"
+			"type": "Code editor",
+			"client": [
+				{
+					"file": "client-build.js",
+					"region": "projectDetail"
+				}
+			],
+			"router": "server-build.js"
 		},
 		"scripts": {
 			"postinstall": "rm -rf GSL && git clone https://github.com/rupalkhilari/GSL.git && cd GSL && git checkout json_assembly && ./build.sh CopyBinaries",
@@ -91211,7 +91216,6 @@
 			"nightwatch": "node ./node_modules/nightwatch/bin/nightwatch --config ./tests/e2e/nightwatch.json",
 			"selenium": "node ./node_modules/selenium-standalone/bin/selenium-standalone install",
 			"e2e": "NODE_ENV=test node ./tests/e2e/bin/e2e.js",
-			"dev": "webpack --progress --watch main.js",
 			"build": "webpack --config webpack.config.js && babel server/router.js -o server-build.js",
 			"debug-server": "webpack --config webpack.server.config.js",
 			"watch-server": "webpack --watch --config webpack.server.config.js",
