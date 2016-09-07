@@ -31,7 +31,6 @@ export default class MenuItem extends Component {
   };
 
   render() {
-
     const indent = this.props.checked === true || this.props.checked === false;
     let check = null;
     if (indent) {
@@ -41,7 +40,7 @@ export default class MenuItem extends Component {
     if (this.props.classes) {
       classes += ` ${this.props.classes}`;
     }
-    let itemId = 'download-item-type-' + this.props.type;
+    const itemId = 'download-item-type-' + this.props.type;
 
     return (
       <div id={itemId} className={classes}

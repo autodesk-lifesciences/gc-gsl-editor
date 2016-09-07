@@ -17,13 +17,13 @@ export default class TitlebarItem extends Component {
     action: PropTypes.func.isRequired,
   };
 
-	render() {
-		return (
-			<div className="TitleBarItem"
+  render() {
+    return (
+      <div className="TitleBarItem"
         style={{backgroundImage: `url(${this.props.imageUrl})`}}
-        onClick = {this.props.action} > 
+        onClick = {this.props.action}>
         <span>{this.props.label}</span>
       </div>
     );
-	}       
+  }
 }

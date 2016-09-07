@@ -21,14 +21,14 @@ export default class ToolbarMenu extends Component {
         key: PropTypes.string,
         text: PropTypes.string,
         action: PropTypes.func,
-        disabled: PropTypes.bool
+        disabled: PropTypes.bool,
       })
     ),
   }
   constructor(props) {
     super(props);
     this.state = {
-      menuPosition: { "x" : 200, "y": 200},
+      menuPosition: { 'x': 200, 'y': 200},
       isOpen: false,
     };
   }

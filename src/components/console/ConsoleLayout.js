@@ -1,18 +1,17 @@
 import React, { PropTypes, Component } from 'react';
-import throttle  from 'lodash.throttle';
-
+import throttle from 'lodash.throttle';
 import ResultViewer from './ResultViewer';
 import Titlebar from './Titlebar';
 
 /**
- * ConsoleLayout groups together the components in the console window. 
+ * ConsoleLayout groups together the components in the console window.
  *
  * Properties:
  *
  * {function} resultChange - Result/Output text from running the GSL code.
  * {string} resultContent - A function to be called when the result changes.
- * {bool} isOpen - True, if the output console is open
- * {bool} onToggleConsoleVisibility - A function to be called when the console visibility is toggled.
+ * {bool} isOpen - True, if the output console is open.
+ * {function} onToggleConsoleVisibility - A function to be called when the console visibility is toggled.
  */
 export default class ConsoleLayout extends Component {
 
@@ -42,10 +41,15 @@ export default class ConsoleLayout extends Component {
           label: '  ',
           action: this.closeConsole,
           enabled: true,
-          imageUrl: '/images/ui/close_icon.svg'
+          imageUrl: '/images/ui/close_icon.svg',
         },
       ],
     };
+  }
+
+  componentDidUpdate() {
+    // Note: This is necessary for the ace_content size to update.
+    window.dispatchEvent(new Event('resize'));
   }
 
   throttledDispatchResize = throttle(() => window.dispatchEvent(new Event('resize')), 50);
@@ -94,11 +98,6 @@ export default class ConsoleLayout extends Component {
    */
   clearConsole = () => {
     this.props.resultChange('');
-  }
-
-  componentDidUpdate() {
-    // Note: This is necessary for the ace_content size to update.
-    window.dispatchEvent(new Event('resize'));
   }
 
   render() {

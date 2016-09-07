@@ -78,6 +78,5 @@ guard ^\\s*\n\
 	var ${1/.*\\/(.)/\\u$1/} = require(\"${1}\").${1/.*\\/(.)/\\u$1/};\n\
 	$0\n\
 ";
-exports.scope = "gsl";
-
+exports.scope = 'gsl';
 });

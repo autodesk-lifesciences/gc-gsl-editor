@@ -9,24 +9,22 @@ import { argConfig } from '../config';
 /**
  * Preprocess arguments to replace placeholders with filepaths.
  * @param {string} projectID
- * @param {string} extensionKey 
+ * @param {string} extensionKey
  * @param {Object} args - Hash of gslc options with file placeholders
  * @return {Object} - Hash of gslc options with resolved file path arguments
  */ 
 export const preprocessArgs = (projectId, extensionKey, args) => {
   let modifiedArgs = args;
-  for (let key of Object.keys(modifiedArgs)) {
+  for (const key of Object.keys(modifiedArgs)) {
     if (argConfig.fileArguments.hasOwnProperty(key)) {
       // Get or create a type for this file and modify the argument string.
       let argCounter = 0;
-      for (let argType of argConfig.fileArguments[key].arguments) {
+      for (const argType of argConfig.fileArguments[key].arguments) {
         if (argType === '<filePath>') {
           modifiedArgs[key][argCounter] = createProjectFilePath(projectId, extensionKey, argConfig.fileArguments[key].fileName);
-        }
-        else if (argType === '<prefix>') {
+        } else if (argType === '<prefix>') {
           modifiedArgs[key][argCounter] = argConfig.fileArguments[key].fileName;
-        }
-        else if (argType === '<outDir>') {
+        } else if (argType === '<outDir>') {
           modifiedArgs[key][argCounter] = createProjectFilesDirectoryPath(projectId, extensionKey);
         }
         argCounter++;
@@ -34,7 +32,7 @@ export const preprocessArgs = (projectId, extensionKey, args) => {
     }
   }
   return modifiedArgs;
-}
+};
 
 /**
  * Make a string of the GSL argument map.
@@ -43,22 +41,22 @@ export const preprocessArgs = (projectId, extensionKey, args) => {
  */ 
 export const makeArgumentString = (args) => {
   let argumentString = '';
-  for (let key of Object.keys(args)){
+  for (let key of Object.keys(args)) {
     // create the option string.
     argumentString += ' ' + key + ' ';
     argumentString += args[key].join(' ');
   }
   return argumentString;
-}
+};
 
 /**
  * Gets the JSON Out file path
  * @param {Object} Processed gslc options
  * @return {string} - Path of the output json file
- */ 
+ */
 export const getJsonOutFile = (args) => {
   const json = '--json';
   if (args.hasOwnProperty(json)) {
     return args[json][0];
   }
-}
+};

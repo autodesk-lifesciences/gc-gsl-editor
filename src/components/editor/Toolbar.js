@@ -4,10 +4,10 @@ import ToolbarItem from './ToolbarItem';
 /**
  * Toolbar represents a component to group together a set of functions
  * as ToobarItems.
- * 
+ *
  * Properties:
  *
- * {array} toolbarItems - An array of ToolbarItems that will be rendered 
+ * {array} toolbarItems - An array of ToolbarItems that will be rendered
  * in the Toolbar.
  */
 export default class Toolbar extends Component {
@@ -17,9 +17,9 @@ export default class Toolbar extends Component {
         label: PropTypes.string.isRequired,
         imageUrl: PropTypes.string,
         action: PropTypes.func.isRequired,
-        enabled: PropTypes.bool
+        enabled: PropTypes.bool,
       })
-    )
+    ),
   };
 
   constructor(props) {
@@ -30,14 +30,14 @@ export default class Toolbar extends Component {
     return (
       <div className="Toolbar">
         <div className="ToolbarItems">
-          {this.props.toolbarItems.map(function(item, i){
-            return <ToolbarItem
+          {this.props.toolbarItems.map((item, i) => {
+            return (<ToolbarItem
               key={i}
               label={item.label}
               action={item.action}
               imageUrl={item.imageUrl}
               disabled={item.disabled}
-            />;
+            />);
           })}
         </div>
       </div>

@@ -197,14 +197,12 @@ router.get('/download*', function(req, res, next) {
       if (exists) {
         res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
         res.download(filePath, fileName);
-      }
-      else {
+      } else {
         res.send(`No file of type ${req.query.type} generated yet`);
         res.status(404);
       }
     });
-  }
-  else {
+  } else {
     res.send('Could not find an appropriate file type to download.');
     res.status(501);
   }
@@ -218,13 +216,12 @@ router.post('/listDownloads', function(req, res, next) {
   const input = req.body;
   let fileStatus = {};
   const projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
-  Object.keys(argConfig.downloadableFileTypes).forEach(function(key) {
+  Object.keys(argConfig.downloadableFileTypes).forEach((key) => {
     const filePath = projectFileDir + '/' + argConfig.downloadableFileTypes[key].fileName;
     try {
       fs.accessSync(filePath);
       fileStatus[key] = true;
-    }
-    catch (e) {
+    } catch (err) {
       fileStatus[key] = false;
     }
   });

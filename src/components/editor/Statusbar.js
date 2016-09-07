@@ -4,10 +4,10 @@ require('../../styles/styles.css');
 
 /**
  * Statusbar represents a component to display the current status of the Code editor.
- * 
+ *
  * Properties:
  *
- * {string} toolbarItems - An array of ToolbarItems that will be rendered 
+ * {string} toolbarItems - An array of ToolbarItems that will be rendered
  * {function} showConsole - Function that displays the console window.
  * {bool} isConsoleVisible - True, if the console window is visible.
  */
@@ -24,14 +24,14 @@ export default class Statusbar extends Component {
 
   render() {
     return (
-      <div className='Statusbar'>
-        <div className='StatusbarText'>
-          { this.props.message }  
+      <div className="Statusbar">
+        <div className="StatusbarText">
+          { this.props.message }
         </div>
-        <input className='StatusbarButton'
-          type='button'value='Console'
+        <input className="StatusbarButton"
+          type="button" value="Console"
           onClick={this.props.showConsole}
-          style={{ display: this.props.isConsoleVisible ? 'none' : 'block'  }}
+          style={{ display: this.props.isConsoleVisible ? 'none' : 'block' }}
         />
       </div>
     );

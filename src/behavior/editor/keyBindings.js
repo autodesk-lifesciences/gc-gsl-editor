@@ -11,9 +11,9 @@ export const registerKeysRunCode = (ace, func) => {
   ace.editor.commands.addCommand({
     name: 'gslrun',
     bindKey: {win: 'Ctrl-Enter', mac: 'Command-Enter'},
-    exec: function(editor) {
+    exec: (editor) => {
       func();
     },
-    readOnly: true
+    readOnly: true,
   });
-}
+};

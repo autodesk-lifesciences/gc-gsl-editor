@@ -5,7 +5,7 @@ import MenuItem from './MenuItem';
 import MenuSeparator from './MenuSeparator';
 
 /**
- * PopupMenu represents a rectangular menu or submenu drawn as a part of the 
+ * PopupMenu represents a rectangular menu or submenu drawn as a part of the
  * ToolbarMenu.
  *
  * Properties:
@@ -13,7 +13,7 @@ import MenuSeparator from './MenuSeparator';
  * {bool} open - True, if the PopupMenu is open/visible.
  * {function} closePopup - A function to close the PopupMenu
  * {array} menuItems - An array of MenuItems to be displayed in the PopupMenu
- * {object} position - Position at which the popup menu will be drawn. 
+ * {object} position - Position at which the popup menu will be drawn.
  */
 
 export default class PopupMenu extends Component {
@@ -29,9 +29,9 @@ export default class PopupMenu extends Component {
    * Closes the menu on mouse down outside the menu.
    * @param {MouseEvent} click event
    */
-  onMouseDown(e) {
+  onMouseDown(evt) {
     const blockEl = ReactDOM.findDOMNode(this.refs.blocker);
-    if (e.target === blockEl) {
+    if (evt.target === blockEl) {
       this.props.closePopup();
     }
   }
@@ -45,7 +45,7 @@ export default class PopupMenu extends Component {
       <div
         onMouseDown={this.onMouseDown.bind(this)}
         className={this.props.open ? 'menu-popup-blocker-visible' : 'menu-popup-blocker-hidden'}
-        style={this.props.style || {}}
+        style={{}}
         ref="blocker"
       >
         <div className="menu-popup-container" style={position}>

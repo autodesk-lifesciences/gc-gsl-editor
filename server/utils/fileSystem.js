@@ -2,7 +2,7 @@
  * File-System related helper functions.
  */
 
-const JSZip = require("jszip");
+const JSZip = require('jszip');
 import fs from 'fs';
 
 /**
@@ -29,9 +29,9 @@ export const fileRead = (path, jsonParse = true) => {
 /**
  * Return the contents of the directory based on a pattern match.
  * @param {string} path
- * @param {string} regex pattern 
+ * @param {string} regex pattern
  * @return {array} items - List of files matching the given regex.
- */ 
+ */
 export const directoryContents = (path, pattern = '') => {
   return new Promise((resolve, reject) => {
     fs.readdir(path, (err, contents) => {
@@ -44,18 +44,18 @@ export const directoryContents = (path, pattern = '') => {
       }));
     });
   });
-}
+};
 
 /**
  * Create a zip archive of files.
  * @param {string} directory path
- * @param {string} content extension regex 
- * @param {string} zipFileName 
- * @return {Object} JSZip object (zip archive) 
- */ 
+ * @param {string} content extension regex
+ * @param {string} zipFileName
+ * @return {Object} JSZip object (zip archive)
+ */
 export const makeZip = (path, contentExt, zipFileName) => {
   return new Promise((resolve, reject) => {
-    var zip = new JSZip();
+    const zip = new JSZip();
     directoryContents(path, contentExt)
     .then(directoryContents => Promise.all(
       directoryContents.map(fileName => {
@@ -65,7 +65,7 @@ export const makeZip = (path, contentExt, zipFileName) => {
       })
     ))
     .then(() => {
-      zip.generateNodeStream({type:'nodebuffer', streamFiles:true})
+      zip.generateNodeStream({type: 'nodebuffer', streamFiles: true})
       .pipe(fs.createWriteStream(path + '/' + zipFileName))
       .on('finish', function() {
         console.log(`Written out ${zipFileName}.`);

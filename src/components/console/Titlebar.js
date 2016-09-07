@@ -16,12 +16,12 @@ export default class Titlebar extends Component {
         label: PropTypes.string.isRequired,
         imageUrl: PropTypes.string,
         action: PropTypes.func.isRequired,
-        enabled: PropTypes.bool
+        enabled: PropTypes.bool,
       })
-    )
+    ),
   }
 
-	constructor(props) {
+  constructor(props) {
     super(props);
   }
 
@@ -32,13 +32,13 @@ export default class Titlebar extends Component {
           GSL console
         </div>
         <div className="TitlebarItems">
-          {this.props.items.map(function(item, i){
-            return <TitlebarItem
+          {this.props.items.map((item, i) => {
+            return (<TitlebarItem
               key={i}
               label={item.label}
               action={item.action}
               imageUrl={item.imageUrl}
-            />;
+            />);
           })}
         </div>
       </div>

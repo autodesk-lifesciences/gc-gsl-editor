@@ -1,10 +1,10 @@
-import React, { PropTypes, Component } from 'react';
+import React, { Component } from 'react';
 import CodeEditorLayout from './editor/CodeEditorLayout';
 import ConsoleLayout from './console/ConsoleLayout';
-var gslState = require('../../globals');
+let gslState = require('../../globals');
 
 /**
- * GSLEditorLayout groups together the Editor and Output Console Components 
+ * GSLEditorLayout groups together the Editor and Output Console Components
  * and manages communication between them.
  */
 export default class GSLEditorLayout extends Component {
@@ -58,7 +58,9 @@ export default class GSLEditorLayout extends Component {
     this.setState({ isConsoleOpen: value });
     gslState.isConsoleOpen = value;
     // Needed for scrollbar resize with content.
-    setTimeout(() => {window.dispatchEvent(new Event('resize'))}, 40);
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 40);
   };
 
   render() {

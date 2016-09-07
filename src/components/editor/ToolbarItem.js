@@ -18,17 +18,16 @@ export default class ToolbarItem extends Component {
     action: PropTypes.func.isRequired,
     disabled: PropTypes.bool,
   };
-  
+
   static defaultProps = {
     disabled: false,
   };
 
-	render() {
-
-    let divClasses = 'ToolbarItem' + (this.props.disabled ? ' disabled' : '');
-    let linkClass = 'ToolbarItemLink' + (this.props.disabled ? ' disabled' : '');
-		return (
-			<div className={divClasses}
+  render() {
+    const divClasses = 'ToolbarItem' + (this.props.disabled ? ' disabled' : '');
+    const linkClass = 'ToolbarItemLink' + (this.props.disabled ? ' disabled' : '');
+    return (
+      <div className={divClasses}
         style={{ backgroundImage: `url(${this.props.imageUrl})`}}
         onClick = {this.props.action}>
         <a className={linkClass} id={this.props.label + '-a'}>
@@ -36,5 +35,5 @@ export default class ToolbarItem extends Component {
         </a>
       </div>
     );
-	}
+  }
 }

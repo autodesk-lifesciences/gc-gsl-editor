@@ -33,17 +33,16 @@ export default class CodeEditorAce extends Component {
   };
 
   componentDidMount() {
-
     window.constructor.DnD.registerTarget(this.element, {
       drop: this.onDrop.bind(this),
       zorder: 1000,
     });
 
     this.ace.editor.completers.push({
-      getCompletions: function(editor, session, pos, prefix, callback) {
+      getCompletions: (editor, session, pos, prefix, callback) => {
          // callback(null, autocompleteList.geneList);
       },
-      getDocTooltip: function(item) {
+      getDocTooltip: (item) => {
         if (autocompleteList.geneDocStrings[item.value]) {
           item.docHTML = '<textarea rows=4 cols=40 enabled=false>' + autocompleteList.geneDocStrings[item.value] + '</textarea>';
         }
@@ -61,20 +60,6 @@ export default class CodeEditorAce extends Component {
     this.listener();
   }
 
-  getEditorHeight = () => {
-    //return this.element.getBoundingClientRect().height;
-    let editorHeight = 0;
-    this.ace.editor.focus();
-    if (document.querySelector('.GSLEditorLayout') !== null && document.querySelector('.ConsoleLayout') !== null)
-      editorHeight = document.querySelector('.GSLEditorLayout').getBoundingClientRect().height - document.querySelector('.ConsoleLayout').getBoundingClientRect().height - 60;
-    return editorHeight;
-  }
-
-  // This editor seems to be returning the content of the editor rather than the event
-  handleChange = (e) => {
-    this.props.callbackParent(e);
-  };
-
   // Trigger drag and drop behavior when an operator is dropped on the editor
   onDrop = (position, payload, evt) => {
     if (payload.type === 'GSL') {
@@ -82,14 +67,28 @@ export default class CodeEditorAce extends Component {
     }
   };
 
+  getEditorHeight = () => {
+    //return this.element.getBoundingClientRect().height;
+    let editorHeight = 0;
+    this.ace.editor.focus();
+    if (document.querySelector('.GSLEditorLayout') !== null && document.querySelector('.ConsoleLayout') !== null) {
+      editorHeight = document.querySelector('.GSLEditorLayout').getBoundingClientRect().height - document.querySelector('.ConsoleLayout').getBoundingClientRect().height - 60;
+    }
+    return editorHeight;
+  }
+
+  // This editor seems to be returning the content of the editor rather than the event
+  handleChange = (evt) => {
+    this.props.callbackParent(evt);
+  };
 
   render() {
     return (
         <div className="Editor" ref={(el) => {
-            if (el) {
-              this.element = el;
-            }
-          }}>
+          if (el) {
+            this.element = el;
+          }
+        }}>
           <AceEditor ref={(el) => {
             if (el) {
               this.ace = el;
@@ -99,10 +98,10 @@ export default class CodeEditorAce extends Component {
              theme="xcode"
              name="aceEditor"
              editorProps={{ $blockScrolling: Infinity}}
-             setOptions={{dragEnabled: true, enableSnippets:true}}
-             enableBasicAutocompletion={true}
-             enableSnippets={true}
-             enableLiveAutocompletion={true}
+             setOptions={{dragEnabled: true, enableSnippets: true}}
+             enableBasicAutocompletion={Boolean(true)}
+             enableSnippets={Boolean(true)}
+             enableLiveAutocompletion={Boolean(true)}
              width="Infinity"
              height={this.state.editorHeight + 'px'}
              showPrintMargin={false}
