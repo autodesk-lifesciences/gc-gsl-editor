@@ -6,11 +6,27 @@ const JSZip = require('jszip');
 import fs from 'fs';
 
 /**
+ * JSON parser.
+ * @param {string} content
+ */
+const parser = (string) => {
+  if (typeof string !== 'string') {
+    return string;
+  }
+  try {
+    return JSON.parse(string);
+  } catch (err) {
+    console.error(err);
+    return {};
+  }
+};
+
+/**
  * Read a file, optionally parse Json.
  * @param {string} path
- * @param {bool} parseJson 
+ * @param {bool} True, if json should be parsed.
  * @return {string|Object} - Content of the file as a string or JSON Object
- */ 
+ */
 export const fileRead = (path, jsonParse = true) => {
   return new Promise((resolve, reject) => {
     fs.readFile(path, 'utf8', (err, result) => {
@@ -67,7 +83,7 @@ export const makeZip = (path, contentExt, zipFileName) => {
     .then(() => {
       zip.generateNodeStream({type: 'nodebuffer', streamFiles: true})
       .pipe(fs.createWriteStream(path + '/' + zipFileName))
-      .on('finish', function() {
+      .on('finish', () => {
         console.log(`Written out ${zipFileName}.`);
         resolve(zip);
       });

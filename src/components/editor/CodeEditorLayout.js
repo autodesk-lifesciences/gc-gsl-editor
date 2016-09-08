@@ -11,7 +11,7 @@ import { registerKeysRunCode } from '../../behavior/editor/keyBindings';
 
 const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
-let gslState = require('../../../globals');
+const gslState = require('../../../globals');
 
 /**
  * CodeEditorLayout groups together the components of the editor.
@@ -106,6 +106,22 @@ export default class CodeEditorLayout extends Component {
   }
 
   /**
+   * Actions to be performed when this component mounts.
+   */
+  componentDidMount() {
+    this.refreshDownloadMenu();
+    if (gslState.hasOwnProperty('isConsoleOpen')) {
+      this.props.onToggleConsoleVisibility(gslState.isConsoleOpen);
+    }
+    if (gslState.hasOwnProperty('editorContent') && this.state.editorContent !== gslState.editorContent) {
+      this.onEditorContentChange(gslState.editorContent);
+      this.onResultContentChange(gslState.resultContent);
+      this.onStatusMessageChange(gslState.statusContent);
+    }
+    registerKeysRunCode(this.codeEditor.ace, this.runCode);
+  }
+
+  /**
    * Actions to be performed when the editor content changes
    * @param {string} content
    */
@@ -121,7 +137,7 @@ export default class CodeEditorLayout extends Component {
     // Enable or disable the 'Save' button based on the editor content.
     const projectId = window.constructor.api.projects.projectGetCurrentId();
     if (gslState.hasOwnProperty(projectId)) {
-      let items = this.state.toolbarItems;
+      const items = this.state.toolbarItems;
       if (gslState[projectId].hasOwnProperty('savedCode')) {
         if (content === gslState[projectId].savedCode) {
           items[1].disabled = true;
@@ -180,7 +196,7 @@ export default class CodeEditorLayout extends Component {
    * @param {Object} settings
    */
   onDownloadMenuSettingsChange = (settings) => {
-    let items = this.state.downloadItems;
+    const items = this.state.downloadItems;
     let index = 0;
     for (const item of this.state.downloadItems) {
       // special case gsl
@@ -269,7 +285,7 @@ export default class CodeEditorLayout extends Component {
       }
       gslState[projectId].savedCode = this.state.editorContent;
       // disable the 'Save' Button
-      let items = this.state.toolbarItems;
+      const items = this.state.toolbarItems;
       if (gslState[projectId].hasOwnProperty('savedCode')) {
         items[1].disabled = true;
         this.setState( { toolbarItems: items});
@@ -307,22 +323,6 @@ export default class CodeEditorLayout extends Component {
     window.constructor.api.ui.inventoryToggleVisibility(true);
     window.constructor.api.ui.inventorySelectTab('gsl');
     this.codeEditor.ace.editor.focus();
-  }
-
-  /**
-   * Actions to be performed when this component mounts.
-   */
-  componentDidMount() {
-    this.refreshDownloadMenu();
-    if (gslState.hasOwnProperty('isConsoleOpen')) {
-      this.props.onToggleConsoleVisibility(gslState.isConsoleOpen);
-    }
-    if (gslState.hasOwnProperty('editorContent') && this.state.editorContent !== gslState.editorContent) {
-      this.onEditorContentChange(gslState.editorContent);
-      this.onResultContentChange(gslState.resultContent);
-      this.onStatusMessageChange(gslState.statusContent);
-    }
-    registerKeysRunCode(this.codeEditor.ace, this.runCode);
   }
 
   /**
@@ -364,8 +364,8 @@ export default class CodeEditorLayout extends Component {
       'cm': 'Clone Manager output zip file',
       'allFormats': 'files',
     };
-    const buttonType = evt.nativeEvent.button;
-    for (const key of Object.keys(fileMap)) {
+
+    const saveGSLAndDownload = (evt, key, buttonType) => {
       if (evt.currentTarget.id.indexOf(key) !== -1) {
           // Save file first if required, if the gsl file is requested.
         if ((key === 'gsl' || key === 'allFormats') && (!this.state.toolbarItems[1].disabled)) {
@@ -396,6 +396,11 @@ export default class CodeEditorLayout extends Component {
           this.downloadFileByType(key, buttonType);
         }
       }
+    };
+
+    const buttonType = evt.nativeEvent.button;
+    for (const key of Object.keys(fileMap)) {
+      saveGSLAndDownload(evt, key, buttonType);
     }
     this.codeEditor.ace.editor.focus();
   }

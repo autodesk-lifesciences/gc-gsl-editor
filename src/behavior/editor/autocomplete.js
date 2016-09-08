@@ -7,9 +7,9 @@ function requireAll(requireContext) {
 }
 
 const genomes = requireAll(require.context('../../../resources/genomes', false, /.json$/));
-let autocompleteGeneList = [];
-let autocompleteDocStrings = {};
-let geneList = [];
+const autocompleteGeneList = [];
+const autocompleteDocStrings = {};
+const geneList = [];
 let altName;
 let geneListString;
 

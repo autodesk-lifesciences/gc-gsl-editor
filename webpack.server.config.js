@@ -1,8 +1,6 @@
-var path = require('path');
-var webpack = require('webpack');
-var extensionConfig = require('./package.json');
-// modules section is very similar for debug and release so
-// the config is shared. In release we add eslint as a preLoader.
+const path = require('path');
+const webpack = require('webpack');
+const extensionConfig = require('./package.json');
 
 const serverModules = {
   loaders: [
@@ -13,120 +11,76 @@ const serverModules = {
     },
     {
       test: /\.json/,
-      loader: 'json-loader'
-    }
+      loader: 'json-loader',
+    },
   ],
 };
 // entry point doesn't vary by build
-const entry = "./server/router.js";
+const entry = './server/router.js';
 
 // ===========================================================================
 // debug builds a source map decorated, non minified version of the extension
 // ===========================================================================
 const debug = {
   entry,
-  target: "node",
+  target: 'node',
   node: {
-    '__dirname': true
+    '__dirname': true,
   },
   output: {
-    filename: "./server-build.js",
+    filename: './server-build.js',
     libraryTarget: 'commonjs2',
   },
-  devtool: "inline-source-map",
+  devtool: 'inline-source-map',
   module: serverModules,
   plugins: [
     new webpack.DefinePlugin({
-      'EXTENSION_DEPLOY_DIR': JSON.stringify(path.join('extensions', 'node_modules', extensionConfig.name))
-    })
-  ],
-};
-
-const server = {
-  entry,
-  target: "node",
-  node: {
-    '__dirname': true
-  },
-  output: {
-    filename: "./server-build.js",
-    libraryTarget: 'commonjs2',
-  },
-  module: serverModules,
-  devtool: "inline-source-map",
-  plugins: [
-    new webpack.DefinePlugin({
-      'EXTENSION_DEPLOY_DIR': JSON.stringify(path.join('extensions', 'node_modules', extensionConfig.name))
-    })
+      'process.env.EXTENSION_DEPLOY_DIR': JSON.stringify(path.join('extensions', 'node_modules', extensionConfig.name)),
+    }),
   ],
 };
 
 // ===========================================================================
 // release builds a minified version of the extension
 // ===========================================================================
-const releaseback = {
-  entry,
-  target: "node",
-  node: {
-    '__dirname': true
-  },
-  output: {
-    filename: "./server-build.js",
-    libraryTarget: 'commonjs2',
-  },
-  module: Object.assign({}, serverModules, {
-    preLoaders: [
-      {test: /\.js$/, loader: "eslint-loader", exclude: /node_modules/}
-    ],
-  }),
-  plugins: [
-    new webpack.DefinePlugin({
-      'EXTENSION_DEPLOY_DIR': JSON.stringify(path.join('extensions', 'node_modules', extensionConfig.name))
-    })
-  ],
-  eslint: {
-    configFile: './.eslintrc',
-    failOnError: true
-  }
-};
-
 const release = {
   entry,
-  target: "node",
+  target: 'node',
   node: {
-    '__dirname': true
+    '__dirname': true,
   },
   output: {
-    filename: "./server-build.js",
+    filename: './server-build.js',
     libraryTarget: 'commonjs2',
   },
   module: serverModules,
   plugins: [
     new webpack.DefinePlugin({
-      'EXTENSION_DEPLOY_DIR': JSON.stringify(path.join('extensions', 'node_modules', extensionConfig.name))
-    })
-  ]
+      'process.env.EXTENSION_DEPLOY_DIR': JSON.stringify(path.join('extensions', 'node_modules', extensionConfig.name)),
+    }),
+  ],
 };
+
 // ===========================================================================
 // dev is a modified version of the debug build that puts the output directly in the app.
 // Change the filename to put to your dev file.
 // ===========================================================================
 const dev = {
   entry,
-  target: "node",
+  target: 'node',
   node: {
-    '__dirname': true
+    '__dirname': true,
   },
   output: {
-    filename: "./server-build.js",
+    filename: './server-build.js',
     libraryTarget: 'commonjs2',
   },
   module: serverModules,
-  devtool: "inline-source-map",
+  devtool: 'inline-source-map',
   plugins: [
     new webpack.DefinePlugin({
-      'EXTENSION_DEPLOY_DIR': JSON.stringify(path.join('extensions', 'node_modules', extensionConfig.name))
-    })
+      'process.env.EXTENSION_DEPLOY_DIR': JSON.stringify(path.join('extensions', 'node_modules', extensionConfig.name)),
+    }),
   ],
 };
 
@@ -144,8 +98,4 @@ if (TARGET === 'release-server') {
 
 if (TARGET === 'watch-server') {
   module.exports = dev;
-}
-
-if (TARGET === 'build-server') {
-  module.exports = server;
 }

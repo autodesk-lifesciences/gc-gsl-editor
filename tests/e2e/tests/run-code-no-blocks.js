@@ -29,7 +29,7 @@ module.exports = {
     runCode(
       browser,
       '',
-      'Program exited with status code: 0'
+      'Code executed successfully.'
     );
 
     browser
@@ -39,7 +39,7 @@ module.exports = {
     runCode(
       browser,
       'Invalid code',
-      'Program exited with status code: 1'
+      'Running this code resulted in errors. Please check the console for details.'
     )
 
     blockCount(browser, 1);

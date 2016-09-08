@@ -2,7 +2,6 @@
  * Helper functions to execute a GSL command line tool (gslc) and process its argumnets.
  */
 
-import fs from 'fs';
 import { createProjectFilePath, createProjectFilesDirectoryPath } from './project';
 import { argConfig } from '../config';
 
@@ -12,9 +11,9 @@ import { argConfig } from '../config';
  * @param {string} extensionKey
  * @param {Object} args - Hash of gslc options with file placeholders
  * @return {Object} - Hash of gslc options with resolved file path arguments
- */ 
+ */
 export const preprocessArgs = (projectId, extensionKey, args) => {
-  let modifiedArgs = args;
+  const modifiedArgs = args;
   for (const key of Object.keys(modifiedArgs)) {
     if (argConfig.fileArguments.hasOwnProperty(key)) {
       // Get or create a type for this file and modify the argument string.
@@ -38,10 +37,10 @@ export const preprocessArgs = (projectId, extensionKey, args) => {
  * Make a string of the GSL argument map.
  * @param {Object} Processed gslc options
  * @return {string} - A string of options and arguments.
- */ 
+ */
 export const makeArgumentString = (args) => {
   let argumentString = '';
-  for (let key of Object.keys(args)) {
+  for (const key of Object.keys(args)) {
     // create the option string.
     argumentString += ' ' + key + ' ';
     argumentString += args[key].join(' ');

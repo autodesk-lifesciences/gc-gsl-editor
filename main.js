@@ -3,13 +3,17 @@ import ReactDOM from 'react-dom';
 import GSLEditorLayout from './src/components/GSLEditorLayout';
 const extensionConfig = require('./package.json');
 const defaultEditorContent = '#name NewGSLConstruct\n';
-let gslState = require('./globals');
+const gslState = require('./globals');
 
+/**
+ * Load GSL code associated with the project into the editor.
+ * @param {string} url of the GSL file in the project.
+ */
 const loadProjectCode = (url) => {
-  return new Promise(function(resolve, reject) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.onreadystatechange = function() {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
           const allText = xhr.responseText;
@@ -18,21 +22,26 @@ const loadProjectCode = (url) => {
           gslState.resultContent = '';
           gslState.statusContent = '';
           const projectId = window.constructor.api.projects.projectGetCurrentId();
-          if (!gslState.hasOwnProperty(projectId)) 
-            gslState[projectId] = {}
+          if (!gslState.hasOwnProperty(projectId)) {
+            gslState[projectId] = {};
+          }
           gslState[projectId].savedCode = gslState.editorContent;
           resolve();
         }
       }
-    }
+    };
     xhr.send(null);
   });
-}
+};
 
+/**
+ * Load the GSL to construct metadata (stored on the server) into the project.
+ * @param {string} url of the metadata settings file.
+ */
 const loadSettings = (url) => {
-  var xhr = new XMLHttpRequest();
-  xhr.open("GET", url, true);
-  xhr.onreadystatechange = function() {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.onreadystatechange = () => {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
         const allText = xhr.responseText;
@@ -40,10 +49,14 @@ const loadSettings = (url) => {
         gslState.gslConstructs = jsonSettings.constructs;
       }
     }
-  }
+  };
   xhr.send(null);
-}
+};
 
+/**
+ * Load editor detauls.
+ * @param {Object} instance of the container
+ */
 const loadDefaults = (container) => {
   gslState.editorContent = defaultEditorContent;
   gslState.resultContent = '';
@@ -56,17 +69,21 @@ const loadDefaults = (container) => {
     'project.run.gsl',
     ''
   ).then(()=> {
-     ReactDOM.render(<GSLEditorLayout/>, container);
-   })
+    ReactDOM.render(<GSLEditorLayout/>, container);
+  })
   .catch((err) => {
     console.log(err);
     ReactDOM.render(<GSLEditorLayout/>, container);
-  });  
-}
+  });
+};
 
+/**
+ * The main render function.
+ * @param {Object} container element of the extension.
+ * @param {Object} other container size related data.
+ */
 function render(container, options) {
-
-  var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
+  const subscriber = window.constructor.store.subscribe((state, lastAction) => {
     if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
       if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
         // read the list of files on present on the server
@@ -96,8 +113,7 @@ function render(container, options) {
                   .then((response) => {
                     if (response.status === 200) {
                       loadSettings(response.url);
-                    }
-                    else {
+                    } else {
                       gslState.gslConstructs = [];
                     }
                   })
@@ -117,11 +133,10 @@ function render(container, options) {
           loadDefaults(container);
         });
       } else {
-          ReactDOM.render(<GSLEditorLayout/>, container);
+        ReactDOM.render(<GSLEditorLayout/>, container);
       }
-        gslState.prevProject = window.constructor.api.projects.projectGetCurrentId();
-    }
-    else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
+      gslState.prevProject = window.constructor.api.projects.projectGetCurrentId();
+    } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
       // save the current content of the editor.
       window.constructor.extensions.files.write(
         window.constructor.api.projects.projectGetCurrentId(),
@@ -137,8 +152,7 @@ function render(container, options) {
         console.log('Failed to save GSL Code');
         console.log(err);
       });
-    }
-    else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_OPEN) {
+    } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_OPEN) {
       // read code from the server.
       window.constructor.extensions.files.read(
         window.constructor.api.projects.projectGetCurrentId(),
