@@ -35,7 +35,7 @@ module.exports = {
     runCode(
       browser,
       code,
-      'Program exited with status code: 0'
+      'Code executed successfully.'
     );
 
     browser

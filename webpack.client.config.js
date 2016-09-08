@@ -1,6 +1,4 @@
-var path = require('path');
-
-var AUTOPREFIXER_BROWSERS = [
+const AUTOPREFIXER_BROWSERS = [
   'Android 2.3',
   'Android >= 4',
   'Chrome >= 35',
@@ -19,30 +17,30 @@ const clientModules = {
       exclude: [
         /node_modules/,
         'client-build.js',
-        'server-build.js'
+        'server-build.js',
       ],
     },
     {
       test: /\.css$/,
-      loader: 'style-loader!css-loader!postcss-loader'
+      loader: 'style-loader!css-loader!postcss-loader',
     },
     {
       test: /\.json/,
-      loader: 'json-loader'
-    }
+      loader: 'json-loader',
+    },
   ],
   postcss: function plugins(bundler) {
     return [
       require('postcss-import')({ addDependencyTo: bundler }),
       require('postcss-nested')(),
-      require('postcss-cssnext')({ autoprefixer: AUTOPREFIXER_BROWSERS })
+      require('postcss-cssnext')({ autoprefixer: AUTOPREFIXER_BROWSERS }),
     ];
   },
   //devtool: 'inline-source-map',
-}
+};
 
 // entry point doesn't vary by build
-const entry = "./main.js";
+const entry = './main.js';
 
 // =================================================================================
 // debug builds a source map decorated, non minified version of the extension client
@@ -50,22 +48,22 @@ const entry = "./main.js";
 const debug = {
   entry,
   output: {
-    filename: "client-build.js",
+    filename: './client-build.js',
   },
-  module: clientModules
+  module: clientModules,
+  devtool: 'inline-source',
 };
 
 
 // ===========================================================================
 // release builds a minified version of the extension client
 // ===========================================================================
-
 const release = {
   entry,
   output: {
-    filename: "./client-build.js",
+    filename: './client-build.js',
   },
-  module: clientModules
+  module: clientModules,
 };
 
 // =======================================================================================
@@ -74,9 +72,9 @@ const release = {
 const dev = {
   entry,
   output: {
-    filename: "./client-build.js",
+    filename: './client-build.js',
   },
-  module: clientModules
+  module: clientModules,
 };
 
 // get target from npm command used to start the build

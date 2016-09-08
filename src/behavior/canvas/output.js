@@ -28,7 +28,7 @@ const removeGSLConstructs = () => {
  */
 const renderBlocks = (assemblyList) => {
   let blockModel = {};
-  let gslConstructs = [];
+  const gslConstructs = [];
   assemblyList.reverse();
 
   for (const assembly of assemblyList) {

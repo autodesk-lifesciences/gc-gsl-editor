@@ -68,10 +68,14 @@
 	var defaultEditorContent = '#name NewGSLConstruct\n';
 	var gslState = __webpack_require__(303);
 
+	/**
+	 * Load GSL code associated with the project into the editor.
+	 * @param {string} url of the GSL file in the project.
+	 */
 	var loadProjectCode = function loadProjectCode(url) {
 	  return new _promise2.default(function (resolve, reject) {
 	    var xhr = new XMLHttpRequest();
-	    xhr.open("GET", url, true);
+	    xhr.open('GET', url, true);
 	    xhr.onreadystatechange = function () {
 	      if (xhr.readyState === 4) {
 	        if (xhr.status === 200) {
@@ -81,7 +85,9 @@
 	          gslState.resultContent = '';
 	          gslState.statusContent = '';
 	          var projectId = window.constructor.api.projects.projectGetCurrentId();
-	          if (!gslState.hasOwnProperty(projectId)) gslState[projectId] = {};
+	          if (!gslState.hasOwnProperty(projectId)) {
+	            gslState[projectId] = {};
+	          }
 	          gslState[projectId].savedCode = gslState.editorContent;
 	          resolve();
 	        }
@@ -91,9 +97,13 @@
 	  });
 	};
 
+	/**
+	 * Load the GSL to construct metadata (stored on the server) into the project.
+	 * @param {string} url of the metadata settings file.
+	 */
 	var loadSettings = function loadSettings(url) {
 	  var xhr = new XMLHttpRequest();
-	  xhr.open("GET", url, true);
+	  xhr.open('GET', url, true);
 	  xhr.onreadystatechange = function () {
 	    if (xhr.readyState === 4) {
 	      if (xhr.status === 200) {
@@ -106,6 +116,10 @@
 	  xhr.send(null);
 	};
 
+	/**
+	 * Load editor detauls.
+	 * @param {Object} instance of the container
+	 */
 	var loadDefaults = function loadDefaults(container) {
 	  gslState.editorContent = defaultEditorContent;
 	  gslState.resultContent = '';
@@ -120,8 +134,12 @@
 	  });
 	};
 
+	/**
+	 * The main render function.
+	 * @param {Object} container element of the extension.
+	 * @param {Object} other container size related data.
+	 */
 	function render(container, options) {
-
 	  var subscriber = window.constructor.store.subscribe(function (state, lastAction) {
 	    if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
 	      if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
@@ -22469,43 +22487,44 @@
 	        'cm': 'Clone Manager output zip file',
 	        'allFormats': 'files'
 	      };
+
+	      var saveGSLAndDownload = function saveGSLAndDownload(evt, key, buttonType) {
+	        if (evt.currentTarget.id.indexOf(key) !== -1) {
+	          // Save file first if required, if the gsl file is requested.
+	          if ((key === 'gsl' || key === 'allFormats') && !_this.state.toolbarItems[1].disabled) {
+	            // save the GSL file first before downloading.
+	            window.constructor.extensions.files.write(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'project.gsl', gslState.editorContent).then(function () {
+	              // refactor this to separate the save part.
+	              gslState.refreshDownloadList = true;
+	              setTimeout(function () {
+	                _this.onStatusMessageChange('');
+	              }, 2000);
+	              _this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
+	              _this.downloadFileByType(key, buttonType);
+	            }).catch(function (err) {
+	              console.log('Failed to save GSL Code');
+	              console.log(err);
+	            });
+	          } else {
+	            setTimeout(function () {
+	              _this.onStatusMessageChange('');
+	            }, 2000);
+	            _this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
+	            _this.downloadFileByType(key, buttonType);
+	          }
+	        }
+	      };
+
 	      var buttonType = evt.nativeEvent.button;
 	      var _iteratorNormalCompletion2 = true;
 	      var _didIteratorError2 = false;
 	      var _iteratorError2 = undefined;
 
 	      try {
-	        var _loop = function _loop() {
+	        for (var _iterator2 = (0, _getIterator3.default)((0, _keys2.default)(fileMap)), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
 	          var key = _step2.value;
 
-	          if (evt.currentTarget.id.indexOf(key) !== -1) {
-	            // Save file first if required, if the gsl file is requested.
-	            if ((key === 'gsl' || key === 'allFormats') && !_this.state.toolbarItems[1].disabled) {
-	              // save the GSL file first before downloading.
-	              window.constructor.extensions.files.write(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name, 'project.gsl', gslState.editorContent).then(function () {
-	                // refactor this to separate the save part.
-	                gslState.refreshDownloadList = true;
-	                setTimeout(function () {
-	                  _this.onStatusMessageChange('');
-	                }, 2000);
-	                _this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
-	                _this.downloadFileByType(key, buttonType);
-	              }).catch(function (err) {
-	                console.log('Failed to save GSL Code');
-	                console.log(err);
-	              });
-	            } else {
-	              setTimeout(function () {
-	                _this.onStatusMessageChange('');
-	              }, 2000);
-	              _this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
-	              _this.downloadFileByType(key, buttonType);
-	            }
-	          }
-	        };
-
-	        for (var _iterator2 = (0, _getIterator3.default)((0, _keys2.default)(fileMap)), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	          _loop();
+	          saveGSLAndDownload(evt, key, buttonType);
 	        }
 	      } catch (err) {
 	        _didIteratorError2 = true;
@@ -22581,88 +22600,12 @@
 	  }
 
 	  /**
-	   * Actions to be performed when the editor content changes
-	   * @param {string} content
-	   */
-
-
-	  /**
-	   * Actions to be performed when the status message changes
-	   * @param {string} message
-	   */
-
-
-	  /**
-	   * Actions to be performed when the result of the code execution changes
-	   * @param {string} content
-	   */
-
-
-	  /**
-	   * Actions to be performed when the download menu is toggled
-	   * @param {bool} value
-	   */
-
-
-	  /**
-	   * Sets the position of the download menu
-	   * @param {string} content
-	   */
-
-
-	  /**
-	   * Actions to be performed when the attributes of the download items change.
-	   * @param {Object} settings
-	   */
-
-
-	  /**
-	   * actions to be performed when the editor content changes
-	   * @param {string} content
-	   */
-
-
-	  /**
-	   * Toggles comments in the editor.
-	   */
-
-
-	  /**
-	   * Expands the console window.
-	   */
-
-
-	  /**
-	   * Runs GSL code present in the editor
-	   * @param {MouseEvent} click event
-	   */
-
-
-	  /**
-	   * Saves the GSL code associated with the project on the server.
-	   * @param {MouseEvent} click event
-	   */
-
-
-	  /**
-	   * Opens the download menu.
-	   * @param {MouseEvent} click event
-	   */
-
-
-	  /**
-	   * Opens the GSL Library panel in the inventory.
-	   * @param {MouseEvent} click event
+	   * Actions to be performed when this component mounts.
 	   */
 
 
 	  (0, _createClass3.default)(CodeEditorLayout, [{
 	    key: 'componentDidMount',
-
-
-	    /**
-	     * Actions to be performed when this component mounts.
-	     */
 	    value: function componentDidMount() {
 	      this.refreshDownloadMenu();
 	      if (gslState.hasOwnProperty('isConsoleOpen')) {
@@ -22675,6 +22618,82 @@
 	      }
 	      (0, _keyBindings.registerKeysRunCode)(this.codeEditor.ace, this.runCode);
 	    }
+
+	    /**
+	     * Actions to be performed when the editor content changes
+	     * @param {string} content
+	     */
+
+
+	    /**
+	     * Actions to be performed when the status message changes
+	     * @param {string} message
+	     */
+
+
+	    /**
+	     * Actions to be performed when the result of the code execution changes
+	     * @param {string} content
+	     */
+
+
+	    /**
+	     * Actions to be performed when the download menu is toggled
+	     * @param {bool} value
+	     */
+
+
+	    /**
+	     * Sets the position of the download menu
+	     * @param {string} content
+	     */
+
+
+	    /**
+	     * Actions to be performed when the attributes of the download items change.
+	     * @param {Object} settings
+	     */
+
+
+	    /**
+	     * actions to be performed when the editor content changes
+	     * @param {string} content
+	     */
+
+
+	    /**
+	     * Toggles comments in the editor.
+	     */
+
+
+	    /**
+	     * Expands the console window.
+	     */
+
+
+	    /**
+	     * Runs GSL code present in the editor
+	     * @param {MouseEvent} click event
+	     */
+
+
+	    /**
+	     * Saves the GSL code associated with the project on the server.
+	     * @param {MouseEvent} click event
+	     */
+
+
+	    /**
+	     * Opens the download menu.
+	     * @param {MouseEvent} click event
+	     */
+
+
+	    /**
+	     * Opens the GSL Library panel in the inventory.
+	     * @param {MouseEvent} click event
+	     */
+
 
 	    /**
 	     * Downloads a file based on its type.
@@ -91212,11 +91231,11 @@
 		},
 		"scripts": {
 			"postinstall": "rm -rf GSL && git clone https://github.com/rupalkhilari/GSL.git && cd GSL && git checkout json_assembly && ./build.sh CopyBinaries",
-			"test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js tests/unit/editor.test.js",
+			"test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js",
 			"nightwatch": "node ./node_modules/nightwatch/bin/nightwatch --config ./tests/e2e/nightwatch.json",
 			"selenium": "node ./node_modules/selenium-standalone/bin/selenium-standalone install",
 			"e2e": "NODE_ENV=test node ./tests/e2e/bin/e2e.js",
-			"build": "webpack --config webpack.config.js && babel server/router.js -o server-build.js",
+			"lint": "../../node_modules/eslint/bin/eslint.js * -c ../../.eslintrc --ignore-path ../../.eslintignore --ignore-pattern src/behavior/editor/brace/*/*.js,tests/,GSL,*.json,*.md ; exit 0",
 			"debug-server": "webpack --config webpack.server.config.js",
 			"watch-server": "webpack --watch --config webpack.server.config.js",
 			"release-server": "webpack --optimize-minimize --config webpack.server.config.js",
@@ -91274,7 +91293,7 @@
 			"postcss-import": "^7.1.0",
 			"postcss-loader": "^0.7.0",
 			"postcss-nested": "^1.0.0",
-			"selenium-standalone": "^5.6.0",
+			"selenium-standalone": "5.5.0",
 			"skin-deep": "^0.16.0",
 			"source-map-support": "^0.4.0",
 			"style-loader": "^0.13.0",
@@ -91778,7 +91797,7 @@
 	 * {function} resultChange - Result/Output text from running the GSL code.
 	 * {string} resultContent - A function to be called when the result changes.
 	 * {bool} isOpen - True, if the output console is open.
-	 * {function} onToggleConsoleVisibility - A function to be called when the console visibility is toggled.
+	 * {function} onToggleConsoleVisibility - A function to be called when the console visibility is toggled.
 	 */
 	var ConsoleLayout = function (_Component) {
 	  (0, _inherits3.default)(ConsoleLayout, _Component);

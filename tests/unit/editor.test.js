@@ -45,7 +45,7 @@ describe('Testing Toolbar component', function() {
     expect(item.props.label).to.equal('Run');
     expect(item.props.action).to.equal(runFunc);
     expect(item.props.imageUrl).to.equal('/images/ui/run_icon.svg');
-    expect(item.props.enabled).to.equal(true, 'The item is enabled by default');
+    expect(item.props.disabled).to.equal(false, 'The item is enabled by default');
   });
 
   it('Creates the same number of elements as the array', function() {

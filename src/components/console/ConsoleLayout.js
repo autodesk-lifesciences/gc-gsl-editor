@@ -11,7 +11,7 @@ import Titlebar from './Titlebar';
  * {function} resultChange - Result/Output text from running the GSL code.
  * {string} resultContent - A function to be called when the result changes.
  * {bool} isOpen - True, if the output console is open.
- * {function} onToggleConsoleVisibility - A function to be called when the console visibility is toggled.
+ * {function} onToggleConsoleVisibility - A function to be called when the console visibility is toggled.
  */
 export default class ConsoleLayout extends Component {
 
