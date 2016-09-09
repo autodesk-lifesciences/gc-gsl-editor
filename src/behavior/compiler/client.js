@@ -23,6 +23,7 @@ export const run = (data, args, projectId) => {
 
   return fetch('/extensions/api/' + config.name + '/gslc', {
     method: 'POST',
+    credentials: 'same-origin',
     headers: {
       'Content-type': 'application/json; charset=UTF-8',
     },
@@ -57,6 +58,7 @@ export const getAvailableDownloadList = (projectId) => {
   const stringified = JSON.stringify(payload);
   return fetch('/extensions/api/' + config.name + '/listDownloads', {
     method: 'POST',
+    credentials: 'same-origin',
     headers: {
       'Content-type': 'application/json; charset=UTF-8',
     },

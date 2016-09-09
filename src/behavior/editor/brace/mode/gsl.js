@@ -20,9 +20,9 @@ var GslHighlightRules = function() {
     );
 
     var builtinPragmas = (
-        "push|pop|warn|linkers|refgenome|dnasrc|name|fuse|stitch|megastitch|" +
-        "rabitstart|rabitend|primerpos|warnoff|primermin|primermax|pcrparams|targettm|" +
-        "seamlesstm|seamlessoverlaptm|atpenalty"
+        "\#push|\#pop|\#warn|\#linkers|\#refgenome|\#dnasrc|\#name|\#fuse|\#stitch|\#megastitch|" +
+        "\#rabitstart|\#rabitend|\#primerpos|\#warnoff|\#primermin|\#primermax|\#pcrparams|\#targettm|" +
+        "\#seamlesstm|\#seamlessoverlaptm|\#atpenalty"
     );
 
     // adding GSL Genes to the wordlist.
@@ -112,7 +112,7 @@ var GslHighlightRules = function() {
                 regex : "(let|cut|end|for|in|open|do)\\b"
             },
             {
-                token : ["keyword.operator", "keyword.operator", "constant.gene"],
+                token : ["keyword.operator", "keyword.operator", "gsl.gene"],
                 regex : "(!)?(g|p|t|u|d|o|f|m|!|@|~|\\$)(" + escapedGeneList.join('|') + ")\\b"
             },
             {
@@ -122,6 +122,10 @@ var GslHighlightRules = function() {
             {
                 token : ["keyword.operator", "keyword.operator", "gsl.inline", "keyword.operator"],
                 regex : "(\\/)(\\$)?([A|C|G|T|a|c|g|t]+)(\\/)"  // verify if we require more characters.
+            },
+            {
+                token : "gsl.pragma",
+                regex : builtinPragmas
             },
             {
                 token : "keyword.operator",
