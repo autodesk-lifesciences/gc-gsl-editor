@@ -38,9 +38,9 @@ This builds the debug version of both the client (`./main.js`) and the server (`
 ## System Diagram
 As shown below, at a high level, the GSL extension is made up of a client (ReactJS, NodeJS) and a server (NodeJS).
 
-![GSL System Diagram](http://goo.gl/gzDgoR)
+![GSL System Diagram](http://goo.gl/I7I9G5)
 	
 ## Shortcuts
-```Alt + Space``` lists the available keywords, snippets and Genes.
-```Cmd + F``` or ```Ctrl + F ``` brings up the search bar.
-```Cmd + Enter ``` runs the code in the editor.
+* ```Alt + Space``` lists the available keywords, snippets and Genes.
+* ```Cmd + F``` or ```Ctrl + F ``` brings up the search bar.
+* ```Cmd + Enter ``` runs the code in the editor.
