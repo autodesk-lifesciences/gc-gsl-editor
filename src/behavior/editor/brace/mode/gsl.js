@@ -105,7 +105,7 @@ var GslHighlightRules = function() {
             },
             {   
                 token : ["constant.numeric", "keyword.operator"],
-                regex : "(" + integer + ")(S|E)" 
+                regex : "(" + integer + ")(S|E|a)" 
             },
             {
                 token : ["keyword"],
