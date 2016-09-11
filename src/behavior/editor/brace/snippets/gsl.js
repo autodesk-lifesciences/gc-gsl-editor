@@ -26,25 +26,26 @@ snippet f\n\
 snippet m\n\
 	m${1:GENE} \n\
 \n\
-snippet var\n\
-	@${1:variableName}.prototype.${2:method_name} = function(${3:first_argument}) {\n\
-		${4:// body...}\n\
-	};\n\
-snippet proto\n\
-	${1:class_name}.prototype.${2:method_name} = function(${3:first_argument}) {\n\
-		${4:// body...}\n\
-	};\n\
 # Declare variable\n\
 snippet var\n\
 	let ${1:variable_name} = ${2:identifier}\n\
 # Function\n\
-snippet fun\n\
+snippet func\n\
 	let ${1?:function_name}(${2:argument}) =\n\
 		${3:// body...}\n\
 	end\n\
-# Function\n\
+# Simple slice\n\
 snippet slice\n\
-	g${1:GENE}[${2:start}S:${3:end}E] \n\
+	g${1:GENE}[${2:Basepair}S:${3:Basepair}E] \n\
+# Relative slice start\n\
+snippet relativeSliceStart\n\
+	g${1:GENE}[${2:Basepair}S:${3:Basepair}] \n\
+# Protein slice\n\
+snippet proteinSlice\n\
+	g${1:GENE}[${2:Aminoacid}a:${3:Aminoacid}a] \n\
+# Approx slice \n\
+snippet apprSlice\n\
+	g${1:GENE}[~${2:Basepair}:~${3:Basepair}] \n\
 # Delete locus\n\
 snippet del\n\
 	g${1:GENE}^\n\
@@ -61,21 +62,8 @@ snippet for\n\
 	end\n\
 \n\
 \n\
-#modules\n\
-snippet def\n\
-	define(function(require, exports, module) {\n\
-	\"use strict\";\n\
-	var ${1/.*\\///} = require(\"${1}\");\n\
-	\n\
-	$TM_SELECTED_TEXT\n\
-	});\n\
-snippet req\n\
-guard ^\\s*\n\
-	var ${1/.*\\///} = require(\"${1}\");\n\
-	$0\n\
-snippet requ\n\
-guard ^\\s*\n\
-	var ${1/.*\\/(.)/\\u$1/} = require(\"${1}\").${1/.*\\/(.)/\\u$1/};\n\
+snippet name\n\
+	\#name ${0/.*\\/()/\\u$0/}${1:ConstructName} \n\
 	$0\n\
 ";
 exports.scope = 'gsl';
