@@ -22,17 +22,17 @@ module.exports = {
 
     loadExtension(browser);
 
+    openGSLLibrary(browser); // open the GSL library and be prepared for drag drop
+
     clickElementText(browser, 'GSL Editor (S288C)');
 
     browser.waitForElementPresent('.GSLEditorLayout', 4000, 'expected extension to render')
     
-    openGSLLibrary(browser); // open the GSL library and be prepared for drag drop
-
-    /*browser.elementActive(function (result) {
+    browser.elementActive(function (result) {
       browser.elementIdAttribute(result.value.ELEMENT, 'className', function (nodeClass) {
         browser.assert.equal(nodeClass.value, 'ace_text-input', 'expected the Ace editor to have focus on opening');
       });
-    });*/
+    });
 
     browser
       .pause(2000)
