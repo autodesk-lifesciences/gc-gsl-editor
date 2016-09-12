@@ -36,22 +36,22 @@ snippet func\n\
 	end\n\
 # Simple slice\n\
 snippet sl\n\
-	g${1:GENE}[${2:Basepair}:${3:Basepair}] \n\
+	g${1:GENE}[${2:Basepair}:${3:Basepair}]\n\
 # Relative slice start\n\
 snippet sl_relative\n\
-	g${1:GENE}[${2:Basepair}S:${3:Basepair}E] \n\
+	g${1:GENE}[${2:Basepair}S:${3:Basepair}E]\n\
 # Relative slice start\n\
 snippet sl_start\n\
-	g${1:GENE}[${2:Basepair}S:${3:Basepair}] \n\
+	g${1:GENE}[${2:Basepair}S:${3:Basepair}]\n\
 # Relative slice end\n\
 snippet sl_end\n\
-	g${1:GENE}[${2:Basepair}:${3:Basepair}E] \n\
+	g${1:GENE}[${2:Basepair}:${3:Basepair}E]\n\
 # Protein slice\n\
 snippet sl_protein\n\
-	g${1:GENE}[${2:Aminoacid}a:${3:Aminoacid}a] \n\
+	g${1:GENE}[${2:Aminoacid}a:${3:Aminoacid}a]\n\
 # Approx slice \n\
 snippet sl_appr\n\
-	g${1:GENE}[~${2:Basepair}:~${3:Basepair}] \n\
+	g${1:GENE}[~${2:Basepair}:~${3:Basepair}]\n\
 # Delete locus\n\
 snippet del\n\
 	g${1:GENE}^\n\

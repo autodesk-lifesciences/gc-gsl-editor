@@ -3,7 +3,8 @@
  */
 
 const config = require('../../../package.json');
-
+const gslState = require('../../../globals');
+const defaultEditorContent = '#name NewGSLConstruct\n';
 /**
  * Sends the code and corresponding gslc options to run the command on the server.
  * @param {string} editor content
@@ -69,3 +70,97 @@ export const getAvailableDownloadList = (projectId) => {
     return data;
   });
 };
+
+/**
+ * Load GSL code associated with the project into the editor.
+ * @param {string} url of the GSL file in the project.
+ */
+export const loadProjectCode = (url) => {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          const allText = xhr.responseText;
+          gslState.editorContent = allText;
+          gslState.refreshDownloadList = false;
+          gslState.resultContent = '';
+          gslState.statusContent = '';
+          const projectId = window.constructor.api.projects.projectGetCurrentId();
+          if (!gslState.hasOwnProperty(projectId)) {
+            gslState[projectId] = {};
+          }
+          gslState[projectId].savedCode = gslState.editorContent;
+          resolve();
+        }
+      }
+    };
+    xhr.send(null);
+  });
+};
+
+/**
+ * Load the GSL to construct metadata (stored on the server) into the project.
+ * @param {string} url of the metadata settings file.
+ */
+export const loadSettings = (url) => {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.onreadystatechange = () => {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        const allText = xhr.responseText;
+        const jsonSettings = JSON.parse(allText);
+        gslState.gslConstructs = jsonSettings.constructs;
+      }
+    }
+  };
+  xhr.send(null);
+};
+
+/**
+ * Load editor defaults.
+
+ */
+export const loadDefaults = () => {
+  return new Promise((resolve, reject) => {
+    gslState.editorContent = defaultEditorContent;
+    gslState.resultContent = '';
+    gslState.statusContent = '';
+    gslState.refreshDownloadList = true;
+    // write an empty file.
+    window.constructor.extensions.files.write(
+      window.constructor.api.projects.projectGetCurrentId(),
+      config.name,
+      'project.run.gsl',
+      ''
+    ).then(()=> {
+      resolve();
+    })
+    .catch((err) => {
+      console.log(err);
+      reject(err);
+    });
+  });
+};
+
+/**
+ * Save Project code.
+ */
+export const saveProjectCode = () => {
+  window.constructor.extensions.files.write(
+    window.constructor.api.projects.projectGetCurrentId(),
+    config.name,
+    'project.gsl',
+    gslState.editorContent
+  )
+  .then(() => {
+    console.log('Saved GSL Code.');
+    gslState.refreshDownloadList = true;
+  })
+  .catch((err) => {
+    console.log('Failed to save GSL Code');
+    console.log(err);
+  });
+}

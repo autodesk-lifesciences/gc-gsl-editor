@@ -26,7 +26,6 @@
     "debug-client": "webpack --config webpack.client.config.js",
     "watch-client": "webpack --watch --config webpack.client.config.js",
     "release-client": "webpack --optimize-minimize --config webpack.client.config.js",
-    "watch": "npm run watch-server && npm run watch-client",
     "debug": "npm run debug-server && npm run debug-client",
     "release": "npm run release-server && npm run release-client"
   },
