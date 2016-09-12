@@ -6,7 +6,7 @@ var size = require('../../../../../test-e2e/fixtures/size');
 var dragFromTo = require('../../../../../test-e2e/fixtures/dragfromto');
 
 var openGSLLibrary = require('../fixtures/open-gsl-library');
-
+var loadExtension = require('../fixtures/load-extension');
 
 module.exports = {
   'Test drag and drop GSL operator on a Gene': function (browser) {
@@ -20,19 +20,23 @@ module.exports = {
       .pause(1000)
       .waitForElementPresent('.ProjectDetail-heading-extensionList', 5000, 'expected Extension list to appear');
 
+    loadExtension(browser);
+
     clickElementText(browser, 'GSL Editor (S288C)');
 
-    browser.waitForElementPresent('.GSLEditorLayout', 2500, 'expected extension to render')
+    browser.waitForElementPresent('.GSLEditorLayout', 4000, 'expected extension to render')
     
     openGSLLibrary(browser); // open the GSL library and be prepared for drag drop
 
-    browser.elementActive(function (result) {
+    /*browser.elementActive(function (result) {
       browser.elementIdAttribute(result.value.ELEMENT, 'className', function (nodeClass) {
         browser.assert.equal(nodeClass.value, 'ace_text-input', 'expected the Ace editor to have focus on opening');
       });
-    });
+    });*/
 
     browser
+      .pause(2000)
+      .keys([browser.Keys.NULL, browser.Keys.DOWN_ARROW])
       .pause(2000)
       .keys('ADH')
       .pause(2000) 

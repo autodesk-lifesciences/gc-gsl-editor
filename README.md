@@ -31,9 +31,13 @@ This will build the client into `./client-build.js` and the server into `./serve
 
 For fast development, use...
 
-```npm run watch```
+```npm run watch-client```
 
-This builds the debug version of both the client (`./main.js`) and the server (`./server/router.js`) and continues to watch the project for changes, recompiling on all changes. 
+This builds the debug version of the client (`./main.js`) and continues to watch the project for changes, recompiling on all changes. 
+
+```npm run watch-server```
+
+Similarly, this builds the debug version of the the server (`./server/router.js`) and continues to watch for server changes.
 
 ## System Diagram
 As shown below, at a high level, the GSL extension is made up of a client (ReactJS, NodeJS) and a server (NodeJS).
@@ -42,5 +46,6 @@ As shown below, at a high level, the GSL extension is made up of a client (React
 	
 ## Shortcuts
 * ```Alt + Space``` lists the available keywords, snippets and Genes.
+* ```Ctrl + Shift + S``` lists the available snippets.
 * ```Cmd + F``` or ```Ctrl + F ``` brings up the search bar.
 * ```Cmd + Enter ``` runs the code in the editor.

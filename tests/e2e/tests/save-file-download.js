@@ -7,6 +7,7 @@ var size = require('../../../../../test-e2e/fixtures/size');
 var runCode = require('../fixtures/run-code');
 var saveCode = require('../fixtures/save-code');
 var downloadItem = require('../fixtures/download-item');
+var loadExtension = require('../fixtures/load-extension');
 
 module.exports = {
   'Test that the GSL code can be saved and downloaded': function (browser) {
@@ -19,6 +20,8 @@ module.exports = {
     browser
       .pause(1000)
       .waitForElementPresent('.ProjectDetail-heading-extensionList', 5000, 'expected Extension list to appear');
+
+    loadExtension(browser);
 
     clickElementText(browser, 'GSL Editor (S288C)');
 

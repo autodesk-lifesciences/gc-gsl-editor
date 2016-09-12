@@ -4,6 +4,7 @@ var homepageRegister = require('../../../../../test-e2e/fixtures/homepage-regist
 var testProject = require('../../../../../test-e2e/fixtures/testproject');
 var clickElementText = require('../../../../../test-e2e/fixtures/click-element-text');
 var size = require('../../../../../test-e2e/fixtures/size');
+var loadExtension = require('../fixtures/load-extension');
 
 module.exports = {
   'Test opening the GSL extension on a pre-saved project': function (browser) {
@@ -12,6 +13,7 @@ module.exports = {
     size(browser);
     homepageRegister(browser);
     testProject(browser);
+    loadExtension(browser);
 
     browser
       .pause(1000)

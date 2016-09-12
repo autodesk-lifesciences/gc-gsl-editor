@@ -3,6 +3,7 @@ var testProject = require('../../../../../test-e2e/fixtures/testproject');
 var newProject = require('../../../../../test-e2e/fixtures/newproject');
 var clickElementText = require('../../../../../test-e2e/fixtures/click-element-text');
 var size = require('../../../../../test-e2e/fixtures/size');
+var loadExtension = require('../fixtures/load-extension');
 
 module.exports = {
   'Test opening the GSL extension on an unsaved new project': function (browser) {
@@ -15,6 +16,8 @@ module.exports = {
     browser
       .pause(1000)
       .waitForElementPresent('.ProjectDetail-heading-extensionList', 5000, 'expected Extension list to appear');
+
+    loadExtension(browser);
 
     clickElementText(browser, 'GSL Editor (S288C)');
 

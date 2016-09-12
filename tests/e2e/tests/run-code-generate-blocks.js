@@ -5,6 +5,7 @@ var size = require('../../../../../test-e2e/fixtures/size');
 
 var runCode = require('../fixtures/run-code');
 var blockCount = require('../fixtures/block-count');
+var loadExtension = require('../fixtures/load-extension');
 
 module.exports = {
   'Test cases where GSL code produces blocks': function (browser) {
@@ -12,12 +13,14 @@ module.exports = {
     size(browser);
     homepageRegister(browser);
     newProject(browser);
-    
+
     blockCount(browser, 1);
 
     browser
       .pause(1000)
       .waitForElementPresent('.ProjectDetail-heading-extensionList', 3000, 'expected Extension list to appear');
+
+    loadExtension(browser);
 
     clickElementText(browser, 'GSL Editor (S288C)');
 

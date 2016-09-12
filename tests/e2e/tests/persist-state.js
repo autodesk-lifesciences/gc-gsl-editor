@@ -5,6 +5,7 @@ var clickElementText = require('../../../../../test-e2e/fixtures/click-element-t
 var size = require('../../../../../test-e2e/fixtures/size');
 
 var runCode = require('../fixtures/run-code');
+var loadExtension = require('../fixtures/load-extension');
 
 module.exports = {
   'Test that the GSL extension persists its state': function (browser) {
