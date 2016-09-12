@@ -20,8 +20,8 @@ var GslHighlightRules = function() {
     );
 
     var builtinPragmas = (
-        "\#push|\#pop|\#warn|\#linkers|\#refgenome|\#dnasrc|\#name|\#fuse|\#stitch|\#megastitch|" +
-        "\#rabitstart|\#rabitend|\#primerpos|\#warnoff|\#primermin|\#primermax|\#pcrparams|\#targettm|" +
+        "\#push|\#pop|\#linkers|\#refgenome|\#dnasrc|\#name|\#fuse|\#stitch|\#megastitch|" +
+        "\#rabitstart|\#rabitend|\#primerpos|\#warnoff|\#warn|\#primermin|\#primermax|\#pcrparams|\#targettm|" +
         "\#seamlesstm|\#seamlessoverlaptm|\#atpenalty"
     );
 
@@ -129,7 +129,7 @@ var GslHighlightRules = function() {
             },
             {
                 token : "keyword.operator",
-                regex : "\\+\\.|\\-\\.|\\*\\.|\\/\\.|#|;;|\\+|\\-|\\*|\\*\\*\\/|\\/\\/|%|<<|>>|&|\\||\\^|~|<|>|<=|=>|==|!=|<>|<-|="
+                regex : "\\+\\.|\\-\\.|\\*\\.|\\/\\.|###|;;|\\+|\\-|\\*|\\*\\*\\/|\\/\\/|%|<<|>>|&|\\||\\^|~|<|>|<=|=>|==|!=|<>|<-|="
             },
             {
                 token : keywordMapper,

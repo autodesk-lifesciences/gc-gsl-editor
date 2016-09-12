@@ -1232,7 +1232,7 @@ exports.parForEach = function(array, fn, callback) {
 };
 
 //var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/;
-var ID_REGEX = /[A-Z]/;
+var ID_REGEX = /[A-Z\#]/;
 exports.retrievePrecedingIdentifier = function(text, pos, regex) {
     regex = regex || ID_REGEX;
     var buf = [];
@@ -1841,6 +1841,21 @@ var expandSnippet = {
     bindKey: "Tab"
 };
 
+var displaySnippetPopup = {
+    name: "displaySnippetPopup",
+    exec: function(editor) {
+       if (!editor.completer)
+            editor.completer = new Autocomplete();
+        editor.completer.autoInsert = false;
+        editor.completer.autoSelect = true;
+        editor.completers = [ snippetCompleter ];
+        editor.completer.showPopup(editor);
+        editor.completer.cancelContextMenu();
+        editor.completers = [ snippetCompleter, textCompleter, keyWordCompleter ];
+    },
+    bindKey: "Ctrl-Shift-S"
+};
+
 var onChangeMode = function(e, editor) {
     loadSnippetsForMode(editor.session.$mode);
 };
@@ -1924,6 +1939,7 @@ acequire("../config").defineOptions(Editor.prototype, "editor", {
         set: function(val) {
             if (val) {
                 this.commands.addCommand(expandSnippet);
+                this.commands.addCommand(displaySnippetPopup);
                 this.on("changeMode", onChangeMode);
                 onChangeMode(null, this);
             } else {
