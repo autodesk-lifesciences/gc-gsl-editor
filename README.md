@@ -12,9 +12,13 @@ First, install the module dependencies via npm.
 ```npm install```
 
 ### Server installation
-* As a part of the postinstall stage, a fork of the GSL repository will be cloned into the current directory and used by the extension's server to run GSL code. 
+* If you are running an instance of the server locally, you also need to install F# and mono by running the following installation helper script, present in the project root directory (`genome-designer/`). 
 
-* If you are running an instance of the server locally, you also need to install F# and mono by following the instructions given for [Mac]( http://fsharp.org/use/mac/) or [Linux](http://fsharp.org/use/linux/). 
+	```bash tools/install-fsharp.sh```
+
+	Alternatively, you could manually install them by following the instructions given for [Mac]( http://fsharp.org/use/mac/) or [Linux](http://fsharp.org/use/linux/). 
+
+* As a part of the postinstall stage of the GSL extension, a [pre-built fork of the GSL repository](https://github.com/rupalkhilari/GSL-build) will be cloned and used by the extension's server to run GSL code. The development fork of the GSL repository can be found [here](https://github.com/rupalkhilari/GSL).
 
 
 ## Development
