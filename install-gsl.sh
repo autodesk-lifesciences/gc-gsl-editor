@@ -7,7 +7,7 @@ if [ ! -d 'GSL' ]; then
 # If the existing GSL directory is a git repo then update it
 elif [ -d GSL/.git ]; then
 	cd GSL
-	git pull --verbose
+	git pull
 # Else remove the existing GSL directory and reclone it.
 else
 	rm -rf GSL
