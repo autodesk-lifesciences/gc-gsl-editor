@@ -14,7 +14,7 @@
     "router": "server-build.js"
   },
   "scripts": {
-    "postinstall": "bash install-gsl.sh",
+    "postinstall": "./tools/install-fsharp.sh && ./tools/install-gsl.sh",
     "test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js",
     "nightwatch": "node ./node_modules/nightwatch/bin/nightwatch --config ./tests/e2e/nightwatch.json",
     "selenium": "node ./node_modules/selenium-standalone/bin/selenium-standalone install",
@@ -46,7 +46,8 @@
     "react-addons-test-utils": "^0.14.2",
     "react-dom": "0.14.2",
     "shelljs": "^0.7.4",
-    "skin-deep": "^0.16.0"
+    "skin-deep": "^0.16.0",
+    "s288c": "git+http://github.com/rupalkhilari/gsl-genome-s288c.git"
   },
   "devDependencies": {
     "babel-cli": "^6.9.0",

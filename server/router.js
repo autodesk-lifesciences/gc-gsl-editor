@@ -45,21 +45,26 @@ router.post('/gslc', jsonParser, (req, res, next) => {
   // make sure that mono is installed on the server.
   commandExists('mono', (err, commandExists) => {
     if (err || !commandExists) {
-      console.log('ERROR: Could not find mono/fsharp installation on the server to run GSL.');
+      const monoErrorMessage = 'ERROR: Could not find a valid mono installation on the server to run GSL.' +
+      'Please refer to extensions/gslEditor/README.md for server installation instructions.'
       const result = {
-        'result': 'ERROR: Could not find a valid mono installation on the server to run GSL.',
+        'result': monoErrorMessage,
         'contents': [],
         'status': -1,
       };
       res.status(501).json(result); // Service not implemented
     }
-    // make sure that the server is configured with GSL before sending out
+    // make sure that the server is configured with GSL.
     if (!gslDir || !gslBinary || !fs.existsSync(gslDir) || !fs.existsSync(gslBinary)) {
-      console.log('ERROR: Someone requested to run GSL code, but this has not been configured.');
+      const errorMessage = 'ERROR: Failed to execute GSL code. The server ' +
+      'has not been configured for GSL. Please refer to extensions/gslEditor/README.md for' +
+      'server installation instructions.'
+
       console.log(`gslDir: ${gslDir} and gslBinary: ${gslBinary}`);
       console.log(gslDir, gslBinary, fs.existsSync(gslDir), fs.existsSync(gslBinary));
+      
       const result = {
-        'result': 'ERROR: Failed to execute GSL code. The server has not been configured for GSL.',
+        'result': errorMessage,
         'contents': [],
         'status': -1,
       };

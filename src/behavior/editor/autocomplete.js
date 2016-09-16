@@ -1,12 +1,11 @@
 /**
  * Defines behavior for the editor autocompletion.
  */
+const s288c = require('gsl-genome-s288c');
 
-function requireAll(requireContext) {
-  return requireContext.keys().map(requireContext);
-}
-
-const genomes = requireAll(require.context('../../../resources/genomes', false, /.json$/));
+const genomes = [
+  s288c,
+];
 const autocompleteGeneList = [];
 const autocompleteDocStrings = {};
 const geneList = [];
