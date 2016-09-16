@@ -46,7 +46,8 @@ router.post('/gslc', jsonParser, (req, res, next) => {
   commandExists('mono', (err, commandExists) => {
     if (err || !commandExists) {
       const monoErrorMessage = 'ERROR: Could not find a valid mono installation on the server to run GSL.' +
-      'Please refer to extensions/gslEditor/README.md for server installation instructions.'
+      'Please refer to genome-designer/extensions/gslEditor/README.md for server installation instructions. \n' +
+      'Alternatively, you could run genome-designer/extensions/gslEditor/tools/install-fsharp.sh';
       const result = {
         'result': monoErrorMessage,
         'contents': [],
@@ -57,12 +58,12 @@ router.post('/gslc', jsonParser, (req, res, next) => {
     // make sure that the server is configured with GSL.
     if (!gslDir || !gslBinary || !fs.existsSync(gslDir) || !fs.existsSync(gslBinary)) {
       const errorMessage = 'ERROR: Failed to execute GSL code. The server ' +
-      'has not been configured for GSL. Please refer to extensions/gslEditor/README.md for' +
-      'server installation instructions.'
+      'has not been configured for GSL. Please refer to genome-designer/extensions/gslEditor/README.md for ' +
+      'server installation instructions.';
 
       console.log(`gslDir: ${gslDir} and gslBinary: ${gslBinary}`);
       console.log(gslDir, gslBinary, fs.existsSync(gslDir), fs.existsSync(gslBinary));
-      
+
       const result = {
         'result': errorMessage,
         'contents': [],
