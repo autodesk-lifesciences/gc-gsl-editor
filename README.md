@@ -12,9 +12,9 @@ First, install the module dependencies via npm.
 ```npm install```
 
 ### Server installation
-* If you are running an instance of the server locally, you also need to install F# and mono by running the following installation helper script, present in the project root directory (`genome-designer/`). 
+* If you are running an instance of the server locally, you also need to install F# and mono by running the following installation helper script, present in the extension's root directory (`./gslEditor/`). 
 
-	```bash tools/install-fsharp.sh```
+	```./tools/install-fsharp.sh```
 
 	Alternatively, you could manually install them by following the instructions given for [Mac]( http://fsharp.org/use/mac/) or [Linux](http://fsharp.org/use/linux/). 
 
