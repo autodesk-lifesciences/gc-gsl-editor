@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if which mono >/dev/null; then
-    echo "Found a valid mono installation required for the GSL server."
+    echo "Found a valid mono installation required by the GSL server."
     exit 0
 fi
 
