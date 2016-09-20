@@ -46,7 +46,7 @@ Similarly, this builds the debug version of the the server (`./server/router.js`
 ## System Diagram
 As shown below, at a high level, the GSL extension is made up of a client (ReactJS, NodeJS) and a server (NodeJS).
 
-![GSL System Diagram](http://goo.gl/I7I9G5)
+![GSL System Diagram](http://goo.gl/S0npPy)
 	
 ## Shortcuts
 * ```Alt + Space``` lists the available keywords, snippets and Genes.
