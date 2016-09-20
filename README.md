@@ -14,9 +14,9 @@ First, install the module dependencies via npm.
 ### Server installation
 * If you are running an instance of the server locally, you also need to install F# and mono by running the following installation helper script, present in the extension's root directory (`./gslEditor/`). 
 
-    ```./tools/install-fsharp.sh```
+```./tools/install-fsharp.sh```
 
-    Alternatively, you could manually install them by following the instructions given for [Mac]( http://fsharp.org/use/mac/) or [Linux](http://fsharp.org/use/linux/). 
+Alternatively, you could manually install them by following the instructions given for [Mac]( http://fsharp.org/use/mac/) or [Linux](http://fsharp.org/use/linux/). 
 
 * As a part of the postinstall stage of the GSL extension, a [pre-built fork of the GSL repository](https://github.com/rupalkhilari/GSL-build) will be cloned and used by the extension's server to run GSL code. The development fork of the GSL repository can be found [here](https://github.com/rupalkhilari/GSL).
 
