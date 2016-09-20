@@ -12,11 +12,11 @@ First, install the module dependencies via npm.
 ```npm install```
 
 ### Server installation
-* If you are running an instance of the server locally, you also need to install F# and mono by running the following installation helper script, present in the extension's root directory (`./gslEditor/`). 
+* If you are running an instance of the server locally, you also need to install F# and mono by running the following installation helper script, present in the extension's root directory (`gslEditor/`). 
 
-```./tools/install-fsharp.sh```
+	```./tools/install-fsharp.sh```
 
-Alternatively, you could manually install them by following the instructions given for [Mac]( http://fsharp.org/use/mac/) or [Linux](http://fsharp.org/use/linux/). 
+	Alternatively, you could manually install them by following the instructions given for [Mac]( http://fsharp.org/use/mac/) or [Linux](http://fsharp.org/use/linux/). 
 
 * As a part of the postinstall stage of the GSL extension, a [pre-built fork of the GSL repository](https://github.com/rupalkhilari/GSL-build) will be cloned and used by the extension's server to run GSL code. The development fork of the GSL repository can be found [here](https://github.com/rupalkhilari/GSL).
 
@@ -47,6 +47,7 @@ Similarly, this builds the debug version of the the server (`./server/router.js`
 As shown below, at a high level, the GSL extension is made up of a client (ReactJS, NodeJS) and a server (NodeJS).
 
 ![GSL System Diagram](http://goo.gl/S0npPy)
+
 	
 ## Shortcuts
 * ```Alt + Space``` lists the available keywords, snippets and Genes.
