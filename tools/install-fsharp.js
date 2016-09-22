@@ -27,8 +27,8 @@ async function installFSharp() {
       await promisedExec('sudo apt-get install mono-complete -yf', {}, { forceOutput: true});
       await promisedExec('sudo apt-get install fsharp -yf', {}, { forceOutput: true});
     } else if (process.platform === 'darwin') {
-      commandExists('brew', (err, commandExists) => {
-        if (err || !commandExists) {
+      commandExists('brew', (err, exists) => {
+        if (err || !exists) {
             const brewErrorMessage = 
               "****************************************************\n" +
               "              Action Required! \n" +
@@ -41,7 +41,13 @@ async function installFSharp() {
               "****************************************************";
             console.log(brewErrorMessage);
         } else {
-          promisedExec('brew install mono', {}, { forceOutput: true});
+          commandExists('mono', (err, exists) => {
+            if (err || !exists) {
+              promisedExec('brew install mono', {}, { forceOutput: true});
+            } else {
+              console.log('Detected mono.');
+            }
+          });
         }
       });
     } else if (process.platform.startswith('win')) {
