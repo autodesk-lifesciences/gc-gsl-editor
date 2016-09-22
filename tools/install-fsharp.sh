@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Script used only by the Dockerfile, for other purposes run 'npm run install-fsharp'
+
 if which mono >/dev/null; then
     echo "Found a valid mono installation required by the GSL server."
     exit 0
