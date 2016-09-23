@@ -35,17 +35,17 @@ async function installFSharp() {
     } else if (process.platform === 'darwin') {
       commandExists('brew', (err, exists) => {
         if (err || !exists) {
-            const brewErrorMessage = 
-              '****************************************************\n' +
-              '              Action Required! \n' +
-              '\n' +
-              'We could not detect \'Homebrew\' installed on your \n' +
-              'system. Please refer to http://fsharp.org/use/mac/ \n' +
-              'and follow the instructions given to manually \n' +
-              'install mono.\n' +
-              '\n' +
-              '****************************************************';
-            console.log(brewErrorMessage);
+          const brewErrorMessage =
+            '****************************************************\n' +
+            '              Action Required! \n' +
+            '\n' +
+            'We could not detect \'Homebrew\' installed on your \n' +
+            'system. Please refer to http://fsharp.org/use/mac/ \n' +
+            'and follow the instructions given to manually \n' +
+            'install mono.\n' +
+            '\n' +
+            '****************************************************';
+          console.log(brewErrorMessage);
         } else {
           commandExists('mono', async function(err, exists) {
             if (err || !exists) {
@@ -59,7 +59,7 @@ async function installFSharp() {
     } else if (process.platform.startsWith('win')) {
       commandExists('mono', (err, commandExists) => {
         if (err || !commandExists) {
-          const monoErrorMessage = 
+          const monoErrorMessage =
             '****************************************************\n' +
             '              Action Required! \n' +
             '\n' +
