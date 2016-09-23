@@ -56,7 +56,7 @@ It is recommended that you use ``` npm link ``` as documented [here](https://git
 ## Architechture Diagram
 As shown below, at a high level, the GSL extension is made up of a client (ReactJS, NodeJS) and a server (NodeJS).
 
-![GSL System Diagram](http://goo.gl/SktTsV)
+![GSL System Diagram](https://cloud.githubusercontent.com/assets/7693347/18800773/ad4e4efe-8193-11e6-9576-eb738cbdbdaf.png)
 
 ## Documentation
 
