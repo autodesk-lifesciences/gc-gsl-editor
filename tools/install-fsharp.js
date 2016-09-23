@@ -17,15 +17,21 @@ import commandExists from 'command-exists';
 async function installFSharp() {
   try {
     if (process.platform === 'linux') {
-      await promisedExec('sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y', {}, { forceOutput: true});
-      await promisedExec('sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF', {}, { forceOutput: true});
-      await promisedExec('echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list', {}, { forceOutput: true});
-      await promisedExec('echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list', {}, { forceOutput: true});
-      await promisedExec('sudo apt-get update -y', {}, { forceOutput: true});
-      await promisedExec('sudo apt-get install mono-devel -yf', {}, { forceOutput: true});
-      await promisedExec('sudo apt-get install ca-certificates-mono -yf', {}, { forceOutput: true});
-      await promisedExec('sudo apt-get install mono-complete -yf', {}, { forceOutput: true});
-      await promisedExec('sudo apt-get install fsharp -yf', {}, { forceOutput: true});
+      commandExists('mono', async function(err, exists) {
+        if (err || !exists) {
+          await promisedExec('sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y', {}, { forceOutput: true});
+          await promisedExec('sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF', {}, { forceOutput: true});
+          await promisedExec('echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list', {}, { forceOutput: true});
+          await promisedExec('echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list', {}, { forceOutput: true});
+          await promisedExec('sudo apt-get update -y', {}, { forceOutput: true});
+          await promisedExec('sudo apt-get install mono-devel -yf', {}, { forceOutput: true});
+          await promisedExec('sudo apt-get install ca-certificates-mono -yf', {}, { forceOutput: true});
+          await promisedExec('sudo apt-get install mono-complete -yf', {}, { forceOutput: true});
+          await promisedExec('sudo apt-get install fsharp -yf', {}, { forceOutput: true});
+        } else {
+          console.log('Detected mono.');
+        }
+      });
     } else if (process.platform === 'darwin') {
       commandExists('brew', (err, exists) => {
         if (err || !exists) {
@@ -41,16 +47,16 @@ async function installFSharp() {
               "****************************************************";
             console.log(brewErrorMessage);
         } else {
-          commandExists('mono', (err, exists) => {
+          commandExists('mono', async function(err, exists) {
             if (err || !exists) {
-              promisedExec('brew install mono', {}, { forceOutput: true});
+              await promisedExec('brew install mono', {}, { forceOutput: true});
             } else {
               console.log('Detected mono.');
             }
           });
         }
       });
-    } else if (process.platform.startswith('win')) {
+    } else if (process.platform.startsWith('win')) {
       commandExists('mono', (err, commandExists) => {
         if (err || !commandExists) {
           const monoErrorMessage = 
@@ -60,8 +66,8 @@ async function installFSharp() {
             "We could not detect mono installed on your \n" +
             "system. Please refer to http://fsharp.org/use/windows/ \n" +
             "and follow the instructions given to manually \n" +
-            "install mono. Make you have added 'mono' to the 'PATH'\n" +
-            "varible.\n"+
+            "install mono. Make sure you have added 'mono' to the \n" +
+            "'PATH' variable.\n"+
             "\n" +
             "****************************************************";
           console.log(monoErrorMessage);

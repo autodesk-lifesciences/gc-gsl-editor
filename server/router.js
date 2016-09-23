@@ -18,7 +18,7 @@ import { argConfig } from './config';
 const repoName = 'GSL';
 const gslDir = path.resolve(__dirname, process.env.EXTENSION_DEPLOY_DIR ? process.env.EXTENSION_DEPLOY_DIR : '', repoName);
 const gslBinary = path.resolve(gslDir, 'bin/gslc/gslc.exe');
-const envVariables = `GSL_LIB=${gslDir}/data/lib`;
+const libArg = `--lib ${gslDir}/data/lib`;
 
 const router = express.Router();
 const jsonParser = bodyParser.json({
@@ -89,7 +89,7 @@ router.post('/gslc', jsonParser, (req, res, next) => {
           console.log(err);
         }
         // execute the code
-        const command = `${envVariables} mono ${gslBinary} ${argumentString} ${filePath}`;
+        const command = `mono ${gslBinary} ${libArg} ${argumentString} ${filePath}`;
         console.log('Running: ', command);
 
         let process;
