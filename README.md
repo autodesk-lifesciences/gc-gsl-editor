@@ -12,11 +12,11 @@ First, install the module dependencies via npm.
 ```npm install```
 
 ### Server installation
-* If you are running an instance of the server locally, you also need to install F# and mono by running the following installation helper script, present in the extension's root directory (```gslEditor/```). 
+* If you are running an instance of the server locally, you also need to install fsharp and mono by running the following command from the extension's root directory (```gslEditor/```). 
 
-	``` ./tools/install-fsharp.sh ```
+	``` npm run install-fsharp ```
 
-	Alternatively, you could manually install them by following the instructions given for [Mac]( http://fsharp.org/use/mac/) or [Linux](http://fsharp.org/use/linux/). 
+	Alternatively, you could manually install these by following the instructions given for [Mac](http://fsharp.org/use/mac/) or [Linux](http://fsharp.org/use/linux/). 
 
 * As a part of the postinstall stage of the GSL extension, a [pre-built fork of the GSL repository](https://github.com/rupalkhilari/GSL-build) will be cloned and used by the extension's server to run GSL code. The development fork of the GSL repository can be found [here](https://github.com/rupalkhilari/GSL).
 
@@ -43,12 +43,25 @@ This builds the debug version of the client (`./main.js`) and continues to watch
 
 Similarly, this builds the debug version of the the server (`./server/router.js`) and continues to watch for server changes.
 
-## System Diagram
+It is recommended that you use ``` npm link ``` as documented [here](https://github.com/autodesk-bionano/genome-designer/blob/master/docs/extensions/npmLink.md) for faster development.
+
+### Custom GSL
+
+* The development fork of the GSL repository can be found [here](https://github.com/rupalkhilari/GSL). If you wish to make changes to the GSL code being executed by the server, you'd could modify the variables holding the repository and branch used by default in ``` tools/install-gsl.js ```. Then run
+
+	``` npm run install-gsl ```
+
+* Note that your custom GSL repository should use ``` GSL/bin/gslc/ ``` to hold the ``` gslc ``` executable, config and dlls.
+
+## Architechture Diagram
 As shown below, at a high level, the GSL extension is made up of a client (ReactJS, NodeJS) and a server (NodeJS).
 
-![GSL System Diagram](http://goo.gl/OmwGjP)
+![GSL System Diagram](http://goo.gl/SktTsV)
 
-	
+## Documentation
+
+To learn more about the Genotype Specification Language, you could look [here](https://github.com/Amyris/GSL/blob/master/README.md) and in [this forum post](https://forum.bionano.autodesk.com/t/extensions-genotype-specification-language-gsl/131).
+
 ## Shortcuts
 * ```Alt + Space``` lists the available keywords, snippets and Genes.
 * ```Ctrl + Shift + S``` lists the available snippets.
