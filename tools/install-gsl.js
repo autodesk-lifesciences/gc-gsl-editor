@@ -24,13 +24,11 @@ async function installGSL() {
       await promisedExec('git clone ' + repo + ' GSL', {}, { forceOutput: true});
       process.chdir('GSL');
       await promisedExec('git checkout ' + branch, {}, { forceOutput: true});
-    }
-    else if (fs.existsSync('GSL/.git')) {
+    } else if (fs.existsSync('GSL/.git')) {
       process.chdir('GSL');
       await promisedExec('git pull', {}, { forceOutput: true});
       await promisedExec('git checkout ' + branch, {}, { forceOutput: true});
-    }
-    else {
+    } else {
       rimraf.sync('GSL');
       console.log('Removed GSL directory');
       await promisedExec('git clone ' + repo + ' GSL', {}, { forceOutput: true} );

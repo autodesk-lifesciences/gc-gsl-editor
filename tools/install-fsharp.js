@@ -36,15 +36,15 @@ async function installFSharp() {
       commandExists('brew', (err, exists) => {
         if (err || !exists) {
             const brewErrorMessage = 
-              "****************************************************\n" +
-              "              Action Required! \n" +
-              "\n" +
-              "We could not detect 'Homebrew' installed on your \n" +
-              "system. Please refer to http://fsharp.org/use/mac/ \n" +
-              "and follow the instructions given to manually \n" +
-              "install mono.\n" +
-              "\n" +
-              "****************************************************";
+              '****************************************************\n' +
+              '              Action Required! \n' +
+              '\n' +
+              'We could not detect \'Homebrew\' installed on your \n' +
+              'system. Please refer to http://fsharp.org/use/mac/ \n' +
+              'and follow the instructions given to manually \n' +
+              'install mono.\n' +
+              '\n' +
+              '****************************************************';
             console.log(brewErrorMessage);
         } else {
           commandExists('mono', async function(err, exists) {
@@ -60,19 +60,19 @@ async function installFSharp() {
       commandExists('mono', (err, commandExists) => {
         if (err || !commandExists) {
           const monoErrorMessage = 
-            "****************************************************\n" +
-            "              Action Required! \n" +
-            "\n" +
-            "We could not detect mono installed on your \n" +
-            "system. Please refer to http://fsharp.org/use/windows/ \n" +
-            "and follow the instructions given to manually \n" +
-            "install mono. Make sure you have added 'mono' to the \n" +
-            "'PATH' variable.\n"+
-            "\n" +
-            "****************************************************";
+            '****************************************************\n' +
+            '              Action Required! \n' +
+            '\n' +
+            'We could not detect mono installed on your \n' +
+            'system. Please refer to http://fsharp.org/use/windows/ \n' +
+            'and follow the instructions given to manually \n' +
+            'install mono. Make sure you have added \'mono\' to the \n' +
+            '\'PATH\' variable.\n' +
+            '\n' +
+            '****************************************************';
           console.log(monoErrorMessage);
         }
-      });     
+      });
     }
   } catch (err) {
     console.log('CAUGHT', err);
