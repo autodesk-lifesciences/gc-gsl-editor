@@ -45,22 +45,22 @@ router.post('/gslc', jsonParser, (req, res, next) => {
   // make sure that mono is installed on the server.
   commandExists('mono', (err, commandExists) => {
     if (err || !commandExists) {
-      const monoErrorMessage = 'ERROR: Could not find a valid mono installation on the server to run GSL.' +
-      'Please refer to genome-designer/extensions/gslEditor/README.md for server installation instructions. \n' +
-      'Alternatively, you could run genome-designer/extensions/gslEditor/tools/install-fsharp.sh';
+      const monoErrorMessage = 'ERROR: Could not find a valid mono installation on the server to run GSL. \n' +
+      'Please refer to https://github.com/autodesk-bionano/genome-designer/blob/master/extensions/gslEditor/README.md for server installation instructions. \n' +
+      'Alternatively, you could run `npm run install-fsharp` from extensions/gslEditor';
       const result = {
         'result': monoErrorMessage,
         'contents': [],
         'status': -1,
       };
+      console.log(monoErrorMessage);
       res.status(501).json(result); // Service not implemented
-    }
-    // make sure that the server is configured with GSL.
-    if (!gslDir || !gslBinary || !fs.existsSync(gslDir) || !fs.existsSync(gslBinary)) {
-      const errorMessage = 'ERROR: Failed to execute GSL code. The server ' +
-      'has not been configured for GSL. Please refer to genome-designer/extensions/gslEditor/README.md for ' +
+    } else if (!gslDir || !gslBinary || !fs.existsSync(gslDir) || !fs.existsSync(gslBinary)) {
+      const errorMessage = 'ERROR: Failed to execute GSL code. \nThe server ' +
+      'has not been configured for GSL. \n Please refer to https://github.com/autodesk-bionano/genome-designer/blob/master/extensions/gslEditor/README.md for ' +
       'server installation instructions.';
 
+      console.log(errorMessage);
       console.log(`gslDir: ${gslDir} and gslBinary: ${gslBinary}`);
       console.log(gslDir, gslBinary, fs.existsSync(gslDir), fs.existsSync(gslBinary));
 
