@@ -16,7 +16,7 @@ First, install the module dependencies via npm.
 
 	``` npm run install-fsharp ```
 
-	Alternatively, you could manually install these by following the instructions given for [Mac](http://fsharp.org/use/mac/), [Linux](http://fsharp.org/use/linux/) or [Windows](http://www.mono-project.com/download/#download-win). 
+	Alternatively, you could manually install these by following the instructions given for [Mac](http://fsharp.org/use/mac/), [Linux](http://fsharp.org/use/linux/) or [Windows](http://www.mono-project.com/download/#download-win).
 
 * As a part of the postinstall stage of the GSL extension, a [pre-built fork of the GSL repository](https://github.com/rupalkhilari/GSL-build) will be cloned and used by the extension's server to run GSL code. The development fork of the GSL repository can be found [here](https://github.com/rupalkhilari/GSL).
 
@@ -47,7 +47,7 @@ It is recommended that you use ``` npm link ``` as documented [here](https://git
 
 ### Custom GSL
 
-* The development fork of the GSL repository can be found [here](https://github.com/rupalkhilari/GSL). If you wish to make changes to the GSL code being executed by the server, you'd could modify the variables holding the repository and branch used by default in ``` tools/install-gsl.js ```. Then run
+* The development fork of the GSL repository can be found [here](https://github.com/rupalkhilari/GSL). If you wish to make changes to the GSL code being executed by the server, you could modify the variables holding the repository and branch used by default in ``` tools/install-gsl.js ```. Then run
 
 	``` npm run install-gsl ```
 
