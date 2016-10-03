@@ -117,6 +117,7 @@ export default class CodeEditorLayout extends Component {
 
     // Load code from the server if the code from the previous project isn't already in the state.
     if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
+      this.codeEditor.ace.editor.env.editor.setReadOnly(true);
       this.onStatusMessageChange('Loading...');
       let fileList = [];
       window.constructor.extensions.files.list(
@@ -290,6 +291,7 @@ export default class CodeEditorLayout extends Component {
     this.onEditorContentChange(gslState.editorContent);
     this.onResultContentChange(gslState.resultContent);
     this.onStatusMessageChange(gslState.statusContent);
+    this.codeEditor.ace.editor.env.editor.setReadOnly(false);
   }
 
   /**
@@ -377,8 +379,15 @@ export default class CodeEditorLayout extends Component {
       offsetLeft = 10;
       offsetBottom = 8;
     }
+    // TODO: Figure this out from the DOM node after it has been mounted.
+    const menuWidth = 230;
+    let fitInPageOffset = 0;
+    const xMax = evt.target.getBoundingClientRect().left - offsetLeft + menuWidth;
+    if (xMax > document.body.getBoundingClientRect().right) {
+      fitInPageOffset = xMax - document.body.getBoundingClientRect().right;
+    }
     this.onDownloadMenuPositionSet({
-      'x': evt.target.getBoundingClientRect().left - offsetLeft,
+      'x': evt.target.getBoundingClientRect().left - offsetLeft - fitInPageOffset,
       'y': evt.target.getBoundingClientRect().bottom + offsetBottom,
     });
   }
@@ -478,6 +487,7 @@ export default class CodeEditorLayout extends Component {
       this.refreshDownloadMenu();
       gslState.refreshDownloadList = false;
     }
+
     return (
       <div className="CodeEditorLayout">
         <Toolbar toolbarItems={this.state.toolbarItems} />

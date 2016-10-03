@@ -25,6 +25,12 @@ export default class PopupMenu extends Component {
     position: PropTypes.object.isRequired,
   };
 
+  componentDidMount() {
+    this.listener = window.addEventListener('resize', (evt) => {
+      this.props.closePopup();
+    });
+  }
+
   /**
    * Closes the menu on mouse down outside the menu.
    * @param {MouseEvent} click event
