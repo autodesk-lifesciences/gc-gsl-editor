@@ -16,7 +16,7 @@ import fs from 'fs';
 import rimraf from 'rimraf';
 
 const repo = 'https://github.com/rupalkhilari/GSL-build.git';
-const branch = 'json_assembly_build';
+const branch = 'new_genomes_build';
 
 async function installGSL() {
   try {

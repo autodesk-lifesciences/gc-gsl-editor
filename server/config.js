@@ -35,7 +35,7 @@ export const argConfig = {
   },
   'gslFile': {
     'fileName': 'project.run.gsl',
-    'preCode': '#refgenome S288C\n',
+    'preCode': '',
   },
   'downloadableFileTypes': {
     'ape': {
