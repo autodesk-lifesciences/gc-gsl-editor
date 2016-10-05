@@ -16,7 +16,7 @@ var GslHighlightRules = function() {
     );
 
     var builtinConstants = (
-        "S288C"
+        "S288C|BY4741|BY4742"
     );
 
     var builtinPragmas = (
