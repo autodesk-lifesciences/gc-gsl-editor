@@ -4,7 +4,7 @@
 
 const config = require('../../../package.json');
 const gslState = require('../../../globals');
-const defaultEditorContent = '#name NewGSLConstruct\n';
+const defaultEditorContent = '#refgenome S288C\n// #refgenome BY4741\n// #refgenome BY4742\n\n#name NewGSLConstruct\n';
 /**
  * Sends the code and corresponding gslc options to run the command on the server.
  * @param {string} editor content
