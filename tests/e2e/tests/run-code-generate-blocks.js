@@ -20,15 +20,13 @@ module.exports = {
       .pause(1000)
       .waitForElementPresent('.ProjectDetail-heading-extensionList', 3000, 'expected Extension list to appear');
 
-    loadExtension(browser);
-
-    clickElementText(browser, 'GSL Editor (S288C)');
+    clickElementText(browser, 'GSL Editor');
 
     browser
       .waitForElementPresent('.GSLEditorLayout', 3000, 'expected extension to render')
 
 
-    const code = '#name Construct1 \r' + 
+    const code =
       '#stitch \r' + 
       '/ATGG/ ; gHMG1[1586:~200E] \r'+
       '#name Construct2 \r'+

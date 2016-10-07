@@ -20,9 +20,7 @@ module.exports = {
       .pause(1000)
       .waitForElementPresent('.ProjectDetail-heading-extensionList', 3000, 'expected Extension list to appear');
 
-    loadExtension(browser);
-
-    clickElementText(browser, 'GSL Editor (S288C)');
+    clickElementText(browser, 'GSL Editor');
 
     browser
       .waitForElementPresent('.GSLEditorLayout', 3000, 'expected extension to render')

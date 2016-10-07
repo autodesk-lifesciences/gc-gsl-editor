@@ -6,8 +6,20 @@ var runGSLCode = function(browser, code, expectedStatus) {
   // select all first and then start typing the code - this would replace the existing code.
   /*
   browser
-      .keys([browser.Keys.COMMAND, 'a'])
-      .pause(1000) */
+      .keys([browser.Keys.NULL, browser.Keys.DOWN_ARROW])
+      .pause(50) */
+
+  browser
+    .keys([browser.Keys.NULL, browser.Keys.DOWN_ARROW])
+    .pause(50)
+    .keys([browser.Keys.NULL, browser.Keys.DOWN_ARROW])
+    .pause(50)
+    .keys([browser.Keys.NULL, browser.Keys.DOWN_ARROW])
+    .pause(50)
+    .keys([browser.Keys.NULL, browser.Keys.DOWN_ARROW])
+    .pause(50)
+    .keys([browser.Keys.NULL, browser.Keys.DOWN_ARROW])
+    .pause(50)
   // split the code and write into the editor.
   var codeLines = code.split('\r');
   codeLines.forEach(function(codeLine) {

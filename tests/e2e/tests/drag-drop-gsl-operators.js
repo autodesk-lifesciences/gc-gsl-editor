@@ -20,11 +20,9 @@ module.exports = {
       .pause(1000)
       .waitForElementPresent('.ProjectDetail-heading-extensionList', 5000, 'expected Extension list to appear');
 
-    loadExtension(browser);
-
     openGSLLibrary(browser); // open the GSL library and be prepared for drag drop
 
-    clickElementText(browser, 'GSL Editor (S288C)');
+    clickElementText(browser, 'GSL Editor');
 
     browser.waitForElementPresent('.GSLEditorLayout', 4000, 'expected extension to render')
     

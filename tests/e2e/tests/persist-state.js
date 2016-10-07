@@ -19,13 +19,13 @@ module.exports = {
       .pause(1000)
       .waitForElementPresent('.ProjectDetail-heading-extensionList', 5000, 'expected Extension list to appear');
 
-    clickElementText(browser, 'GSL Editor (S288C)');
+    clickElementText(browser, 'GSL Editor');
 
     browser.waitForElementPresent('.GSLEditorLayout', 5000, 'expected extension to render')
 
     // Running code to check persistence.
     const codeString = 'pADH4 ; mADH2';
-    const statusString = 'Program exited with status code: 0';
+    const statusString = 'Code executed successfully.';
     const resultStringStart = 'GSL compiler version';
 
     runCode(
@@ -42,7 +42,7 @@ module.exports = {
     browser
       .pause(1000)
 
-    clickElementText(browser, 'GSL Editor (S288C)');
+    clickElementText(browser, 'GSL Editor');
 
     // Verify that all the content persists.
     browser.expect.element('.ace_content:nth-of-type(1)').text.to.equal(codeString);
