@@ -20,6 +20,7 @@ var runGSLCode = function(browser, code, expectedStatus) {
     .pause(50)
     .keys([browser.Keys.NULL, browser.Keys.DOWN_ARROW])
     .pause(50)
+
   // split the code and write into the editor.
   var codeLines = code.split('\r');
   codeLines.forEach(function(codeLine) {

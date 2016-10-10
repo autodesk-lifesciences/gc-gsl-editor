@@ -6,10 +6,10 @@ var size = require('../../../../../test-e2e/fixtures/size');
 var runCode = require('../fixtures/run-code');
 var blockCount = require('../fixtures/block-count');
 var loadExtension = require('../fixtures/load-extension');
+var constants = require('../fixtures/extension-constants');
 
 module.exports = {
   'Test cases where GSL code produces blocks': function (browser) {
-
     size(browser);
     homepageRegister(browser);
     newProject(browser);
@@ -18,13 +18,12 @@ module.exports = {
 
     browser
       .pause(1000)
-      .waitForElementPresent('.ProjectDetail-heading-extensionList', 3000, 'expected Extension list to appear');
+      .waitForElementPresent('.ProjectDetail-heading-extensionList', 3000, 'expected Extension list to appear')
 
     clickElementText(browser, 'GSL Editor');
 
     browser
       .waitForElementPresent('.GSLEditorLayout', 3000, 'expected extension to render')
-
 
     const code =
       '#stitch \r' + 
@@ -36,7 +35,7 @@ module.exports = {
     runCode(
       browser,
       code,
-      'Code executed successfully.'
+      constants.codeExecuteSuccessString
     );
 
     browser
@@ -44,23 +43,10 @@ module.exports = {
 
     blockCount(browser, 6);
 
-
-    // Rerunning the code should result in the same number of constructs.
-    /*runCode(
-      browser,
-      code,
-      'Program exited with status code: 0'
-    );
-
-    browser
-      .pause(2000)
-
-    blockCount(browser, 6); */
-
     // Verify the properties of the constructs.
 
     browser
       .pause(2000)
-      .end();
+      .end()
   }
 };

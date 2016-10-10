@@ -9,7 +9,7 @@ var openGSLLibrary = require('../fixtures/open-gsl-library');
 var loadExtension = require('../fixtures/load-extension');
 
 module.exports = {
-  'Test drag and drop GSL operator on a Gene': function (browser) {
+  'Test drag-drop GSL operator and Autocomplete on a Gene': function (browser) {
 
     // maximize for graphical tests
     size(browser);

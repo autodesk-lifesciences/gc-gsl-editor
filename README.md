@@ -60,7 +60,8 @@ As shown below, at a high level, the GSL extension is made up of a client (React
 
 ## Documentation
 
-To learn more about the Genotype Specification Language, you could look [here](https://github.com/Amyris/GSL/blob/master/README.md) and in [this forum post](https://forum.bionano.autodesk.com/t/extensions-genotype-specification-language-gsl/131).
+
+To learn more about the Genotype Specification Language, you could look at the documentation [here](https://geneticconstructor.readme.io/docs/genotype-specification-language) or in the GSL respository [here](https://github.com/Amyris/GSL/blob/master/README.md).
 
 ## Shortcuts
 * ```Alt + Space``` lists the available keywords, snippets and Genes.
