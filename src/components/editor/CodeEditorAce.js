@@ -32,7 +32,6 @@ export default class CodeEditorAce extends Component {
   };
 
   componentDidMount() {
-
     this.ace.editor.completers.push({
       getCompletions: (editor, session, pos, prefix, callback) => {
          // callback(null, autocompleteList.geneList);
