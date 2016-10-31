@@ -1,7 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import AceEditor from 'react-ace';
 
-import * as dragDropOperator from '../../behavior/editor/dragDrop';
 import '../../behavior/editor/brace/mode/gsl';
 import '../../behavior/editor/brace/theme/xcode';
 import '../../behavior/editor/brace/ext/language_tools';
@@ -33,10 +32,6 @@ export default class CodeEditorAce extends Component {
   };
 
   componentDidMount() {
-    window.constructor.DnD.registerTarget(this.element, {
-      drop: this.onDrop.bind(this),
-      zorder: 1000,
-    });
 
     this.ace.editor.completers.push({
       getCompletions: (editor, session, pos, prefix, callback) => {
@@ -59,13 +54,6 @@ export default class CodeEditorAce extends Component {
   componentWillUnmount() {
     this.listener();
   }
-
-  // Trigger drag and drop behavior when an operator is dropped on the editor
-  onDrop = (position, payload, evt) => {
-    if (payload.type === 'GSL') {
-      dragDropOperator.insert(this.ace, position, payload, evt);
-    }
-  };
 
   getEditorHeight = () => {
     //return this.element.getBoundingClientRect().height;

@@ -54,11 +54,6 @@ export default class CodeEditorLayout extends Component {
           disabled: false,  // Make sure to update index references in saveCode if items are rearranged.
         },
         {
-          label: 'GSL Library',
-          action: this.showGSLLibrary,
-          imageUrl: '/images/ui/add_icon.svg',
-        },
-        {
           label: 'Comment',
           action: this.toggleComment,
         },
@@ -390,16 +385,6 @@ export default class CodeEditorLayout extends Component {
       'x': evt.target.getBoundingClientRect().left - offsetLeft - fitInPageOffset,
       'y': evt.target.getBoundingClientRect().bottom + offsetBottom,
     });
-  }
-
-  /**
-   * Opens the GSL Library panel in the inventory.
-   * @param {MouseEvent} click event
-   */
-  showGSLLibrary = (evt) => {
-    window.constructor.api.ui.inventoryToggleVisibility(true);
-    window.constructor.api.ui.inventorySelectTab('gsl');
-    this.codeEditor.ace.editor.focus();
   }
 
   /**

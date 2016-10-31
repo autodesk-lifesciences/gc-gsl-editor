@@ -3,13 +3,11 @@ var testProject = require('../../../../../test-e2e/fixtures/testproject');
 var newProject = require('../../../../../test-e2e/fixtures/newproject');
 var clickElementText = require('../../../../../test-e2e/fixtures/click-element-text');
 var size = require('../../../../../test-e2e/fixtures/size');
-var dragFromTo = require('../../../../../test-e2e/fixtures/dragfromto');
 
-var openGSLLibrary = require('../fixtures/open-gsl-library');
 var loadExtension = require('../fixtures/load-extension');
 
 module.exports = {
-  'Test drag-drop GSL operator and Autocomplete on a Gene': function (browser) {
+  'Test Autocomplete on a Gene': function (browser) {
 
     // maximize for graphical tests
     size(browser);
@@ -19,8 +17,6 @@ module.exports = {
     browser
       .pause(1000)
       .waitForElementPresent('.ProjectDetail-heading-extensionList', 5000, 'expected Extension list to appear');
-
-    openGSLLibrary(browser); // open the GSL library and be prepared for drag drop
 
     clickElementText(browser, 'GSL Editor');
 
@@ -44,8 +40,6 @@ module.exports = {
       .waitForElementPresent('.ace_doc-tooltip', 2000, 'expected the tooltip to show up')
       .keys([browser.Keys.ENTER])
       .waitForElementPresent('.ace_gene', 2000, 'expected the line to appear and tokenized as a Gene')
-
-    dragFromTo(browser, '.InventoryItemGsl:nth-of-type(1)', 10, 10, '.ace_gene:nth-of-type(1)', 5, 5);
 
     browser
       .pause(2000)
