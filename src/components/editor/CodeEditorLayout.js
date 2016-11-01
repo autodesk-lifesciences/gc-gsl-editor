@@ -38,7 +38,7 @@ export default class CodeEditorLayout extends Component {
     this.state = {
       editorContent: '',
       resultContent: '',
-      statusMessage: 'Begin typing GSL code. Drag and drop blocks or GSL commands from the Inventory to use them in a script.',
+      statusMessage: 'Begin typing GSL code.',
       showDownloadMenu: false,
       currentMenuPosition: {},
       consoleVisible: true,
@@ -184,7 +184,7 @@ export default class CodeEditorLayout extends Component {
     this.setState({ editorContent: content });
     this.props.onEditorContentChange(content);
     if (content === '') {
-      this.onStatusMessageChange('Begin typing GSL code. Drag and drop blocks or GSL commands from the Inventory to use them in a script.');
+      this.onStatusMessageChange('Begin typing GSL code.');
     } else {
       this.onStatusMessageChange(' ');
     }
