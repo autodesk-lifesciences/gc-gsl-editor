@@ -19,175 +19,52 @@ const repoName = 'GSL';
 const gslDir = path.resolve(__dirname, process.env.EXTENSION_DEPLOY_DIR ? process.env.EXTENSION_DEPLOY_DIR : '', repoName);
 const gslBinary = path.resolve(gslDir, 'bin/gslc/gslc.exe');
 const libArg = `--lib ${gslDir}/data/lib`;
-
+var http = require('http');
 const router = express.Router();
 const jsonParser = bodyParser.json({
   strict: false,
 });
 
-/**
- * Route for running GSL programs on the server
- */
-router.post('/gslc', jsonParser, (req, res, next) => {
+router.post('/gslcExternal', jsonParser, (req, res, next) => {
+  // forward the request as it is to the GSL server.
   const input = req.body;
-  let content = '';
-  if (argConfig.gslFile.hasOwnProperty('preCode')) {
-    content += argConfig.gslFile.preCode;
-  }
+  const payload = {
+    'code': input.code,
+    'projectId': input.projectId,
+    'extension': input.extension,
+    'args': input.args,
+  };
 
-  content += input.code;
-
-  let argumentString = null;
-  if (input.hasOwnProperty('arguments')) {
-    argumentString = input.arguments;
-  }
-
-  // make sure that mono is installed on the server.
-  commandExists('mono', (err, commandExists) => {
-    if (err || !commandExists) {
-      const monoErrorMessage = 'ERROR: Could not find a valid mono installation on the server to run GSL. \n' +
-      'Please refer to https://github.com/autodesk-bionano/genome-designer/blob/master/extensions/gslEditor/README.md for server installation instructions. \n' +
-      'Alternatively, you could run `npm run install-fsharp` from extensions/gslEditor';
-      const result = {
-        'result': monoErrorMessage,
-        'contents': [],
-        'status': -1,
-      };
-      console.log(monoErrorMessage);
-      res.status(501).json(result); // Service not implemented
-    } else if (!gslDir || !gslBinary || !fs.existsSync(gslDir) || !fs.existsSync(gslBinary)) {
-      const errorMessage = 'ERROR: Failed to execute GSL code. \nThe server ' +
-      'has not been configured for GSL. \n Please refer to https://github.com/autodesk-bionano/genome-designer/blob/master/extensions/gslEditor/README.md for ' +
-      'server installation instructions.';
-
-      console.log(errorMessage);
-      console.log(`gslDir: ${gslDir} and gslBinary: ${gslBinary}`);
-      console.log(gslDir, gslBinary, fs.existsSync(gslDir), fs.existsSync(gslBinary));
-
-      const result = {
-        'result': errorMessage,
-        'contents': [],
-        'status': -1,
-      };
-      res.status(501).json(result); // Service not implemented
-    } else {
-      const modifiedArgs = preprocessArgs(input.projectId, input.extension, input.args);
-      const jsonOutFile = getJsonOutFile(modifiedArgs);
-      if (!argumentString) {
-        argumentString = makeArgumentString(modifiedArgs);
-      }
-      const projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
-      const filePath = createProjectFilePath(input.projectId, input.extension, argConfig.gslFile.fileName);
-      if (!fs.existsSync(projectFileDir)) {
-        fs.mkdirSync(projectFileDir);
-      }
-
-      let output = '';
-      // write out a file with the code.
-      fs.writeFile(filePath, content, (err) => {
-        if (err) {
-          console.log(err);
-        }
-        // execute the code
-        const command = `mono ${gslBinary} ${libArg} ${argumentString} ${filePath}`;
-        console.log('Running: ', command);
-
-        let process;
-        try {
-          process = exec(`${command}`, (err, stdout, stderr) => {
-            if (err) {
-              console.log('Invalid GSL code.');
-              console.log(err);
-            }
-          });
-        } catch (ex) {
-          console.log('The following exception occured while running the gslc command ', ex);
-          const result = {
-            'result': 'An exception occured while running the gslc command.',
-            'contents': [],
-            'status': -1,
-          };
-          res.status(500).json(result);
-        }
-
-        if (process) {
-          process.stdout.on('data', (data) => {
-            output += data;
-          });
-
-          process.stderr.on('data', (data) => {
-            output += data;
-          });
-
-          // find the exit code of the process.
-          process.on('exit', (code) => {
-            // mask all server paths
-            output = output.replace(new RegExp(projectFileDir, 'g'), '<Server_Path>');
-            console.log('Child process exited with an exit code of ', code);
-            if (code === 0) {
-              fs.readFile(jsonOutFile, 'utf8', (err, contents) => {
-                if (err) {
-                  res.status(500).send('Error reading the json file.');
-                  return;
-                }
-                const result = {
-                  'result': output,
-                  'contents': contents,
-                  'status': code,
-                };
-                res.status(200).json(result);
-              });
-
-              // Create zip packages.
-              if (modifiedArgs.hasOwnProperty('--cm')) {
-                makeZip(projectFileDir,
-                  argConfig.downloadableFileTypes.cm.contentExt,
-                  argConfig.downloadableFileTypes.cm.fileName);
-              }
-
-              if (modifiedArgs.hasOwnProperty('--ape')) {
-                makeZip(projectFileDir,
-                  argConfig.downloadableFileTypes.ape.contentExt,
-                  argConfig.downloadableFileTypes.ape.fileName);
-              }
-
-              makeZip(projectFileDir,
-                argConfig.downloadableFileTypes.allFormats.contentExt,
-                argConfig.downloadableFileTypes.allFormats.fileName);
-
-              if (modifiedArgs.hasOwnProperty('--thumper')) {
-                makeZip(projectFileDir,
-                  argConfig.downloadableFileTypes.thumper.contentExt,
-                  argConfig.downloadableFileTypes.thumper.fileName)
-                  .then(() => {
-                    // create the rabit spreadsheet.
-                    const inputFile = projectFileDir + '/' + argConfig.fileArguments['--thumper'].fileName + '.rabits.txt';
-                    const outputFile = projectFileDir + '/' + argConfig.fileArguments['--thumper'].fileName + '.rabits.xls';
-                    console.log(`Copying ${inputFile} to ${outputFile}`);
-                    try {
-                      fs.createReadStream(inputFile).pipe(fs.createWriteStream(outputFile));
-                    } catch (ex) {
-                      console.log(`Failed to read ${inputFile} and write to ${outputFile}.`, ex);
-                    }
-                  })
-                  .catch((ex) => {
-                    console.log('An error occured while writing the .xls file', ex);
-                  });
-              }
-            } else {
-              const result = {
-                'result': output,
-                'contents': [],
-                'status': code,
-              };
-              res.status(422).json(result);
-            }
-          });
-        }
-      });
-    }
+  fetch(argConfig.externalServer + '/gslc', {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8',
+    },
+    body: JSON.stringify(payload),
+  })
+  .then((resp) => {
+    return resp.json();
+  })
+  .then((data) => {
+    const result = {
+      'result': data.result,
+      'contents': data.contents,
+      'status': data.status,
+    };
+    res.status(200).json(result);
+  })
+  .catch((err) => {
+    const result = {
+      'result': err.stack,
+      'contents': [],
+      'status': -1,
+    };
+    console.log('Encountered an error:');
+    console.log(err.stack);
+    res.status(422).json(result);
   });
 });
+
 
 /**
  * Route for downloading any file type.
@@ -197,13 +74,42 @@ router.get('/download*', (req, res, next) => {
   if (argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
     const fileName = argConfig.downloadableFileTypes[req.query.type].fileName;
     const filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
+    const useLocalStorage = false;
     fs.exists(filePath, (exists) => {
-      if (exists) {
+      if (exists && useLocalStorage) {
         res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
         res.download(filePath, fileName);
       } else {
-        res.send(`No file of type ${req.query.type} generated yet`);
-        res.status(404);
+        var params = {
+          projectId: req.query.projectId,
+          extension: 'gslEditor',
+          type: req.query.type,
+        };
+
+        var query = Object.keys(params)
+          .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+          .join('&');
+
+        const baseUrl = '/download?' 
+
+        var download = function(url, dest) {
+          var file = fs.createWriteStream(dest);
+          var request = http.get(url, function(response) {
+            response.pipe(file);
+            file.on('finish', function() {
+              res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
+              res.download(filePath, fileName);
+              file.close();
+            });
+          }).on('error', function(err) {
+            //fs.unlink(dest);
+            console.log('An error occured while downloading');
+            console.log(err.stack);
+            res.send(`No file of type ${req.query.type} generated yet`);
+            res.status(404);
+          });
+        };
+        download(argConfig.externalServer + baseUrl + query, filePath );
       }
     });
   } else {
@@ -212,24 +118,29 @@ router.get('/download*', (req, res, next) => {
   }
 });
 
+
 /**
  * Route to list the available file downloads.
  */
 router.post('/listDownloads', (req, res, next) => {
-  // list the available downloads.
+
   const input = req.body;
-  const fileStatus = {};
-  const projectFileDir = createProjectFilesDirectoryPath(input.projectId, input.extension);
-  Object.keys(argConfig.downloadableFileTypes).forEach((key) => {
-    const filePath = projectFileDir + '/' + argConfig.downloadableFileTypes[key].fileName;
-    try {
-      fs.accessSync(filePath);
-      fileStatus[key] = true;
-    } catch (err) {
-      fileStatus[key] = false;
-    }
+  const payload = {
+    'projectId': input.projectId,
+    'extension': input.extension,
+  };
+  const stringified = JSON.stringify(payload);
+  fetch(argConfig.externalServer + '/listDownloads', {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8',
+    },
+    body: stringified,
+  })
+  .then(resp => resp.json())
+  .then((data) => {
+    res.status(200).json(data);
   });
-  res.status(200).json(fileStatus);
 });
 
 
