@@ -1,6 +1,6 @@
 {
-  "name": "gslEditor",
-  "version": "1.0.0",
+  "name": "gc-gsl-editor",
+  "version": "1.0.1",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
   "geneticConstructor": {
     "readable": "GSL Editor",
@@ -19,7 +19,7 @@
     "postinstall": "npm run install-gsl",
     "test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js",
     "nightwatch": "node ./node_modules/nightwatch/bin/nightwatch --config ./tests/e2e/nightwatch.json",
-    "selenium": "node ./node_modules/selenium-standalone/bin/selenium-standalone install --version=2.53.1 --drivers.chrome.version=2.24",    
+    "selenium": "node ./node_modules/selenium-standalone/bin/selenium-standalone install --version=2.53.1 --drivers.chrome.version=2.24",
     "e2e": "NODE_ENV=test node ./tests/e2e/bin/e2e.js",
     "lint": "../../node_modules/eslint/bin/eslint.js * -c ../../.eslintrc --ignore-path ../../.eslintignore --ignore-pattern src/behavior/editor/brace/*/*.js,tests/,GSL,*.json,*.md ; exit 0",
     "debug-server": "webpack --config webpack.server.config.js",
@@ -47,9 +47,10 @@
     "react-ace": "^3.5.0",
     "react-addons-test-utils": "^0.14.2",
     "react-dom": "0.14.2",
+    "rimraf": "^2.5.4",
+    "s288c": "git+http://github.com/rupalkhilari/gsl-genome-s288c.git",
     "shelljs": "^0.7.4",
-    "skin-deep": "^0.16.0",
-    "s288c": "git+http://github.com/rupalkhilari/gsl-genome-s288c.git"
+    "skin-deep": "^0.16.0"
   },
   "devDependencies": {
     "babel-cli": "^6.9.0",
