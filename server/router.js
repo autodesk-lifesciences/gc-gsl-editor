@@ -19,13 +19,13 @@ const repoName = 'GSL';
 const gslDir = path.resolve(__dirname, process.env.EXTENSION_DEPLOY_DIR ? process.env.EXTENSION_DEPLOY_DIR : '', repoName);
 const gslBinary = path.resolve(gslDir, 'bin/gslc/gslc.exe');
 const libArg = `--lib ${gslDir}/data/lib`;
-var http = require('http');
+
 const router = express.Router();
 const jsonParser = bodyParser.json({
   strict: false,
 });
 
-router.post('/gslcExternal', jsonParser, (req, res, next) => {
+router.post('/gslc', jsonParser, (req, res, next) => {
   // forward the request as it is to the GSL server.
   const input = req.body;
   const payload = {
@@ -35,7 +35,7 @@ router.post('/gslcExternal', jsonParser, (req, res, next) => {
     'args': input.args,
   };
 
-  fetch(argConfig.externalServer + '/gslc', {
+  fetch(argConfig.externalServer.url + '/gslc', {
     method: 'POST',
     headers: {
       'Content-type': 'application/json; charset=UTF-8',
@@ -94,7 +94,8 @@ router.get('/download*', (req, res, next) => {
 
         var download = function(url, dest) {
           var file = fs.createWriteStream(dest);
-          var request = http.get(url, function(response) {
+          const lib = url.startsWith('https') ? require('https') : require('http');
+          var request = lib.get(url, function(response) {
             response.pipe(file);
             file.on('finish', function() {
               res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
@@ -109,7 +110,7 @@ router.get('/download*', (req, res, next) => {
             res.status(404);
           });
         };
-        download(argConfig.externalServer + baseUrl + query, filePath );
+        download(argConfig.externalServer.url + baseUrl + query, filePath );
       }
     });
   } else {
@@ -130,7 +131,7 @@ router.post('/listDownloads', (req, res, next) => {
     'extension': input.extension,
   };
   const stringified = JSON.stringify(payload);
-  fetch(argConfig.externalServer + '/listDownloads', {
+  fetch(argConfig.externalServer.url + '/listDownloads', {
     method: 'POST',
     headers: {
       'Content-type': 'application/json; charset=UTF-8',

@@ -1,5 +1,8 @@
 export const argConfig = {
-  'externalServer': 'https://gsl-standalone.herokuapp.com',
+  'externalServer': {
+    'url': 'https://gsl-standalone.herokuapp.com',
+    'enabled': 1,
+  },
   'fileArguments': {
     '--flat': {
       'arguments': ['<filePath>'],
