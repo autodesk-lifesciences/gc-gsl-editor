@@ -395,9 +395,9 @@ export default class CodeEditorLayout extends Component {
   downloadFileByType = (fileType, buttonType) => {
     const hyperlink = document.createElement('a');
     let mouseEvent;
-    hyperlink.href = '/extensions/api/gslEditor/download?projectId=' +
+    hyperlink.href = '/extensions/api/' + extensionConfig.name + '/download?projectId=' +
       window.constructor.api.projects.projectGetCurrentId() +
-      '&extension=gslEditor' +
+      '&extension=' + extensionConfig.name +
       '&type=' + fileType;
 
     if (buttonType === 0) {
