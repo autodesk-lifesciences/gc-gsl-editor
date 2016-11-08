@@ -26,8 +26,7 @@ const jsonParser = bodyParser.json({
 });
 
 router.post('/gslc', jsonParser, (req, res, next) => {
-  // forward the request as it is to the GSL server.
-  const input = req.body;
+const input = req.body;
   const payload = {
     'code': input.code,
     'projectId': input.projectId,
@@ -52,6 +51,46 @@ router.post('/gslc', jsonParser, (req, res, next) => {
       'status': data.status,
     };
     res.status(200).json(result);
+
+    if (data.status == 0) {
+      // Downloading files to the local storage as some files are local and some are remote.
+      Object.keys(argConfig.downloadableFileTypes).forEach((key) => {
+        try {
+          if (argConfig.downloadableFileTypes[key].hasOwnProperty('isRemote') && argConfig.downloadableFileTypes[key].isRemote == 1) {
+            const type = key;
+            const fileName = argConfig.downloadableFileTypes[type].fileName;
+            const filePath = createProjectFilePath(input.projectId, input.extension, fileName);
+            var params = {
+              projectId: input.projectId,
+              extension: input.extension,
+              type: 'ape',
+            };
+
+            var query = Object.keys(params)
+              .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+              .join('&');
+
+            const baseUrl = '/download?';
+            var download = function(url, dest) {
+              var file = fs.createWriteStream(dest);
+              const lib = url.startsWith('https') ? require('https') : require('http');
+              var request = lib.get(url, function(response) {
+                response.pipe(file);
+                file.on('finish', function() {
+                  file.close();
+                });
+              }).on('error', function(err) {
+                console.log(err);
+              });
+            };
+            download(argConfig.externalServer.url + baseUrl + query, filePath );
+          }
+        } catch (err) {
+          // Catch errors but print on the console.
+          console.log(err);
+        }
+      });
+    }
   })
   .catch((err) => {
     const result = {
@@ -74,7 +113,7 @@ router.get('/download*', (req, res, next) => {
   if (argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
     const fileName = argConfig.downloadableFileTypes[req.query.type].fileName;
     const filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
-    const useLocalStorage = false;
+    const useLocalStorage = true;
     fs.exists(filePath, (exists) => {
       if (exists && useLocalStorage) {
         res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
@@ -82,7 +121,7 @@ router.get('/download*', (req, res, next) => {
       } else {
         var params = {
           projectId: req.query.projectId,
-          extension: 'gslEditor',
+          extension: req.query.extension,
           type: req.query.type,
         };
 
@@ -124,7 +163,6 @@ router.get('/download*', (req, res, next) => {
  * Route to list the available file downloads.
  */
 router.post('/listDownloads', (req, res, next) => {
-
   const input = req.body;
   const payload = {
     'projectId': input.projectId,

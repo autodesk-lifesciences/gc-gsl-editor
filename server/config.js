@@ -1,6 +1,6 @@
 export const argConfig = {
   'externalServer': {
-    'url': 'https://gsl-standalone.herokuapp.com',
+    'url': 'http://localhost:9876',
     'enabled': 1,
   },
   'fileArguments': {
@@ -46,11 +46,13 @@ export const argConfig = {
       'fileName': 'gslOutApe.zip',
       'contentType': 'application/zip',
       'contentExt': '.ape$',
+      'isRemote': 1,
     },
     'cm': {
       'fileName': 'gslOutCm.zip',
       'contentType': 'application/zip',
       'contentExt': '.cx5$',
+      'isRemote': 1,
     },
     'thumper': {
       'fileName': 'gslOutThumper.zip',
@@ -81,6 +83,7 @@ export const argConfig = {
       'fileName': 'gslProjectFiles.zip',
       'contentType': 'application/zip',
       'contentExt': 'project.gsl|thumperOut|gslOut.json|.xls|.txt|.ape|.cx5',
+      'isRemote': 1,
     },
   },
 };
