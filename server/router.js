@@ -4,21 +4,10 @@
 
 import express from 'express';
 import bodyParser from 'body-parser';
-import path from 'path';
 import fs from 'fs';
-import { exec } from 'child_process';
-import commandExists from 'command-exists';
 
 import { createProjectFilePath, createProjectFilesDirectoryPath } from './utils/project';
-import { preprocessArgs, makeArgumentString, getJsonOutFile } from './utils/command';
-import { makeZip } from './utils/fileSystem';
 import { argConfig } from './config';
-
-// Path to the GSL repository
-const repoName = 'GSL';
-const gslDir = path.resolve(__dirname, process.env.EXTENSION_DEPLOY_DIR ? process.env.EXTENSION_DEPLOY_DIR : '', repoName);
-const gslBinary = path.resolve(gslDir, 'bin/gslc/gslc.exe');
-const libArg = `--lib ${gslDir}/data/lib`;
 
 const router = express.Router();
 const jsonParser = bodyParser.json({
@@ -26,7 +15,7 @@ const jsonParser = bodyParser.json({
 });
 
 router.post('/gslc', jsonParser, (req, res, next) => {
-const input = req.body;
+  const input = req.body;
   const payload = {
     'code': input.code,
     'projectId': input.projectId,
@@ -52,29 +41,29 @@ const input = req.body;
     };
     res.status(200).json(result);
 
-    if (data.status == 0) {
+    if (data.status === 0) {
       // Downloading files to the local storage as some files are local and some are remote.
       Object.keys(argConfig.downloadableFileTypes).forEach((key) => {
         try {
-          if (argConfig.downloadableFileTypes[key].hasOwnProperty('isRemote') && argConfig.downloadableFileTypes[key].isRemote == 1) {
+          if (argConfig.downloadableFileTypes[key].hasOwnProperty('isRemote') && argConfig.downloadableFileTypes[key].isRemote === 1) {
             const type = key;
             const fileName = argConfig.downloadableFileTypes[type].fileName;
             const filePath = createProjectFilePath(input.projectId, input.extension, fileName);
-            var params = {
+            const params = {
               projectId: input.projectId,
               extension: input.extension,
               type: key,
             };
 
-            var query = Object.keys(params)
-              .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+            const query = Object.keys(params)
+              .map(attr => encodeURIComponent(attr) + '=' + encodeURIComponent(params[attr]))
               .join('&');
 
             const baseUrl = '/download?';
-            var download = function(url, dest) {
-              var file = fs.createWriteStream(dest);
+            const download = function(url, dest) {
+              const file = fs.createWriteStream(dest);
               const lib = url.startsWith('https') ? require('https') : require('http');
-              var request = lib.get(url, function(response) {
+              lib.get(url, function(response) {
                 response.pipe(file);
                 file.on('finish', function() {
                   file.close();
@@ -119,22 +108,22 @@ router.get('/download*', (req, res, next) => {
         res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
         res.download(filePath, fileName);
       } else {
-        var params = {
+        const params = {
           projectId: req.query.projectId,
           extension: req.query.extension,
           type: req.query.type,
         };
 
-        var query = Object.keys(params)
-          .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
+        const query = Object.keys(params)
+          .map(attr => encodeURIComponent(attr) + '=' + encodeURIComponent(params[attr]))
           .join('&');
 
-        const baseUrl = '/download?' 
+        const baseUrl = '/download?';
 
-        var download = function(url, dest) {
-          var file = fs.createWriteStream(dest);
+        const download = function(url, dest) {
+          const file = fs.createWriteStream(dest);
           const lib = url.startsWith('https') ? require('https') : require('http');
-          var request = lib.get(url, function(response) {
+          lib.get(url, function(response) {
             response.pipe(file);
             file.on('finish', function() {
               res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
