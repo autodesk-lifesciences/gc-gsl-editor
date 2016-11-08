@@ -1,7 +1,6 @@
 export const argConfig = {
   'externalServer': {
     'url': 'http://localhost:9876',
-    'enabled': 1,
   },
   'fileArguments': {
     '--flat': {
