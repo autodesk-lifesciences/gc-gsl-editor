@@ -53,6 +53,7 @@ const renderBlocks = (assemblyList) => {
         },
         rules: {
           role: dnaSlice.breed !== null ? compilerConfig.breeds[dnaSlice.breed] : null,
+          hidden: dnaSlice.breed === 'B_LINKER' ? true : false,
         },
         sequence: { initialBases: dnaSlice.dna },
       };
