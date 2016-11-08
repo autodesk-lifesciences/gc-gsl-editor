@@ -63,7 +63,7 @@ const input = req.body;
             var params = {
               projectId: input.projectId,
               extension: input.extension,
-              type: 'ape',
+              type: key,
             };
 
             var query = Object.keys(params)
@@ -83,7 +83,7 @@ const input = req.body;
                 console.log(err);
               });
             };
-            download(argConfig.externalServer.url + baseUrl + query, filePath );
+            download(argConfig.externalServer.url + baseUrl + query, filePath);
           }
         } catch (err) {
           // Catch errors but print on the console.
