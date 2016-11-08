@@ -1,0 +1,23 @@
+{
+  "ecmaFeatures": {
+    "jsx": true,
+    "modules": true
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "parser": "babel-eslint",
+  "extends": "airbnb",
+  "plugins": [
+    "react"
+  ],
+  "rules": {
+    "spaced-comment" : [0, "always"],
+    "no-use-before-define": [2, "nofunc"],
+    "no-unused-vars": [2, {"vars": "all", "args": "none"}],
+    "no-shadow": [0], //this is used for Redux in the connect, and need to get from component props this way
+    "id-length": [1,  {"properties": "never", "exceptions" : ["_", "x", "y", "w", "h", "i"]}],
+    "new-cap": [2, {"capIsNewExceptions": ["DragSource", "DropTarget", "DragDropContext"]}]
+  }
+}

@@ -1,4 +1,7 @@
 export const argConfig = {
+  'externalServer': {
+    'url': 'http://localhost:9876',
+  },
   'fileArguments': {
     '--flat': {
       'arguments': ['<filePath>'],
@@ -42,11 +45,13 @@ export const argConfig = {
       'fileName': 'gslOutApe.zip',
       'contentType': 'application/zip',
       'contentExt': '.ape$',
+      'isRemote': 1,
     },
     'cm': {
       'fileName': 'gslOutCm.zip',
       'contentType': 'application/zip',
       'contentExt': '.cx5$',
+      'isRemote': 1,
     },
     'thumper': {
       'fileName': 'gslOutThumper.zip',
@@ -77,6 +82,7 @@ export const argConfig = {
       'fileName': 'gslProjectFiles.zip',
       'contentType': 'application/zip',
       'contentExt': 'project.gsl|thumperOut|gslOut.json|.xls|.txt|.ape|.cx5',
+      'isRemote': 1,
     },
   },
 };
