@@ -318,13 +318,34 @@ export default class CodeEditorLayout extends Component {
       this.onResultContentChange(data.result);
       if (data.status === 0) {
         this.onStatusMessageChange('Code executed successfully.');
+        canvas.render(JSON.parse(data.contents));
+        this.refreshDownloadMenu();
+      } else if (compiler.isPrimerFailure(data.result)) {
+        this.onStatusMessageChange('Re-running the code without primers...')
+        this.rerunCode(evt, compiler.removePrimerThumperArgs(config.arguments));
+      }
+      else {
+        this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
+        this.showConsole();
+      }      
+    });
+  }
+
+  /**
+   * Runs GSL code present in the editor
+   * @param {MouseEvent} click event
+   */
+  rerunCode = (evt, newArgs) => {
+    console.log(`Sending code to the server: ${this.state.editorContent}`);
+    compiler.run(this.state.editorContent, newArgs, window.constructor.api.projects.projectGetCurrentId()).then((data) => {
+      this.onResultContentChange(data.result);
+      if (data.status === 0) {
+        this.onStatusMessageChange('Code executed successfully.');
+        canvas.render(JSON.parse(data.contents));
+        this.refreshDownloadMenu();
       } else {
         this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
         this.showConsole();
-      }
-      if (data.status === 0) {  // attempt to render in the canvas only if all is well.
-        canvas.render(JSON.parse(data.contents));
-        this.refreshDownloadMenu();
       }
     });
   }

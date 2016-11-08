@@ -164,3 +164,41 @@ export const saveProjectCode = () => {
     console.log(err);
   });
 };
+
+/*
+ * Rule to determine if the result message indicates a primer generation failure.
+ */ 
+export const isPrimerFailure = (resultMessage) => {
+  const errorlist = [
+    '.*ERROR: .* can\'t find suitable.* default.* part diag.* Linker.*',
+    '.*out.*of.*linkers.*',
+  ];
+
+  for (const error of errorlist) {
+    const re = new RegExp(error);
+    const result = resultMessage.match(re);
+    if (result) {
+      return (resultMessage.match(re).length > 0);
+    }   
+  }
+  return false;
+};
+
+/*
+ * Removes the primer and thumper arguments.
+ */ 
+export const removePrimerThumperArgs = (compilerArgs) => {
+  var modifiedArgs = Object.assign({}, compilerArgs);
+  if (modifiedArgs.hasOwnProperty('--primers')) {
+    delete modifiedArgs['--primers'];
+  }
+
+  if (modifiedArgs.hasOwnProperty('--thumper')) {
+    delete modifiedArgs['--thumper'];
+  }
+
+  if (!modifiedArgs.hasOwnProperty('--no-primers')) {
+    modifiedArgs['--noprimers'] = [];
+  }
+  return modifiedArgs;
+};
