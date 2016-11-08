@@ -338,7 +338,9 @@ export default class CodeEditorLayout extends Component {
   rerunCode = (evt, newArgs) => {
     console.log(`Sending code to the server: ${this.state.editorContent}`);
     compiler.run(this.state.editorContent, newArgs, window.constructor.api.projects.projectGetCurrentId()).then((data) => {
-      this.onResultContentChange(data.result);
+      // retain the previous console error.
+      const appendedResultOutput = this.state.resultContent + '\nResult on rerun without primers:\n' + data.result;
+      this.onResultContentChange(appendedResultOutput);
       if (data.status === 0) {
         this.onStatusMessageChange('Code executed successfully.');
         canvas.render(JSON.parse(data.contents));
