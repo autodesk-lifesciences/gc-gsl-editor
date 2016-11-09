@@ -49,6 +49,10 @@ export default class CodeEditorLayout extends Component {
           imageUrl: '/images/ui/run_icon.svg',
         },
         {
+          label: 'Show Console',
+          action: this.showConsole,
+        },
+        {
           label: 'Save',
           action: this.saveCode,
           disabled: false,  // Make sure to update index references in saveCode if items are rearranged.
@@ -195,14 +199,14 @@ export default class CodeEditorLayout extends Component {
       const items = this.state.toolbarItems;
       if (gslState[projectId].hasOwnProperty('savedCode')) {
         if (content === gslState[projectId].savedCode) {
-          items[1].disabled = true;
+          items[2].disabled = true;
           this.setState( { toolbarItems: items});
         } else {
-          items[1].disabled = false;
+          items[2].disabled = false;
           this.setState( { toolbarItems: items});
         }
       } else {
-        items[1].disabled = false;
+        items[2].disabled = false;
         this.setState( { toolbarItems: items});
       }
     }
@@ -375,7 +379,7 @@ export default class CodeEditorLayout extends Component {
       // disable the 'Save' Button
       const items = this.state.toolbarItems;
       if (gslState[projectId].hasOwnProperty('savedCode')) {
-        items[1].disabled = true;
+        items[2].disabled = true;
         this.setState( { toolbarItems: items});
       }
     })
@@ -453,7 +457,7 @@ export default class CodeEditorLayout extends Component {
     const saveGSLAndDownload = (evt, key, buttonType) => {
       if (evt.currentTarget.id.indexOf(key) !== -1) {
           // Save file first if required, if the gsl file is requested.
-        if ((key === 'gsl' || key === 'allFormats') && (!this.state.toolbarItems[1].disabled)) {
+        if ((key === 'gsl' || key === 'allFormats') && (!this.state.toolbarItems[2].disabled)) {
           // save the GSL file first before downloading.
           window.constructor.extensions.files.write(
             window.constructor.api.projects.projectGetCurrentId(),
