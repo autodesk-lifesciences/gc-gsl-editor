@@ -38,7 +38,7 @@ export default class CodeEditorAce extends Component {
       },
       getDocTooltip: (item) => {
         if (autocompleteList.geneDocStrings[item.value]) {
-          item.docHTML = '<textarea rows=4 cols=40 enabled=false>' + autocompleteList.geneDocStrings[item.value] + '</textarea>';
+          item.docHTML = '<textarea rows=4 cols=40 enabled=false style="border: none">' + autocompleteList.geneDocStrings[item.value] + '</textarea>';
         }
       },
     });
@@ -59,7 +59,7 @@ export default class CodeEditorAce extends Component {
     let editorHeight = 0;
     this.ace.editor.focus();
     if (document.querySelector('.GSLEditorLayout') !== null && document.querySelector('.ConsoleLayout') !== null) {
-      editorHeight = document.querySelector('.GSLEditorLayout').getBoundingClientRect().height - document.querySelector('.ConsoleLayout').getBoundingClientRect().height - 60;
+      editorHeight = document.querySelector('.GSLEditorLayout').getBoundingClientRect().height - document.querySelector('.ConsoleLayout').getBoundingClientRect().height - 35;
     }
     return editorHeight;
   }
@@ -81,19 +81,19 @@ export default class CodeEditorAce extends Component {
               this.ace = el;
             }
           }}
-             mode="gsl"
-             theme="xcode"
-             name="aceEditor"
-             editorProps={{ $blockScrolling: Infinity}}
-             setOptions={{dragEnabled: true, enableSnippets: true}}
-             enableBasicAutocompletion={Boolean(true)}
-             enableSnippets={Boolean(true)}
-             enableLiveAutocompletion={Boolean(true)}
-             width="Infinity"
-             height={this.state.editorHeight + 'px'}
-             showPrintMargin={false}
-             value={this.props.value}
-             onChange={this.handleChange}/>
+           mode="gsl"
+           theme="xcode"
+           name="aceEditor"
+           editorProps={{ $blockScrolling: Infinity}}
+           setOptions={{dragEnabled: true, enableSnippets: true}}
+           enableBasicAutocompletion={Boolean(true)}
+           enableSnippets={Boolean(true)}
+           enableLiveAutocompletion={Boolean(true)}
+           width="Infinity"
+           height={this.state.editorHeight + 'px'}
+           showPrintMargin={false}
+           value={this.props.value}
+           onChange={this.handleChange}/>
         </div>
     );
   }
