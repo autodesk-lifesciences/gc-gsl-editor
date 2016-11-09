@@ -38,7 +38,7 @@ export default class CodeEditorAce extends Component {
       },
       getDocTooltip: (item) => {
         if (autocompleteList.geneDocStrings[item.value]) {
-          item.docHTML = '<textarea rows=4 cols=40 enabled=false>' + autocompleteList.geneDocStrings[item.value] + '</textarea>';
+          item.docHTML = '<textarea rows=4 cols=40 enabled=false style="border: none">' + autocompleteList.geneDocStrings[item.value] + '</textarea>';
         }
       },
     });
@@ -81,19 +81,19 @@ export default class CodeEditorAce extends Component {
               this.ace = el;
             }
           }}
-             mode="gsl"
-             theme="xcode"
-             name="aceEditor"
-             editorProps={{ $blockScrolling: Infinity}}
-             setOptions={{dragEnabled: true, enableSnippets: true}}
-             enableBasicAutocompletion={Boolean(true)}
-             enableSnippets={Boolean(true)}
-             enableLiveAutocompletion={Boolean(true)}
-             width="Infinity"
-             height={this.state.editorHeight + 'px'}
-             showPrintMargin={false}
-             value={this.props.value}
-             onChange={this.handleChange}/>
+           mode="gsl"
+           theme="xcode"
+           name="aceEditor"
+           editorProps={{ $blockScrolling: Infinity}}
+           setOptions={{dragEnabled: true, enableSnippets: true}}
+           enableBasicAutocompletion={Boolean(true)}
+           enableSnippets={Boolean(true)}
+           enableLiveAutocompletion={Boolean(true)}
+           width="Infinity"
+           height={this.state.editorHeight + 'px'}
+           showPrintMargin={false}
+           value={this.props.value}
+           onChange={this.handleChange}/>
         </div>
     );
   }
