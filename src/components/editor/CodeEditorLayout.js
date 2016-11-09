@@ -187,11 +187,6 @@ export default class CodeEditorLayout extends Component {
   onEditorContentChange = (content) => {
     this.setState({ editorContent: content });
     this.props.onEditorContentChange(content);
-    if (content === '') {
-      this.onStatusMessageChange('Begin typing GSL code.');
-    } else {
-      this.onStatusMessageChange(' ');
-    }
 
     // Enable or disable the 'Save' button based on the editor content.
     const projectId = window.constructor.api.projects.projectGetCurrentId();
@@ -219,6 +214,7 @@ export default class CodeEditorLayout extends Component {
   onStatusMessageChange = (message) => {
     this.setState({ statusMessage: message });
     this.props.onStatusContentChange(message);
+    window.constructor.api.ui.uiSetGrunt(message);
   }
 
   /**
@@ -289,7 +285,6 @@ export default class CodeEditorLayout extends Component {
   refreshEditorFromState = () => {
     this.onEditorContentChange(gslState.editorContent);
     this.onResultContentChange(gslState.resultContent);
-    this.onStatusMessageChange(gslState.statusContent);
     this.codeEditor.ace.editor.env.editor.setReadOnly(false);
   }
 
@@ -368,7 +363,7 @@ export default class CodeEditorLayout extends Component {
       this.state.editorContent
     )
     .then(() => {
-      this.onStatusMessageChange('Saved.');
+      this.onStatusMessageChange('Saved GSL code.');
       this.refreshDownloadMenu();
       this.codeEditor.ace.editor.focus();
       const projectId = window.constructor.api.projects.projectGetCurrentId();
@@ -467,9 +462,6 @@ export default class CodeEditorLayout extends Component {
           )
           .then(() => {   // refactor this to separate the save part.
             gslState.refreshDownloadList = true;
-            setTimeout(() => {
-              this.onStatusMessageChange('');
-            }, 2000);
             this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
             this.downloadFileByType(key, buttonType);
           })
@@ -478,9 +470,6 @@ export default class CodeEditorLayout extends Component {
             console.log(err);
           });
         } else {
-          setTimeout(() => {
-            this.onStatusMessageChange('');
-          }, 2000);
           this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
           this.downloadFileByType(key, buttonType);
         }
@@ -515,10 +504,6 @@ export default class CodeEditorLayout extends Component {
         }}
           callbackParent={this.onEditorContentChange}
           value={this.state.editorContent}/>
-        <Statusbar
-          message={this.state.statusMessage}
-          showConsole={this.showConsole}
-          isConsoleVisible={this.props.isConsoleOpen}/>
       </div>
     );
   }
