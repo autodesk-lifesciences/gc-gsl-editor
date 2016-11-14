@@ -39,7 +39,7 @@ for (const genome of genomes) {
 }
 
 // Add a combination for each of the genes as well.
-const operators = ['p', 'g', 'o', 't', 'd', 'u'];
+const operators = ['p', 'g', 'o', 't', 'd', 'u', 'f', 'm'];
 const operatorMapDocs = {
   'p': 'Promoter part of ',
   'g': 'Gene locus of ',
@@ -47,6 +47,8 @@ const operatorMapDocs = {
   't': 'Terminator part of ',
   'd': 'Downstream part of ',
   'u': 'Upstream part of ',
+  'f': 'Fusible ORF of ',
+  'm': 'mRNA of ',
 };
 
 for (const genome of genomes) {
