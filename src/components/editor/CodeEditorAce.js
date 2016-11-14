@@ -38,7 +38,7 @@ export default class CodeEditorAce extends Component {
       },
       getDocTooltip: (item) => {
         if (autocompleteList.geneDocStrings[item.value]) {
-          item.docHTML = '<textarea rows=4 cols=40 enabled=false style="border: none">' + autocompleteList.geneDocStrings[item.value] + '</textarea>';
+          item.docHTML = autocompleteList.geneDocStrings[item.value];
         }
       },
     });

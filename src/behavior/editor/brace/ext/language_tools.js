@@ -1174,9 +1174,9 @@ dom.importCssString("\
     z-index: 1;\
 }\
 .ace_editor.ace_autocomplete .ace_line-hover {\
-    border: 1px solid #abbffe;\
+    border: none solid #abbffe;\
     margin-top: -1px;\
-    background: rgba(233,233,253,0.4);\
+    background: rgba(255,255,255,0.4);\
 }\
 .ace_editor.ace_autocomplete .ace_line-hover {\
     position: absolute;\
@@ -1202,11 +1202,11 @@ dom.importCssString("\
 .ace_editor.ace_autocomplete {\
     width: 280px;\
     z-index: 200000;\
-    background: #fbfbfb;\
+    background: #ebebeb;\
     color: #444;\
-    border: 1px lightgray solid;\
+    border: 0.2 lightgray solid;\
     position: fixed;\
-    box-shadow: 2px 3px 5px rgba(0,0,0,.2);\
+    box-shadow: 0.2px 0px 0.5px rgba(0,0,0,.2);\
     line-height: 1.4;\
 }");
 
@@ -1231,8 +1231,8 @@ exports.parForEach = function(array, fn, callback) {
     }
 };
 
-//var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF]/;
-var ID_REGEX = /[A-Z\#]/;
+var ID_REGEX = /[a-zA-Z_0-9\$\-\u00A2-\uFFFF\#]/;
+//var ID_REGEX = /[A-Z\#]/;
 exports.retrievePrecedingIdentifier = function(text, pos, regex) {
     regex = regex || ID_REGEX;
     var buf = [];
@@ -1452,13 +1452,13 @@ var Autocomplete = function() {
         "Esc": function(editor) { editor.completer.detach(); },
         "Return": function(editor) { return editor.completer.insertMatch(); },
         "Shift-Return": function(editor) { editor.completer.insertMatch(null, {deleteSuffix: true}); },
-        "Tab": function(editor) {
+        /*"Tab": function(editor) {
             var result = editor.completer.insertMatch();
             if (!result && !editor.tabstopManager)
                 editor.completer.goTo("down");
             else
                 return result;
-        },
+        },*/
 
         "PageUp": function(editor) { editor.completer.popup.gotoPageUp(); },
         "PageDown": function(editor) { editor.completer.popup.gotoPageDown(); }
@@ -1591,7 +1591,7 @@ var Autocomplete = function() {
     this.showDocTooltip = function(item) {
         if (!this.tooltipNode) {
             this.tooltipNode = dom.createElement("div");
-            this.tooltipNode.className = "ace_tooltip ace_doc-tooltip";
+            this.tooltipNode.className = "ace_tooltip ace_tooltip";
             this.tooltipNode.style.margin = 0;
             this.tooltipNode.style.pointerEvents = "auto";
             this.tooltipNode.tabIndex = -1;
@@ -1611,6 +1611,8 @@ var Autocomplete = function() {
         var rect = popup.container.getBoundingClientRect();
         tooltipNode.style.top = popup.container.style.top;
         tooltipNode.style.bottom = popup.container.style.bottom;
+        tooltipNode.style.backgroundImage = "none";
+        tooltipNode.style.backgroundColor = "#FFFFFF";
 
         if (window.innerWidth - rect.right < 320) {
             tooltipNode.style.right = window.innerWidth - rect.left + "px";
@@ -1620,6 +1622,12 @@ var Autocomplete = function() {
             tooltipNode.style.right = "";
         }
         tooltipNode.style.display = "block";
+        tooltipNode.style.maxWidth = "500px";
+        tooltipNode.style.whiteSpace = "normal";
+        tooltipNode.style.wordWrap = "normal"; 
+        tooltipNode.style.textAlign = "left";
+        tooltipNode.style.borderColor = "#3F82FF";
+        tooltipNode.style.color = "#3F82FF";
     };
 
     this.hideDocTooltip = function() {
@@ -1814,8 +1822,8 @@ var snippetCompleter = {
     getDocTooltip: function(item) {
         if (item.type == "snippet" && !item.docHTML) {
             item.docHTML = [
-                "<b>", lang.escapeHTML(item.caption), "</b>", "<hr></hr>",
-                lang.escapeHTML(item.snippet)
+                "<div><b>", lang.escapeHTML(item.caption), "</b>", "<hr></hr>",
+                lang.escapeHTML(item.snippet), "</div>"
             ].join("");
         }
     }

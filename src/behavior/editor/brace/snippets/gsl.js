@@ -8,6 +8,9 @@ snippet g\n\
 snippet p\n\
 	p${1:GENE}\n\
 \n\
+snippet promoter\n\
+	p${1:GENE}\n\
+\n\
 snippet t\n\
 	t${1:GENE}\n\
 \n\

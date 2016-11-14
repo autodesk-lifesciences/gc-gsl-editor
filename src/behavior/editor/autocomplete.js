@@ -37,6 +37,34 @@ for (const genome of genomes) {
     }
   }
 }
+
+// Add a combination for each of the genes as well.
+const operators = ['p', 'g', 'o', 't', 'd', 'u'];
+const operatorMapDocs = {
+  'p': 'Promoter part of ',
+  'g': 'Gene locus of ',
+  'o': 'Open reading frame of ',
+  't': 'Terminator part of ',
+  'd': 'Downstream part of ',
+  'u': 'Upstream part of ',
+};
+
+for (const genome of genomes) {
+  let element;
+  for (element of genome) {
+    let operator;
+    for (operator of operators) {
+      if (element.commonName.trim() !== '') {
+        autocompleteGeneList.push(operator + element.commonName);
+        autocompleteDocStrings[operator + element.commonName] = operatorMapDocs[operator] + element.commonName;
+      }
+      if (element.systematicName.trim() !== '') {
+        autocompleteGeneList.push(operator + element.systematicName);
+        autocompleteDocStrings[operator + element.systematicName] = operatorMapDocs[operator] + element.systematicName;
+      }
+    }
+  }
+}
 // sort the lists alphabetically
 autocompleteGeneList.sort();
 geneList.sort();
