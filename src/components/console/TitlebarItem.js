@@ -19,7 +19,7 @@ export default class TitlebarItem extends Component {
 
   render() {
     return (
-      <div className="TitleBarItem"
+      <div className={this.props.label.trim() !== '' ? "TitleBarItem ButtonStyle" : "TitleBarItem" }
         style={{backgroundImage: `url(${this.props.imageUrl})`}}
         onClick = {this.props.action}>
         <span>{this.props.label}</span>

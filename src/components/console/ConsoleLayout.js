@@ -33,7 +33,7 @@ export default class ConsoleLayout extends Component {
       openHeight: 150,
       titlebarItems: [
         {
-          label: 'Clear Console',
+          label: 'Clear',
           action: this.clearConsole,
           enabled: true,
         },

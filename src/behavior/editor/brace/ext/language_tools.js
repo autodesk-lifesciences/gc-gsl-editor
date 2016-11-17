@@ -1012,11 +1012,15 @@ var AcePopup = function(parentNode) {
         var selected = t.element.childNodes[row - t.config.firstRow];
         if (selected == t.selectedNode)
             return;
-        if (t.selectedNode)
+        if (t.selectedNode) {
             dom.removeCssClass(t.selectedNode, "ace_selected");
+            dom.removeCssClass(t.selectedNode, "ace_selected_white");  // Added CSS to have the selected text in white
+        }
         t.selectedNode = selected;
-        if (selected)
+        if (selected) {
             dom.addCssClass(selected, "ace_selected");
+            dom.addCssClass(selected, "ace_selected_white");
+        }
     });
     var hideHoverMarker = function() { setHoverMarker(-1) };
     var setHoverMarker = function(row, suppressRedraw) {
@@ -1170,17 +1174,17 @@ var AcePopup = function(parentNode) {
 
 dom.importCssString("\
 .ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line {\
-    background-color: #CAD6FA;\
+    background-color: rgba(60, 130, 255, 0.8);\
     z-index: 1;\
 }\
 .ace_editor.ace_autocomplete .ace_line-hover {\
     border: none solid #abbffe;\
     margin-top: -1px;\
-    background: rgba(255,255,255,0.4);\
+    background: rgba(255,255,255,0.8);\
 }\
 .ace_editor.ace_autocomplete .ace_line-hover {\
     position: absolute;\
-    z-index: 2;\
+    z-index: 0;\
 }\
 .ace_editor.ace_autocomplete .ace_scroller {\
    background: none;\
@@ -1188,21 +1192,23 @@ dom.importCssString("\
    box-shadow: none;\
 }\
 .ace_rightAlignedText {\
-    color: gray;\
     display: inline-block;\
     position: absolute;\
     right: 4px;\
     text-align: right;\
     z-index: -1;\
 }\
+.ace_selected_white {\
+    color: #FFF;\
+    font-weight: lighter;\
+}\
 .ace_editor.ace_autocomplete .ace_completion-highlight{\
-    color: #000;\
     text-shadow: 0 0 0.01em;\
 }\
 .ace_editor.ace_autocomplete {\
     width: 280px;\
     z-index: 200000;\
-    background: #ebebeb;\
+    background: #DFE2EC;\
     color: #444;\
     border: 0.2 lightgray solid;\
     position: fixed;\

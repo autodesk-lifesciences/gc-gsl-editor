@@ -7,7 +7,7 @@ exports.isDark = false;
 exports.cssClass = "ace-xcode";
 exports.cssText = "\
 .ace-xcode .ace_gutter {\
-background: #e8e8e8;\
+background: #DFE2EC;\
 color: #555555\
 }\
 .ace-xcode .ace_print-margin {\
@@ -35,10 +35,10 @@ margin: -1px 0 0 -1px;\
 border: 1px solid #BFBFBF\
 }\
 .ace-xcode .ace_marker-layer .ace_active-line {\
-background: rgba(0, 0, 0, 0.071)\
+background: #EEEFF3\
 }\
 .ace-xcode .ace_gutter-active-line {\
-background-color: rgba(0, 0, 0, 0.071)\
+background-color: #EEEFF3\
 }\
 .ace-xcode .ace_marker-layer .ace_selected-word {\
 border: 1px solid #B5D5FF\
@@ -89,7 +89,7 @@ color: #C900A4\
 color: #DF0002\
 }\
 .ace-xcode .ace_comment {\
-color: #999999\
+color: #a8adbf\
 }\
 .ace-xcode .ace_indent-guide {\
 background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAE0lEQVQImWP4////f4bLly//BwAmVgd1/w11/gAAAABJRU5ErkJggg==) right repeat-y\

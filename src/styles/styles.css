@@ -45,7 +45,6 @@
   color: #757884;
   background: #EAEBF1;
   font-size: 12px;
-  font-family: Helvetica, Arial, sans-serif;
   line-height: 12px;
   white-space: nowrap;
   overflow: hidden;
@@ -104,7 +103,7 @@ input.StatusbarButton {
 }
 
 .ToolbarItemLink {
-  color: #757884;
+  color: #707a96;
   text-decoration: none;
 }
 
@@ -147,14 +146,13 @@ input.StatusbarButton {
 
   height: 30px;
   width: 100%;
-  background: #6B6F7C;
+  background: #4c5263;
   line-height: 12px;
 }
 
 .TitlebarText {
   display: inline-block;
-  font-family: Helvetica, Arial, sans-serif;
-  color: #EEEEEE;
+  color: #C2C5D2;
   padding-left: 10px;
   padding-top: 9px;
 }
@@ -172,12 +170,19 @@ input.StatusbarButton {
   padding-bottom: 3px;
 }
 
+.TitleBarItem.ButtonStyle {
+  background-color: #71747f;
+  color: #EEEEEE;
+  padding-top: 3px;
+  border-radius: 2px;
+}
+
 .TitleBarItem span {
   display: inline-block;
 }
 
 .ResultViewer {
-  background: rgba(0,0,0,0.7);
+  background: #292D40;
   color: white;
   overflow:auto;
 }
@@ -189,8 +194,9 @@ input.StatusbarButton {
 
 .divResult {
   font-family: Courier;
+  color: #BBBBBB;
   white-space: pre;
-  margin-top: 0;  
+  margin-top: 0;
   display: block;
   padding-left: 9px;
   padding-top: 2px;

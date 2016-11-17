@@ -42,6 +42,6 @@ export default class Titlebar extends Component {
           })}
         </div>
       </div>
-      );
+    );
   }
 }

@@ -5,6 +5,9 @@ exports.snippetText = "# Prototype\n\
 snippet g\n\
 	g${1:GENE}\n\
 \n\
+snippet gene\n\
+	g${1:GENE}\n\
+\n\
 snippet p\n\
 	p${1:GENE}\n\
 \n\
@@ -14,19 +17,34 @@ snippet promoter\n\
 snippet t\n\
 	t${1:GENE}\n\
 \n\
+snippet terminator\n\
+	t${1:GENE}\n\
+\n\
 snippet u\n\
+	u${1:GENE}\n\
+\n\
+snippet upstream\n\
 	u${1:GENE}\n\
 \n\
 snippet d\n\
 	d${1:GENE}\n\
 \n\
+snippet downstream\n\
+	d${1:GENE}\n\
+\n\
 snippet o\n\
+	o${1:GENE} \n\
+\n\
+snippet orf\n\
 	o${1:GENE} \n\
 \n\
 snippet f\n\
 	f${1:GENE} \n\
 \n\
 snippet m\n\
+	m${1:GENE} \n\
+\n\
+snippet mrna\n\
 	m${1:GENE} \n\
 \n\
 # Declare variable\n\
