@@ -16,7 +16,6 @@
   "scripts": {
     "install-fsharp": "./node_modules/.bin/babel-node tools/run install-fsharp",
     "install-gsl": "./node_modules/.bin/babel-node tools/run install-gsl",
-    "postinstall": "npm run install-gsl",
     "test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js",
     "nightwatch": "node ./node_modules/nightwatch/bin/nightwatch --config ./tests/e2e/nightwatch.json",
     "selenium": "node ./node_modules/selenium-standalone/bin/selenium-standalone install --version=2.53.1 --drivers.chrome.version=2.24",
