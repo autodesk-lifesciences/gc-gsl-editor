@@ -1,6 +1,6 @@
 export const argConfig = {
   'externalServer': {
-    'url': 'https://gsl.dev.bionano.autodesk.com',
+    'url': 'http://localhost:9876',
   },
   'fileArguments': {
     '--flat': {

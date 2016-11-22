@@ -80,17 +80,17 @@ router.get('/download*', (req, res, next) => {
 
         const baseUrl = '/download?';
 
-        const download = function(url, dest) {
+        const download = (url, dest) => {
           const file = fs.createWriteStream(dest);
           const lib = url.startsWith('https') ? require('https') : require('http');
-          lib.get(url, function(response) {
+          lib.get(url, (response) => {
             response.pipe(file);
-            file.on('finish', function() {
+            file.on('finish', () => {
               res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
               res.download(filePath, fileName);
               file.close();
             });
-          }).on('error', function(err) {
+          }).on('error', (err) => {
             //fs.unlink(dest);
             console.log('An error occured while downloading');
             console.log(err.stack);

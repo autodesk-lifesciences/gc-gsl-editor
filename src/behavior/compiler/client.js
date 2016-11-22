@@ -145,37 +145,6 @@ export const loadDefaults = () => {
   });
 };
 
-/**
- * Save Project code.
- */
-export const saveProjectCode = () => {
-  window.constructor.extensions.files.write(
-    window.constructor.api.projects.projectGetCurrentId(),
-    config.name,
-    'project.gsl',
-    gslState.editorContent
-  )
-  .then(() => {
-    console.log('Saved GSL Code.');
-    gslState.refreshDownloadList = true;
-    // Save code to the remote gsl server.
-    writeRemote(
-      window.constructor.api.projects.projectGetCurrentId(),
-      config.name,
-      'project.gsl',
-      gslState.editorContent
-    )
-    .catch((err) => {
-      console.log('Failed to save GSL code remotely');
-      console.log(err);
-    });
-  })
-  .catch((err) => {
-    console.log('Failed to save GSL Code');
-    console.log(err);
-  });
-};
-
 
 /**
   * Save Project code on the GSL server (needed for downloads)
@@ -210,9 +179,40 @@ export const writeRemote = (projectId, extension, fileName, contents) => {
   });
 };
 
+/**
+ * Save Project code.
+ */
+export const saveProjectCode = () => {
+  window.constructor.extensions.files.write(
+    window.constructor.api.projects.projectGetCurrentId(),
+    config.name,
+    'project.gsl',
+    gslState.editorContent
+  )
+  .then(() => {
+    console.log('Saved GSL Code.');
+    gslState.refreshDownloadList = true;
+    // Save code to the remote gsl server.
+    writeRemote(
+      window.constructor.api.projects.projectGetCurrentId(),
+      config.name,
+      'project.gsl',
+      gslState.editorContent
+    )
+    .catch((err) => {
+      console.log('Failed to save GSL code remotely');
+      console.log(err);
+    });
+  })
+  .catch((err) => {
+    console.log('Failed to save GSL Code');
+    console.log(err);
+  });
+};
+
 /*
  * Rule to determine if the result message indicates a primer generation failure.
- */ 
+ */
 export const isPrimerFailure = (resultMessage) => {
   const errorlist = [
     '.*ERROR: .* can\'t find suitable.* default.* part diag.* Linker.*',
@@ -224,16 +224,16 @@ export const isPrimerFailure = (resultMessage) => {
     const result = resultMessage.match(re);
     if (result) {
       return (resultMessage.match(re).length > 0);
-    }   
+    }
   }
   return false;
 };
 
 /*
  * Removes the primer and thumper arguments.
- */ 
+ */
 export const removePrimerThumperArgs = (compilerArgs) => {
-  var modifiedArgs = Object.assign({}, compilerArgs);
+  const modifiedArgs = Object.assign({}, compilerArgs);
   if (modifiedArgs.hasOwnProperty('--primers')) {
     delete modifiedArgs['--primers'];
   }
