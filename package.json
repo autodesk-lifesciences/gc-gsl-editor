@@ -2,6 +2,21 @@
   "name": "gc-gsl-editor",
   "version": "1.0.1",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
+  "keywords": [
+    "DNA",
+    "GSL",
+    "Autodesk",
+    "Amyris",
+    "Constructor"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:rupalkhilari/gc-gsl-editor.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/rupalkhilari/gc-gsl-editor/issues"
+  },
   "geneticConstructor": {
     "readable": "GSL Editor",
     "type": "Code editor",
