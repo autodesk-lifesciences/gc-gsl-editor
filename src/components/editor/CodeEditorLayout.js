@@ -381,6 +381,20 @@ export default class CodeEditorLayout extends Component {
     .catch((err) => {
       this.onStatusMessageChange('Failed to save the GSL code on the server.');
     });
+
+    // Save code on the remote server.
+    compiler.writeRemote(
+      window.constructor.api.projects.projectGetCurrentId(),
+      extensionConfig.name,
+      'project.gsl',
+      this.state.editorContent
+    )
+    .then(() => {
+      console.log('Saved GSL code remotely.');
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   }
 
   /**

@@ -6,7 +6,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import fs from 'fs';
 
-import { createProjectFilePath, createProjectFilesDirectoryPath } from './utils/project';
+import { createProjectFilePath } from './utils/project';
 import { argConfig } from './config';
 
 const router = express.Router();
@@ -40,46 +40,6 @@ router.post('/gslc', jsonParser, (req, res, next) => {
       'status': data.status,
     };
     res.status(200).json(result);
-
-    if (data.status === 0) {
-      // Downloading files to the local storage as some files are local and some are remote.
-      Object.keys(argConfig.downloadableFileTypes).forEach((key) => {
-        try {
-          if (argConfig.downloadableFileTypes[key].hasOwnProperty('isRemote') && argConfig.downloadableFileTypes[key].isRemote === 1) {
-            const type = key;
-            const fileName = argConfig.downloadableFileTypes[type].fileName;
-            const filePath = createProjectFilePath(input.projectId, input.extension, fileName);
-            const params = {
-              projectId: input.projectId,
-              extension: input.extension,
-              type: key,
-            };
-
-            const query = Object.keys(params)
-              .map(attr => encodeURIComponent(attr) + '=' + encodeURIComponent(params[attr]))
-              .join('&');
-
-            const baseUrl = '/download?';
-            const download = function(url, dest) {
-              const file = fs.createWriteStream(dest);
-              const lib = url.startsWith('https') ? require('https') : require('http');
-              lib.get(url, function(response) {
-                response.pipe(file);
-                file.on('finish', function() {
-                  file.close();
-                });
-              }).on('error', function(err) {
-                console.log(err);
-              });
-            };
-            download(argConfig.externalServer.url + baseUrl + query, filePath);
-          }
-        } catch (err) {
-          // Catch errors but print on the console.
-          console.log(err);
-        }
-      });
-    }
   })
   .catch((err) => {
     const result = {
@@ -102,7 +62,7 @@ router.get('/download*', (req, res, next) => {
   if (argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
     const fileName = argConfig.downloadableFileTypes[req.query.type].fileName;
     const filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
-    const useLocalStorage = true;
+    const useLocalStorage = false;
     fs.exists(filePath, (exists) => {
       if (exists && useLocalStorage) {
         res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
@@ -171,5 +131,44 @@ router.post('/listDownloads', (req, res, next) => {
   });
 });
 
+/**
+ * Route of save a remote file.
+ */
+router.post('/writeRemote', jsonParser, (req, res, next) => {
+  const input = req.body;
+  const payload = {
+    'fileName': input.fileName,
+    'projectId': input.projectId,
+    'extension': input.extension,
+    'contents': input.contents,
+  };
+
+  fetch(argConfig.externalServer.url + '/writeRemote', {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8',
+    },
+    body: JSON.stringify(payload),
+  })
+  .then((resp) => {
+    return resp.json();
+  })
+  .then((data) => {
+    const result = {
+      'status': data.status,
+    };
+    res.status(200).json(result);
+  })
+  .catch((err) => {
+    const result = {
+      'result': err.stack,
+      'contents': [],
+      'status': -1,
+    };
+    console.log('Encountered an error:');
+    console.log(err.stack);
+    res.status(422).json(result);
+  });
+});
 
 module.exports = router;
