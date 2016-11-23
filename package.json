@@ -1,7 +1,22 @@
 {
   "name": "gc-gsl-editor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
+  "keywords": [
+    "DNA",
+    "GSL",
+    "Autodesk",
+    "Amyris",
+    "Constructor"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:rupalkhilari/gc-gsl-editor.git"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/rupalkhilari/gc-gsl-editor/issues"
+  },
   "geneticConstructor": {
     "readable": "GSL Editor",
     "type": "Code editor",
@@ -14,13 +29,11 @@
     "router": "server-build.js"
   },
   "scripts": {
-    "install-fsharp": "./node_modules/.bin/babel-node tools/run install-fsharp",
-    "install-gsl": "./node_modules/.bin/babel-node tools/run install-gsl",
     "test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js",
     "nightwatch": "node ./node_modules/nightwatch/bin/nightwatch --config ./tests/e2e/nightwatch.json",
     "selenium": "node ./node_modules/selenium-standalone/bin/selenium-standalone install --version=2.53.1 --drivers.chrome.version=2.24",
     "e2e": "NODE_ENV=test node ./tests/e2e/bin/e2e.js",
-    "lint": "./node_modules/eslint/bin/eslint.js * -c ./.eslintrc --ignore-path ./.eslintignore --ignore-pattern src/behavior/editor/brace/*/*.js,tests/,GSL,*.json,*.md ; exit 0",
+    "lint": "./node_modules/eslint/bin/eslint.js * -c ./.eslintrc --ignore-path ./.eslintignore --ignore-pattern src/behavior/editor/brace/*/*.js,*-build.js,tests/,GSL,*.json,*.md ; exit 0",
     "debug-server": "webpack --config webpack.server.config.js",
     "watch-server": "webpack --watch --config webpack.server.config.js",
     "release-server": "webpack --optimize-minimize --config webpack.server.config.js",
@@ -30,8 +43,7 @@
     "debug": "npm run debug-server && npm run debug-client",
     "release": "npm run release-server && npm run release-client"
   },
-  "author": "",
-  "license": "MIT",
+  "author": "Rupal Khilari <rupal.khilari@gmail.com>",
   "dependencies": {
     "babel-cli": "^6.9.0",
     "babel-core": "^6.9.1",

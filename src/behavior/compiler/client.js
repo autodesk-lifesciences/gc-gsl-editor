@@ -38,7 +38,7 @@ export const run = (data, args, projectId) => {
   .catch((err) => {
     console.log('Request timed out:', err);
     return {
-      'result': 'Waited too long but could not process the request.',
+      'result': 'Unable to process the request:' + err,
       'status': 1,
       'contents': [],
     };
@@ -145,6 +145,40 @@ export const loadDefaults = () => {
   });
 };
 
+
+/**
+  * Save Project code on the GSL server (needed for downloads)
+  */
+export const writeRemote = (projectId, extension, fileName, contents) => {
+  const payload = {
+    'projectId': projectId,
+    'extension': extension,
+    'fileName': fileName,
+    'contents': contents,
+  };
+
+  const stringified = JSON.stringify(payload);
+  return fetch('/extensions/api/' + extension + '/writeRemote', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8',
+    },
+    body: stringified,
+  })
+  .then(resp => resp.json())
+  .then((data) => {
+    return data;
+  })
+  .catch((err) => {
+    console.log('Request timed out:', err);
+    return {
+      'result': 'Unable to save the file.',
+      'status': 1,
+    };
+  });
+};
+
 /**
  * Save Project code.
  */
@@ -158,6 +192,17 @@ export const saveProjectCode = () => {
   .then(() => {
     console.log('Saved GSL Code.');
     gslState.refreshDownloadList = true;
+    // Save code to the remote gsl server.
+    writeRemote(
+      window.constructor.api.projects.projectGetCurrentId(),
+      config.name,
+      'project.gsl',
+      gslState.editorContent
+    )
+    .catch((err) => {
+      console.log('Failed to save GSL code remotely');
+      console.log(err);
+    });
   })
   .catch((err) => {
     console.log('Failed to save GSL Code');
@@ -167,7 +212,7 @@ export const saveProjectCode = () => {
 
 /*
  * Rule to determine if the result message indicates a primer generation failure.
- */ 
+ */
 export const isPrimerFailure = (resultMessage) => {
   const errorlist = [
     '.*ERROR: .* can\'t find suitable.* default.* part diag.* Linker.*',
@@ -179,16 +224,16 @@ export const isPrimerFailure = (resultMessage) => {
     const result = resultMessage.match(re);
     if (result) {
       return (resultMessage.match(re).length > 0);
-    }   
+    }
   }
   return false;
 };
 
 /*
  * Removes the primer and thumper arguments.
- */ 
+ */
 export const removePrimerThumperArgs = (compilerArgs) => {
-  var modifiedArgs = Object.assign({}, compilerArgs);
+  const modifiedArgs = Object.assign({}, compilerArgs);
   if (modifiedArgs.hasOwnProperty('--primers')) {
     delete modifiedArgs['--primers'];
   }

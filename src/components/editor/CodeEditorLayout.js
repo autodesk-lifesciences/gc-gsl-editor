@@ -2,7 +2,6 @@ import React, {PropTypes, Component} from 'react';
 
 import CodeEditorAce from './CodeEditorAce';
 import Toolbar from './Toolbar';
-import Statusbar from './Statusbar';
 import ToolbarMenu from './ToolbarMenu';
 import * as compiler from '../../behavior/compiler/client';
 import * as canvas from '../../behavior/canvas/output';
@@ -13,6 +12,7 @@ const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
 const gslState = require('../../../globals');
 
+require('../../styles/styles.css');
 /**
  * CodeEditorLayout groups together the components of the editor.
  *
@@ -320,13 +320,12 @@ export default class CodeEditorLayout extends Component {
         canvas.render(JSON.parse(data.contents));
         this.refreshDownloadMenu();
       } else if (compiler.isPrimerFailure(data.result)) {
-        this.onStatusMessageChange('Re-running the code without primers...')
+        this.onStatusMessageChange('Re-running the code without primers...');
         this.rerunCode(evt, compiler.removePrimerThumperArgs(config.arguments));
-      }
-      else {
+      } else {
         this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
         this.showConsole();
-      }      
+      }
     });
   }
 
@@ -380,6 +379,20 @@ export default class CodeEditorLayout extends Component {
     })
     .catch((err) => {
       this.onStatusMessageChange('Failed to save the GSL code on the server.');
+    });
+
+    // Save code on the remote server.
+    compiler.writeRemote(
+      window.constructor.api.projects.projectGetCurrentId(),
+      extensionConfig.name,
+      'project.gsl',
+      this.state.editorContent
+    )
+    .then(() => {
+      console.log('Saved GSL code remotely.');
+    })
+    .catch((err) => {
+      console.log(err);
     });
   }
 
