@@ -2,44 +2,6 @@ export const argConfig = {
   'externalServer': {
     'url': 'https://gsl.dev.bionano.autodesk.com',
   },
-  'fileArguments': {
-    '--flat': {
-      'arguments': ['<filePath>'],
-      'fileName': 'gslOutFlat.txt',
-    },
-    '--json': {
-      'arguments': [ '<filePath>' ],
-      'fileName': 'gslOut.json',
-    },
-    '--ape': {
-      'arguments': [ '<outDir>', '<prefix>' ],
-      'fileName': 'gslOut',
-    },
-    '--cm': {
-      'arguments': [ '<outDir>', '<prefix>'],
-      'fileName': 'gslOut',
-    },
-    '--primers': {
-      'arguments': ['<filePath>'],
-      'fileName': 'gslOut.primers.txt',
-    },
-    '--docstring': {
-      'arguments': ['<filePath>'],
-      'fileName': 'gslOut.doc',
-    },
-    '--name2id': {
-      'arguments': ['<filePath>'],
-      'fileName': 'gslOut.name2id.txt',
-    },
-    '--thumper': {
-      'arguments': ['<filePath>'],
-      'fileName': 'thumperOut',
-    },
-  },
-  'gslFile': {
-    'fileName': 'project.run.gsl',
-    'preCode': '',
-  },
   'downloadableFileTypes': {
     'ape': {
       'fileName': 'gslOutApe.zip',

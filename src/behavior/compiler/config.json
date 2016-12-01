@@ -1,11 +1,11 @@
 {
 	"arguments" : {
-        "--flat" : ["/tmp/placeholder.txt"],
-        "--json" : ["/tmp/placeholder.json"],
-        "--primers" : ["/tmp/primersfile.txt"],
-        "--thumper" : ["/tmp/thumperOut"],
-        "--ape" : ["/tmp/", "placeholder"],
-        "--cm" : ["/tmp/", "placeholder"]
+        "--flat" : [""],
+        "--json" : [""],
+        "--primers" : [""],
+        "--thumper" : [""],
+        "--ape" : [""],
+        "--cm" : [""]
     },
     "breeds" : {
         "B_PROMOTER" : "promoter",
