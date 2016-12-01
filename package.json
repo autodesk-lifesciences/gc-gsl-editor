@@ -1,6 +1,6 @@
 {
-  "name": "gc-gsl-editor",
-  "version": "1.0.2",
+  "name": "GC-GSL-Editor",
+  "version": "1.0.3",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
   "keywords": [
     "DNA",
@@ -11,11 +11,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:rupalkhilari/gc-gsl-editor.git"
+    "url": "git@github.com:autodesk-bionano/gc-gsl-editor.git"
   },
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/rupalkhilari/gc-gsl-editor/issues"
+    "url": "https://github.com/autodesk-bionano/gc-gsl-editor/issues"
   },
   "geneticConstructor": {
     "readable": "GSL Editor",
@@ -75,7 +75,7 @@
     "react-addons-test-utils": "^0.14.2",
     "react-dom": "0.14.2",
     "rimraf": "^2.5.4",
-    "s288c": "git+http://github.com/rupalkhilari/gsl-genome-s288c.git",
+    "s288c": "git+http://github.com/autodesk-bionano/gsl-genome-s288c.git",
     "shelljs": "^0.7.4",
     "skin-deep": "^0.16.0"
   },
