@@ -42,9 +42,12 @@ The routes exposed by this extension are imported into the main app server. It c
 ## Architecture
 
 As shown below, at a high level, the GSL extension is made up of the following components:
+
 1. The client : Displayed in the project details section of the Genetic constructor.
+
 2. The intermediate (forwarding) server : A lightweight server that simply mediates between the GSL client extension in the browser and the remote external GSL server.
-3. The GSL server : The GSL server does the heavy lifting of running the Gslc.exe command and producing output packages available for download. It is located at https://gsl.dev.bionano.autodesk.com/
+
+3. The GSL server : The GSL server does the heavy lifting of running the Gslc.exe command and producing output packages available for download. It is located at `https://gsl.dev.bionano.autodesk.com/`
 
 Note: As shown in the diagram by the grey box, this repository includes functionality mentioned in (1) and (2) above 
 
