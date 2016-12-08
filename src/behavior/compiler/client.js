@@ -183,7 +183,7 @@ export const writeRemote = (projectId, extension, fileName, contents) => {
  * Save Project code.
  */
 export const saveProjectCode = () => {
-  window.constructor.extensions.files.write(
+  return window.constructor.extensions.files.write(
     window.constructor.api.projects.projectGetCurrentId(),
     config.name,
     'project.gsl',
