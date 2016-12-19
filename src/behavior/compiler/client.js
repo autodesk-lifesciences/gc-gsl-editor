@@ -30,19 +30,15 @@ export const run = (data, args, projectId) => {
     },
     body: stringified,
   })
-  .then(resp => resp.json())
-  .then((data) => {
-    console.log(data);
-    return data;
-  })
-  .catch((err) => {
-    console.log('Request timed out:', err);
-    return {
-      'result': 'Unable to process the request:' + err,
-      'status': 1,
-      'contents': [],
-    };
-  });
+    .then(resp => resp.json())
+    .catch((err) => {
+      console.log('Request timed out:', err);
+      return {
+        'result': 'Unable to process the request:' + err,
+        'status': 1,
+        'contents': [],
+      };
+    });
 };
 
 /**
@@ -65,58 +61,60 @@ export const getAvailableDownloadList = (projectId) => {
     },
     body: stringified,
   })
-  .then(resp => resp.json())
-  .then((data) => {
-    return data;
-  });
+    .then(resp => resp.json())
+    .then((data) => {
+      return data;
+    });
+};
+
+//use this after saving, as it also sets the last saved code
+export const setProjectCode = (code, otherState = {}) => {
+  Object.assign(gslState, {
+    editorContent: code,
+    refreshDownloadList: false,
+    resultContent: '',
+    statusContent: '',
+  }, otherState);
+
+  const projectId = window.constructor.api.projects.projectGetCurrentId();
+  if (!gslState.hasOwnProperty(projectId)) {
+    gslState[projectId] = {};
+  }
+  gslState[projectId].savedCode = gslState.editorContent;
+
+  return code;
 };
 
 /**
  * Load GSL code associated with the project into the editor.
- * @param {string} url of the GSL file in the project.
  */
-export const loadProjectCode = (url) => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          const allText = xhr.responseText;
-          gslState.editorContent = allText;
-          gslState.refreshDownloadList = false;
-          gslState.resultContent = '';
-          gslState.statusContent = '';
-          const projectId = window.constructor.api.projects.projectGetCurrentId();
-          if (!gslState.hasOwnProperty(projectId)) {
-            gslState[projectId] = {};
-          }
-          gslState[projectId].savedCode = gslState.editorContent;
-          resolve();
-        }
-      }
-    };
-    xhr.send(null);
+export const loadProjectCode = () => {
+  return window.constructor.extensions.files.read(
+    window.constructor.api.projects.projectGetCurrentId(),
+    config.name,
+    'project.gsl'
+  )
+    .then(resp => resp.text())
+    .then(setProjectCode);
+};
+
+export const setSettings = (settings) => {
+  return Object.assign(gslState, {
+    gslConstructs: settings.constructs,
   });
 };
 
 /**
  * Load the GSL to construct metadata (stored on the server) into the project.
- * @param {string} url of the metadata settings file.
  */
-export const loadSettings = (url) => {
-  const xhr = new XMLHttpRequest();
-  xhr.open('GET', url, true);
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4) {
-      if (xhr.status === 200) {
-        const allText = xhr.responseText;
-        const jsonSettings = JSON.parse(allText);
-        gslState.gslConstructs = jsonSettings.constructs;
-      }
-    }
-  };
-  xhr.send(null);
+export const loadSettings = () => {
+  return window.constructor.extensions.files.read(
+    window.constructor.api.projects.projectGetCurrentId(),
+    config.name,
+    'settings.json'
+  )
+    .then(resp => resp.json())
+    .then(setSettings);
 };
 
 /**
@@ -124,37 +122,28 @@ export const loadSettings = (url) => {
 
  */
 export const loadDefaults = () => {
-  return new Promise((resolve, reject) => {
-    gslState.editorContent = defaultEditorContent;
-    gslState.resultContent = '';
-    gslState.statusContent = '';
-    gslState.refreshDownloadList = true;
-    // write an empty file.
-    window.constructor.extensions.files.write(
-      window.constructor.api.projects.projectGetCurrentId(),
-      config.name,
-      'project.run.gsl',
-      ''
-    ).then(()=> {
-      resolve();
-    })
-    .catch((err) => {
-      console.log(err);
-      reject(err);
-    });
+  setProjectCode(defaultEditorContent, {
+    refreshDownloadList: true
   });
+
+  // write an empty file.
+  return window.constructor.extensions.files.write(
+    window.constructor.api.projects.projectGetCurrentId(),
+    config.name,
+    'project.run.gsl',
+    ''
+  );
 };
 
-
 /**
-  * Save Project code on the GSL server (needed for downloads)
-  */
+ * Save Project code on the GSL server (needed for downloads)
+ */
 export const writeRemote = (projectId, extension, fileName, contents) => {
   const payload = {
-    'projectId': projectId,
-    'extension': extension,
-    'fileName': fileName,
-    'contents': contents,
+    projectId,
+    extension,
+    fileName,
+    contents,
   };
 
   const stringified = JSON.stringify(payload);
@@ -166,48 +155,67 @@ export const writeRemote = (projectId, extension, fileName, contents) => {
     },
     body: stringified,
   })
-  .then(resp => resp.json())
-  .then((data) => {
-    return data;
-  })
-  .catch((err) => {
-    console.log('Request timed out:', err);
-    return {
-      'result': 'Unable to save the file.',
-      'status': 1,
-    };
-  });
+    .then(resp => resp.json())
+    .then((data) => {
+      return data;
+    })
+    .catch((err) => {
+      console.log('Request timed out:', err);
+      return {
+        'result': 'Unable to save the file.',
+        'status': 1,
+      };
+    });
 };
 
 /**
  * Save Project code.
+ * Only saves to constructor if it has changed. will always save to remote server
  */
-export const saveProjectCode = () => {
-  return window.constructor.extensions.files.write(
-    window.constructor.api.projects.projectGetCurrentId(),
-    config.name,
-    'project.gsl',
-    gslState.editorContent
-  )
-  .then(() => {
-    console.log('Saved GSL Code.');
-    gslState.refreshDownloadList = true;
-    // Save code to the remote gsl server.
-    writeRemote(
+export const saveProjectCode = (forceNextCode) => {
+  const projectId = window.constructor.api.projects.projectGetCurrentId();
+  const nextCode = forceNextCode || gslState.editorContent;
+  const lastCode = typeof gslState[projectId] === 'object' ?
+    gslState[projectId].savedCode :
+    null;
+
+  const promise = (lastCode === nextCode) ?
+    Promise.resolve(null) :
+    window.constructor.extensions.files.write(
       window.constructor.api.projects.projectGetCurrentId(),
       config.name,
       'project.gsl',
-      gslState.editorContent
+      nextCode
     )
+      .then(resp => resp.json())
+      .then(json => {
+        console.log('Saved GSL Code.');
+
+        setProjectCode(nextCode, {
+          refreshDownloadList: true,
+        });
+
+        return json;
+      });
+
+  return promise
+    .then(() => {
+      // Save code to the remote gsl server.
+      return writeRemote(
+        projectId,
+        config.name,
+        'project.gsl',
+        nextCode
+      )
+        .catch((err) => {
+          console.log('Failed to save GSL code remotely');
+          console.log(err);
+        });
+    })
     .catch((err) => {
-      console.log('Failed to save GSL code remotely');
+      console.log('Failed to save GSL Code');
       console.log(err);
     });
-  })
-  .catch((err) => {
-    console.log('Failed to save GSL Code');
-    console.log(err);
-  });
 };
 
 /*
