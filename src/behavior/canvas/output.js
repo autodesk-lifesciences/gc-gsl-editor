@@ -1,7 +1,7 @@
 /**
  * Defines how the GSL assemblies are rendered on the canvas.
  */
-
+import * as compiler from '../compiler/client';
 const gslState = require('../../../globals');
 const extensionConfig = require('../../../package.json');
 const compilerConfig = require('../compiler/config.json');
@@ -12,8 +12,8 @@ const compilerConfig = require('../compiler/config.json');
 const removeGSLConstructs = () => {
   for (const blockId of gslState.gslConstructs) {
     if (window.constructor.api.projects.projectHasComponent(
-      window.constructor.api.projects.projectGetCurrentId(),
-      blockId)) {
+        window.constructor.api.projects.projectGetCurrentId(),
+        blockId)) {
       window.constructor.api.projects.projectRemoveConstruct(
         window.constructor.api.projects.projectGetCurrentId(),
         blockId
@@ -30,11 +30,13 @@ const renderBlocks = (assemblyList) => {
   let blockModel = {};
   const gslConstructs = [];
   assemblyList.reverse();
+  const projectId = window.constructor.api.projects.projectGetCurrentId();
 
   for (const assembly of assemblyList) {
     // Create the top level block (construct) and assign it the assembly name
     blockModel = {
-      metadata: { name: assembly.name},
+      metadata: { name: assembly.name },
+      projectId,
     };
     const mainBlock = window.constructor.api.blocks.blockCreate(blockModel);
     window.constructor.api.projects.projectAddConstruct(
@@ -51,6 +53,7 @@ const renderBlocks = (assemblyList) => {
           start: dnaSlice.destFr,
           end: dnaSlice.destTo,
         },
+        projectId,
         rules: {
           role: dnaSlice.breed !== null ? compilerConfig.breeds[dnaSlice.breed] : null,
           hidden: dnaSlice.breed === 'B_LINKER' ? true : false,
@@ -67,34 +70,7 @@ const renderBlocks = (assemblyList) => {
 
   gslState.gslConstructs = gslConstructs;
 
-  window.constructor.extensions.files.write(
-    window.constructor.api.projects.projectGetCurrentId(),
-    extensionConfig.name,
-    'settings.json',
-    JSON.stringify({'constructs': gslConstructs})
-  );
-};
-
-/**
- * Reads remote settings file - containing a list of GSL constructs in the project
- * @param {string} file url
- */
-const readRemoteFile = (url) => {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          const allText = xhr.responseText;
-          resolve(allText);
-        } else {
-          reject();
-        }
-      }
-    };
-    xhr.send(null);
-  });
+  return compiler.writeSettings({ 'constructs': gslConstructs }, projectId);
 };
 
 /**
@@ -102,38 +78,19 @@ const readRemoteFile = (url) => {
  * @param {array} assemblyList - List of objects describing GSL assemblies.
  */
 const reloadStateGSLConstructs = (assemblyList) => {
-  if (!gslState.hasOwnProperty('gslConstructs')) {
-    window.constructor.extensions.files.read(
-      window.constructor.api.projects.projectGetCurrentId(),
-      extensionConfig.name,
-      'settings.json'
-    )
-    .then((response) => {
-      if (response.status === 200) {
-        // read the file and populate the state
-        readRemoteFile(response.url)
-        .then((allText) => {
-          const jsonSettings = JSON.parse(allText);
-          gslState.gslConstructs = jsonSettings.constructs;
-          removeGSLConstructs();
-          renderBlocks(assemblyList);
-        })
-        .catch((err) => {
-          console.log('Failed to read the settings file ', err);
-          renderBlocks(assemblyList);
-        });
-      } else {
-        gslState.gslConstructs = [];
-      }
+  const promise = gslState.hasOwnProperty('gslConstructs') ?
+    Promise.resolve(null) :
+    compiler.loadSettings();
+
+  promise
+    .catch(err => {
+      console.log('Failed to read the settings file ', err);
+      gslState.gslConstructs = [];
     })
-    .catch((err) => {
-      // No settings file yet. Silently render blocks
+    .then(() => {
+      removeGSLConstructs();
       renderBlocks(assemblyList);
     });
-  } else {
-    removeGSLConstructs();
-    renderBlocks(assemblyList);
-  }
 };
 
 /**

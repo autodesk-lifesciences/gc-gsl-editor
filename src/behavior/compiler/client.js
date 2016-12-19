@@ -88,9 +88,10 @@ export const setProjectCode = (code, otherState = {}) => {
 /**
  * Load GSL code associated with the project into the editor.
  */
-export const loadProjectCode = () => {
+export const loadProjectCode = (forceProjectId) => {
+  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
   return window.constructor.extensions.files.read(
-    window.constructor.api.projects.projectGetCurrentId(),
+    projectId,
     config.name,
     'project.gsl'
   )
@@ -107,14 +108,27 @@ export const setSettings = (settings) => {
 /**
  * Load the GSL to construct metadata (stored on the server) into the project.
  */
-export const loadSettings = () => {
+export const loadSettings = (forceProjectId) => {
+  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
+
   return window.constructor.extensions.files.read(
-    window.constructor.api.projects.projectGetCurrentId(),
+    projectId,
     config.name,
     'settings.json'
   )
     .then(resp => resp.json())
     .then(setSettings);
+};
+
+export const writeSettings = (settings = {}, forceProjectId) => {
+  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
+
+  window.constructor.extensions.files.write(
+    projectId,
+    config.name,
+    'settings.json',
+    JSON.stringify(settings)
+  );
 };
 
 /**
@@ -130,7 +144,7 @@ export const loadDefaults = () => {
   return window.constructor.extensions.files.write(
     window.constructor.api.projects.projectGetCurrentId(),
     config.name,
-    'project.run.gsl',
+    'project.gsl',
     ''
   );
 };
@@ -187,15 +201,14 @@ export const saveProjectCode = (forceNextCode) => {
       'project.gsl',
       nextCode
     )
-      .then(resp => resp.json())
-      .then(json => {
+      .then(project => {
         console.log('Saved GSL Code.');
 
         setProjectCode(nextCode, {
           refreshDownloadList: true,
         });
 
-        return json;
+        return project;
       });
 
   return promise

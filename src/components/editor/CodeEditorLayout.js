@@ -112,47 +112,33 @@ export default class CodeEditorLayout extends Component {
     }
     registerKeysRunCode(this.codeEditor.ace, this.runCode);
 
-    // Load code from the server if the code from the previous project isn't already in the state.
-    if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
-      gslState.prevProject = window.constructor.api.projects.projectGetCurrentId();
+    const projectId = window.constructor.api.projects.projectGetCurrentId();
+
+    //if project already loaded, just set as editor content
+    if (gslState[projectId] && gslState[projectId].savedCode) {
+      gslState.editorContent = gslState[projectId].savedCode;
+      this.refreshEditorFromState();
+    } else {
+      //otherwise, load project and try to load settings
       this.codeEditor.ace.editor.env.editor.setReadOnly(true);
       this.onStatusMessageChange('Loading...');
 
-      window.constructor.extensions.files.list(window.constructor.api.projects.projectGetCurrentId(), extensionConfig.name)
-        .then((fileList) => {
-          const fileName = 'project.gsl';
-          const found = fileList.find(fileObj => fileObj.name === fileName);
+      compiler.loadProjectCode(projectId)
+        .then(() => {
+          this.onStatusMessageChange('');
 
-          //if nothing found, reject and error handle with default handling
-          if (!found) {
-            return Promise.reject(null);
-          }
-
-          return compiler.loadProjectCode()
-            .then(() => {
-              this.onStatusMessageChange('');
-              this.refreshEditorFromState();
-
-              if (fileList.indexOf('settings.json') >= 0) {
-                return compiler.loadSettings()
-                  .catch(err => {
-                    //if there is an error loading the settings, dont want to fall into setting all defaults
-                    console.log(err);
-                  });
-              }
+          return compiler.loadSettings(projectId)
+            .catch(err => {
+              //if there is an error loading the settings, dont want to fall into setting all defaults
+              console.log(err);
             });
         })
-        .catch((err) => {
-          compiler.loadDefaults()
-            .then(() => {
-              this.refreshEditorFromState();
-            });
+        .catch(() => {
+          return compiler.loadDefaults();
+        })
+        .then(() => {
+          this.refreshEditorFromState();
         });
-
-    } else {
-      if (gslState.hasOwnProperty('editorContent') && this.state.editorContent !== gslState.editorContent) {
-        this.refreshEditorFromState();
-      }
     }
   }
 
