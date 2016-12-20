@@ -14,26 +14,11 @@ function render(container, options) {
   const subscriber = window.constructor.store.subscribe((state, lastAction) => {
     if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
       ReactDOM.render(<GSLEditorLayout/>, container);
-      if (gslState.hasOwnProperty('prevProject') && gslState.prevProject === window.constructor.api.projects.projectGetCurrentId()) {
-        gslState.prevProject = window.constructor.api.projects.projectGetCurrentId();
-      }
     } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
       // save the current content of the editor.
       saveProjectCode();
     } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_OPEN) {
-      // read code from the server.
-      window.constructor.extensions.files.read(
-        window.constructor.api.projects.projectGetCurrentId(),
-        extensionConfig.name,
-        'project.gsl')
-      .then((response) => {
-        if (response.status === 200) {
-          loadProjectCode(response.url);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+      loadProjectCode();
     }
   }, true);
 

@@ -5,8 +5,9 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import fs from 'fs';
+import mkdirp from 'mkdirp';
 
-import { createProjectFilePath } from './utils/project';
+import { createProjectFilesDirectoryPath, createProjectFilePath } from './utils/project';
 import { argConfig } from './config';
 
 const router = express.Router();
@@ -30,27 +31,27 @@ router.post('/gslc', jsonParser, (req, res, next) => {
     },
     body: JSON.stringify(payload),
   })
-  .then((resp) => {
-    return resp.json();
-  })
-  .then((data) => {
-    const result = {
-      'result': data.result,
-      'contents': data.contents,
-      'status': data.status,
-    };
-    res.status(200).json(result);
-  })
-  .catch((err) => {
-    const result = {
-      'result': err.stack,
-      'contents': [],
-      'status': -1,
-    };
-    console.log('Encountered an error:');
-    console.log(err.stack);
-    res.status(422).json(result);
-  });
+    .then((resp) => {
+      return resp.json();
+    })
+    .then((data) => {
+      const result = {
+        'result': data.result,
+        'contents': data.contents,
+        'status': data.status,
+      };
+      res.status(200).json(result);
+    })
+    .catch((err) => {
+      const result = {
+        'result': err.stack,
+        'contents': [],
+        'status': -1,
+      };
+      console.log('Encountered an error:');
+      console.log(err.stack);
+      res.status(422).json(result);
+    });
 });
 
 
@@ -61,45 +62,52 @@ router.post('/gslc', jsonParser, (req, res, next) => {
 router.get('/download*', (req, res, next) => {
   if (argConfig.downloadableFileTypes.hasOwnProperty(req.query.type)) {
     const fileName = argConfig.downloadableFileTypes[req.query.type].fileName;
+
+    const fileFolder = createProjectFilesDirectoryPath(req.query.projectId, req.query.extension);
     const filePath = createProjectFilePath(req.query.projectId, req.query.extension, fileName);
-    const useLocalStorage = false;
-    fs.exists(filePath, (exists) => {
-      if (exists && useLocalStorage) {
-        res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
-        res.download(filePath, fileName);
-      } else {
-        const params = {
-          projectId: req.query.projectId,
-          extension: req.query.extension,
-          type: req.query.type,
-        };
 
-        const query = Object.keys(params)
-          .map(attr => encodeURIComponent(attr) + '=' + encodeURIComponent(params[attr]))
-          .join('&');
-
-        const baseUrl = '/download?';
-
-        const download = (url, dest) => {
-          const file = fs.createWriteStream(dest);
-          const lib = url.startsWith('https') ? require('https') : require('http');
-          lib.get(url, (response) => {
-            response.pipe(file);
-            file.on('finish', () => {
-              res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
-              res.download(filePath, fileName);
-              file.close();
-            });
-          }).on('error', (err) => {
-            //fs.unlink(dest);
-            console.log('An error occured while downloading');
-            console.log(err.stack);
-            res.send(`No file of type ${req.query.type} generated yet`);
-            res.status(404);
-          });
-        };
-        download(argConfig.externalServer.url + baseUrl + query, filePath );
+    //likely can omit mkdir if we just stream the file directly
+    mkdirp(fileFolder, (err) => {
+      if (err) {
+        console.log(err);
+        console.log(err.stack);
+        res.status(500).send();
       }
+
+      const params = {
+        projectId: req.query.projectId,
+        extension: req.query.extension,
+        type: req.query.type,
+      };
+
+      const query = Object.keys(params)
+        .map(attr => encodeURIComponent(attr) + '=' + encodeURIComponent(params[attr]))
+        .join('&');
+
+      const baseUrl = '/download?';
+
+      //downlaod the remote file and then serve it again?
+      //we could probably just pipe directly to the request...
+      const download = (url, dest) => {
+        const file = fs.createWriteStream(dest);
+        const lib = url.startsWith('https') ? require('https') : require('http');
+        lib.get(url, (response) => {
+          response.pipe(file);
+          file.on('finish', () => {
+            res.header('Content-Type', argConfig.downloadableFileTypes[req.query.type].contentType);
+            res.download(dest, fileName);
+            file.close();
+          });
+        }).on('error', (err) => {
+          //fs.unlink(dest);
+          console.log('An error occured while downloading');
+          console.log(err.stack);
+          res.send(`No file of type ${req.query.type} generated yet`);
+          res.status(404);
+        });
+      };
+
+      download(argConfig.externalServer.url + baseUrl + query, filePath);
     });
   } else {
     res.send('Could not find an appropriate file type to download.');
@@ -125,10 +133,10 @@ router.post('/listDownloads', (req, res, next) => {
     },
     body: stringified,
   })
-  .then(resp => resp.json())
-  .then((data) => {
-    res.status(200).json(data);
-  });
+    .then(resp => resp.json())
+    .then((data) => {
+      res.status(200).json(data);
+    });
 });
 
 /**
@@ -150,25 +158,25 @@ router.post('/writeRemote', jsonParser, (req, res, next) => {
     },
     body: JSON.stringify(payload),
   })
-  .then((resp) => {
-    return resp.json();
-  })
-  .then((data) => {
-    const result = {
-      'status': data.status,
-    };
-    res.status(200).json(result);
-  })
-  .catch((err) => {
-    const result = {
-      'result': err.stack,
-      'contents': [],
-      'status': -1,
-    };
-    console.log('Encountered an error:');
-    console.log(err.stack);
-    res.status(422).json(result);
-  });
+    .then((resp) => {
+      return resp.json();
+    })
+    .then((data) => {
+      const result = {
+        'status': data.status,
+      };
+      res.status(200).json(result);
+    })
+    .catch((err) => {
+      const result = {
+        'result': err.stack,
+        'contents': [],
+        'status': -1,
+      };
+      console.log('Encountered an error:');
+      console.log(err.stack);
+      res.status(422).json(result);
+    });
 });
 
 module.exports = router;

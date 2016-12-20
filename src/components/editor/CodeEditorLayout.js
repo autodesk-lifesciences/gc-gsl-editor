@@ -112,66 +112,34 @@ export default class CodeEditorLayout extends Component {
     }
     registerKeysRunCode(this.codeEditor.ace, this.runCode);
 
-    // Load code from the server if the code from the previous project isn't already in the state.
-    if (!gslState.hasOwnProperty('prevProject') || gslState.prevProject !== window.constructor.api.projects.projectGetCurrentId()) {
-      gslState.prevProject = window.constructor.api.projects.projectGetCurrentId();
+    const projectId = window.constructor.api.projects.projectGetCurrentId();
+
+    //if project already loaded, just set as editor content
+    if (gslState[projectId] && gslState[projectId].savedCode) {
+      gslState.editorContent = gslState[projectId].savedCode;
+      this.refreshEditorFromState();
+    } else {
+      //otherwise, load project and try to load settings
       this.codeEditor.ace.editor.env.editor.setReadOnly(true);
       this.onStatusMessageChange('Loading...');
 
-      window.constructor.extensions.files.list(
-        window.constructor.api.projects.projectGetCurrentId(),
-        extensionConfig.name)
-        .then((fileList) => {
+      compiler.loadProjectCode(projectId)
+        .then(() => {
+          this.onStatusMessageChange('');
 
-          const found = fileList.find(fileObj => fileObj.name === 'project.gsl');
-
-          //if nothing found, reject and error handle with default handling
-          if (!found) {
-            return Promise.reject(null);
-          }
-
-          // read code from the server.
-          return window.constructor.extensions.files.read(
-            window.constructor.api.projects.projectGetCurrentId(),
-            extensionConfig.name,
-            'project.gsl')
-            .then((response) => {
-              if (response.status === 200) {
-                compiler.loadProjectCode(response.url)
-                  .then(() => {
-                    this.onStatusMessageChange('');
-                    this.refreshEditorFromState();
-                  });
-                if (fileList.indexOf('settings.json') >= 0) {
-                  window.constructor.extensions.files.read(
-                    window.constructor.api.projects.projectGetCurrentId(),
-                    extensionConfig.name,
-                    'settings.json')
-                    .then((response) => {
-                      if (response.status === 200) {
-                        compiler.loadSettings(response.url);
-                      } else {
-                        gslState.gslConstructs = [];
-                      }
-                    })
-                    .catch((err) => {
-                      //dont complain
-                    });
-                }
-              }
-            })
-        })
-        .catch((err) => {
-          compiler.loadDefaults()
-            .then(() => {
-              this.refreshEditorFromState();
+          return compiler.loadSettings(projectId)
+            .catch(err => {
+              //if there is an error loading the settings, dont want to fall into setting all defaults
+              console.log(err);
             });
+        })
+        .catch(() => {
+          console.log('loading defaults...');
+          return compiler.loadDefaults();
+        })
+        .then(() => {
+          this.refreshEditorFromState();
         });
-
-    } else {
-      if (gslState.hasOwnProperty('editorContent') && this.state.editorContent !== gslState.editorContent) {
-        this.refreshEditorFromState();
-      }
     }
   }
 
@@ -350,21 +318,14 @@ export default class CodeEditorLayout extends Component {
    * @param {MouseEvent} click event
    */
   saveCode = (evt) => {
-    window.constructor.extensions.files.write(
-      window.constructor.api.projects.projectGetCurrentId(),
-      extensionConfig.name,
-      'project.gsl',
-      this.state.editorContent
-    )
+    const projectId = window.constructor.api.projects.projectGetCurrentId();
+
+    return compiler.saveProjectCode(this.state.editorContent, projectId)
       .then(() => {
         this.onStatusMessageChange('Saved GSL code.');
         this.refreshDownloadMenu();
         this.codeEditor.ace.editor.focus();
-        const projectId = window.constructor.api.projects.projectGetCurrentId();
-        if (!gslState.hasOwnProperty(projectId)) {
-          gslState[projectId] = {};
-        }
-        gslState[projectId].savedCode = this.state.editorContent;
+
         // disable the 'Save' Button
         const items = this.state.toolbarItems;
         if (gslState[projectId].hasOwnProperty('savedCode')) {
@@ -374,20 +335,6 @@ export default class CodeEditorLayout extends Component {
       })
       .catch((err) => {
         this.onStatusMessageChange('Failed to save the GSL code on the server.');
-      });
-
-    // Save code on the remote server.
-    compiler.writeRemote(
-      window.constructor.api.projects.projectGetCurrentId(),
-      extensionConfig.name,
-      'project.gsl',
-      this.state.editorContent
-    )
-      .then(() => {
-        console.log('Saved GSL code remotely.');
-      })
-      .catch((err) => {
-        console.log(err);
       });
   }
 

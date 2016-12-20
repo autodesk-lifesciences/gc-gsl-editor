@@ -10,6 +10,10 @@ const projectPath = 'projects';
 const projectDataPath = 'data';
 const projectFilesPath = 'files';
 
+//note these were very poorly migrated when the GSL repo was split into two
+//importantly, these should match the standalone GSL server, as they are only used to create routes to hit that server
+//this file was taken from Constructor directly when it relied on a file system for storage. but it no longer does.
+
 const makePath = (...paths) => {
   if (process.env.STORAGE) {
     return path.resolve(process.env.STORAGE, ...paths);
