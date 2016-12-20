@@ -134,6 +134,7 @@ export default class CodeEditorLayout extends Component {
             });
         })
         .catch(() => {
+          console.log('loading defaults...');
           return compiler.loadDefaults();
         })
         .then(() => {
@@ -317,7 +318,9 @@ export default class CodeEditorLayout extends Component {
    * @param {MouseEvent} click event
    */
   saveCode = (evt) => {
-    return compiler.saveProjectCode(this.state.editorContent)
+    const projectId = window.constructor.api.projects.projectGetCurrentId();
+
+    return compiler.saveProjectCode(this.state.editorContent, projectId)
       .then(() => {
         this.onStatusMessageChange('Saved GSL code.');
         this.refreshDownloadMenu();

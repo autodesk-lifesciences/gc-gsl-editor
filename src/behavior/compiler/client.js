@@ -95,7 +95,6 @@ export const loadProjectCode = (forceProjectId) => {
     config.name,
     'project.gsl'
   )
-    .then(resp => resp.text())
     .then(setProjectCode);
 };
 
@@ -116,7 +115,7 @@ export const loadSettings = (forceProjectId) => {
     config.name,
     'settings.json'
   )
-    .then(resp => resp.json())
+    .then(text => JSON.parse(text))
     .then(setSettings);
 };
 
@@ -186,8 +185,8 @@ export const writeRemote = (projectId, extension, fileName, contents) => {
  * Save Project code.
  * Only saves to constructor if it has changed. will always save to remote server
  */
-export const saveProjectCode = (forceNextCode) => {
-  const projectId = window.constructor.api.projects.projectGetCurrentId();
+export const saveProjectCode = (forceNextCode, forceProjectId) => {
+  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
   const nextCode = forceNextCode || gslState.editorContent;
   const lastCode = typeof gslState[projectId] === 'object' ?
     gslState[projectId].savedCode :
