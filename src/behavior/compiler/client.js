@@ -98,45 +98,12 @@ export const loadProjectCode = (forceProjectId) => {
     .then(setProjectCode);
 };
 
-export const setSettings = (settings) => {
-  return Object.assign(gslState, {
-    gslConstructs: settings.constructs,
-  });
-};
-
-/**
- * Load the GSL to construct metadata (stored on the server) into the project.
- */
-export const loadSettings = (forceProjectId) => {
-  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
-
-  return window.constructor.extensions.files.read(
-    projectId,
-    config.name,
-    'settings.json'
-  )
-    .then(text => JSON.parse(text))
-    .then(setSettings);
-};
-
-export const writeSettings = (settings = {}, forceProjectId) => {
-  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
-
-  window.constructor.extensions.files.write(
-    projectId,
-    config.name,
-    'settings.json',
-    JSON.stringify(settings)
-  );
-};
-
 /**
  * Load editor defaults.
-
  */
 export const loadDefaults = () => {
   setProjectCode(defaultEditorContent, {
-    refreshDownloadList: true
+    refreshDownloadList: true,
   });
 
   // write an empty file.
