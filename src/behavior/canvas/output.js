@@ -1,25 +1,18 @@
 /**
  * Defines how the GSL assemblies are rendered on the canvas.
  */
-import * as compiler from '../compiler/client';
-const gslState = require('../../../globals');
-const extensionConfig = require('../../../package.json');
 const compilerConfig = require('../compiler/config.json');
 
 /**
- * Removes the GSL constructs from the canvas based on the output
+ * Removes the GSL constructs from the canvas, based on which constructs are frozen
  */
 const removeGSLConstructs = () => {
-  for (const blockId of gslState.gslConstructs) {
-    if (window.constructor.api.projects.projectHasComponent(
-        window.constructor.api.projects.projectGetCurrentId(),
-        blockId)) {
-      window.constructor.api.projects.projectRemoveConstruct(
-        window.constructor.api.projects.projectGetCurrentId(),
-        blockId
-      );
-    }
-  }
+  const projectId = window.constructor.api.projects.projectGetCurrentId();
+  const constructIds = window.constructor.api.projects.projectGet(projectId).components;
+  const constructs = constructIds.map(constructId => window.constructor.api.blocks.blockGet(constructId));
+  //remove the constructs we generate (frozen) and empty ones (in case project had one to start)
+  const toRemove = constructs.filter(block => block.isFrozen() || block.components.length === 0);
+  toRemove.forEach(block => window.constructor.api.projects.projectRemoveConstruct(projectId, block.id));
 };
 
 /**
@@ -27,76 +20,54 @@ const removeGSLConstructs = () => {
  * @param {array} assemblyList - List of objects describing GSL assemblies.
  */
 const renderBlocks = (assemblyList) => {
-  let blockModel = {};
-  const gslConstructs = [];
   assemblyList.reverse();
   const projectId = window.constructor.api.projects.projectGetCurrentId();
 
   for (const assembly of assemblyList) {
-    // Create the top level block (construct) and assign it the assembly name
-    blockModel = {
-      metadata: { name: assembly.name },
-      projectId,
-    };
-    const mainBlock = window.constructor.api.blocks.blockCreate(blockModel);
-    window.constructor.api.projects.projectAddConstruct(
-      window.constructor.api.projects.projectGetCurrentId(),
-      mainBlock.id
-    );
+    // track blocks (dnaSlice) to put in construct (assembly)
+    const components = [];
 
     for (const dnaSlice of assembly.dnaSlices) {
       // create blocks inside the construct.
-      blockModel = {
+      const block = window.constructor.api.blocks.blockCreate({
+        projectId,
         metadata: {
           name: dnaSlice.sliceName !== '' ? dnaSlice.sliceName : dnaSlice.description,
           description: dnaSlice.description,
           start: dnaSlice.destFr,
           end: dnaSlice.destTo,
         },
-        projectId,
         rules: {
           role: dnaSlice.breed !== null ? compilerConfig.breeds[dnaSlice.breed] : null,
-          hidden: dnaSlice.breed === 'B_LINKER' ? true : false,
+          hidden: dnaSlice.breed === 'B_LINKER',
         },
         sequence: { initialBases: dnaSlice.dna },
-      };
-      const block = window.constructor.api.blocks.blockCreate(blockModel);
+      });
+
+      components.push(block.id);
+
+      //this is async, but we'll just trust that it works...
       window.constructor.api.blocks.blockSetSequence(block.id, dnaSlice.dna);
-      window.constructor.api.blocks.blockAddComponent(mainBlock.id, block.id);
     }
-    window.constructor.api.blocks.blockFreeze(mainBlock.id);
-    gslConstructs.push(mainBlock.id);
-  }
 
-  gslState.gslConstructs = gslConstructs;
-
-  return compiler.writeSettings({ 'constructs': gslConstructs }, projectId);
-};
-
-/**
- * Reload the existing contructs created by GSL in global state, to associate GSL code with blocks.
- * @param {array} assemblyList - List of objects describing GSL assemblies.
- */
-const reloadStateGSLConstructs = (assemblyList) => {
-  const promise = gslState.hasOwnProperty('gslConstructs') ?
-    Promise.resolve(null) :
-    compiler.loadSettings();
-
-  promise
-    .catch(err => {
-      console.log('Failed to read the settings file ', err);
-      gslState.gslConstructs = [];
-    })
-    .then(() => {
-      removeGSLConstructs();
-      renderBlocks(assemblyList);
+    // Create the top level block (construct) and assign it the assembly name
+    const mainBlock = window.constructor.api.blocks.blockCreate({
+      metadata: { name: assembly.name },
+      projectId,
+      components,
     });
+
+    window.constructor.api.projects.projectAddConstruct(projectId, mainBlock.id);
+    window.constructor.api.blocks.blockFreeze(mainBlock.id);
+  }
 };
 
 /**
  * Renders blocks created through GSL code.
+ * Reload the existing contructs created by GSL in global state, to associate GSL code with blocks.
  * @param {array} assemblyList - List of objects describing GSL assemblies.
  */
 export const render = (assemblyList) => {
-  reloadStateGSLConstructs(assemblyList);
+  removeGSLConstructs();
+  return renderBlocks(assemblyList);
 };

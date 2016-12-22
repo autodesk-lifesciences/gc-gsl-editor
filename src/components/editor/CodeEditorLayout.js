@@ -124,20 +124,12 @@ export default class CodeEditorLayout extends Component {
       this.onStatusMessageChange('Loading...');
 
       compiler.loadProjectCode(projectId)
-        .then(() => {
-          this.onStatusMessageChange('');
-
-          return compiler.loadSettings(projectId)
-            .catch(err => {
-              //if there is an error loading the settings, dont want to fall into setting all defaults
-              console.log(err);
-            });
-        })
         .catch(() => {
           console.log('loading defaults...');
           return compiler.loadDefaults();
         })
         .then(() => {
+          this.onStatusMessageChange('');
           this.refreshEditorFromState();
         });
     }
@@ -275,11 +267,14 @@ export default class CodeEditorLayout extends Component {
    */
   runCode = (evt) => {
     console.log(`Sending code to the server: ${this.state.editorContent}`);
+
     this.onStatusMessageChange('Running code...');
+
     compiler.run(this.state.editorContent, config.arguments, window.constructor.api.projects.projectGetCurrentId()).then((data) => {
       this.onResultContentChange(data.result);
+
       if (data.status === 0) {
-        this.onStatusMessageChange('Code executed successfully.');
+        this.onStatusMessageChange('GSL executed successfully.');
         canvas.render(JSON.parse(data.contents));
         this.refreshDownloadMenu();
       } else if (compiler.isPrimerFailure(data.result)) {
@@ -303,7 +298,7 @@ export default class CodeEditorLayout extends Component {
       const appendedResultOutput = this.state.resultContent + '\nResult on rerun without primers:\n' + data.result;
       this.onResultContentChange(appendedResultOutput);
       if (data.status === 0) {
-        this.onStatusMessageChange('Code executed successfully.');
+        this.onStatusMessageChange('GSL executed successfully.');
         canvas.render(JSON.parse(data.contents));
         this.refreshDownloadMenu();
       } else {

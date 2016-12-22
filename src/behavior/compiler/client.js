@@ -98,47 +98,16 @@ export const loadProjectCode = (forceProjectId) => {
     .then(setProjectCode);
 };
 
-export const setSettings = (settings) => {
-  return Object.assign(gslState, {
-    gslConstructs: settings.constructs,
-  });
-};
-
-/**
- * Load the GSL to construct metadata (stored on the server) into the project.
- */
-export const loadSettings = (forceProjectId) => {
-  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
-
-  return window.constructor.extensions.files.read(
-    projectId,
-    config.name,
-    'settings.json'
-  )
-    .then(text => JSON.parse(text))
-    .then(setSettings);
-};
-
-export const writeSettings = (settings = {}, forceProjectId) => {
-  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
-
-  window.constructor.extensions.files.write(
-    projectId,
-    config.name,
-    'settings.json',
-    JSON.stringify(settings)
-  );
-};
-
 /**
  * Load editor defaults.
-
  */
 export const loadDefaults = () => {
   setProjectCode(defaultEditorContent, {
-    refreshDownloadList: true
+    refreshDownloadList: true,
   });
 
+  // NOTE - does not appear any reason why we need to write the empty file...
+  // does this mark it GSL? Needed for startup?
   // write an empty file.
   return window.constructor.extensions.files.write(
     window.constructor.api.projects.projectGetCurrentId(),
@@ -195,7 +164,7 @@ export const saveProjectCode = (forceNextCode, forceProjectId) => {
   const promise = (lastCode === nextCode) ?
     Promise.resolve(null) :
     window.constructor.extensions.files.write(
-      window.constructor.api.projects.projectGetCurrentId(),
+      projectId,
       config.name,
       'project.gsl',
       nextCode
