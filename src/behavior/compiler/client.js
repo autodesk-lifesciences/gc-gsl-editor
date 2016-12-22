@@ -106,6 +106,8 @@ export const loadDefaults = () => {
     refreshDownloadList: true,
   });
 
+  // NOTE - does not appear any reason why we need to write the empty file...
+  // does this mark it GSL? Needed for startup?
   // write an empty file.
   return window.constructor.extensions.files.write(
     window.constructor.api.projects.projectGetCurrentId(),
@@ -162,7 +164,7 @@ export const saveProjectCode = (forceNextCode, forceProjectId) => {
   const promise = (lastCode === nextCode) ?
     Promise.resolve(null) :
     window.constructor.extensions.files.write(
-      window.constructor.api.projects.projectGetCurrentId(),
+      projectId,
       config.name,
       'project.gsl',
       nextCode

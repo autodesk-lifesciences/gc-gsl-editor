@@ -274,7 +274,7 @@ export default class CodeEditorLayout extends Component {
       this.onResultContentChange(data.result);
 
       if (data.status === 0) {
-        this.onStatusMessageChange('Code executed successfully.');
+        this.onStatusMessageChange('GSL executed successfully.');
         canvas.render(JSON.parse(data.contents));
         this.refreshDownloadMenu();
       } else if (compiler.isPrimerFailure(data.result)) {
@@ -298,7 +298,7 @@ export default class CodeEditorLayout extends Component {
       const appendedResultOutput = this.state.resultContent + '\nResult on rerun without primers:\n' + data.result;
       this.onResultContentChange(appendedResultOutput);
       if (data.status === 0) {
-        this.onStatusMessageChange('Code executed successfully.');
+        this.onStatusMessageChange('GSL executed successfully.');
         canvas.render(JSON.parse(data.contents));
         this.refreshDownloadMenu();
       } else {

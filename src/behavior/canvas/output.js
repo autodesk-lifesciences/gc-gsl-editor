@@ -8,10 +8,11 @@ const compilerConfig = require('../compiler/config.json');
  */
 const removeGSLConstructs = () => {
   const projectId = window.constructor.api.projects.projectGetCurrentId();
-  const constructIds = window.constructor.api.project.getProject(projectId).components;
+  const constructIds = window.constructor.api.projects.projectGet(projectId).components;
   const constructs = constructIds.map(constructId => window.constructor.api.blocks.blockGet(constructId));
-  const locked = constructs.filter(block => block.isFrozen());
-  locked.forEach(block => window.constructor.api.projects.projectRemoveConstruct(projectId, block.id));
+  //remove the constructs we generate (frozen) and empty ones (in case project had one to start)
+  const toRemove = constructs.filter(block => block.isFrozen() || block.components.length === 0);
+  toRemove.forEach(block => window.constructor.api.projects.projectRemoveConstruct(projectId, block.id));
 };
 
 /**
