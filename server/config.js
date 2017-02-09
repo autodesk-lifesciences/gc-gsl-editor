@@ -1,3 +1,7 @@
+// support different GSL servers if necessary
+const GSL_SERVER = process.env.GSL_SERVER || 'https://gsl.dev.bionano.autodesk.com';
+console.log('target GSL server:', GSL_SERVER);
+
 export const argConfig = {
   'externalServer': {
     'url': 'https://gsl.dev.bionano.autodesk.com',
