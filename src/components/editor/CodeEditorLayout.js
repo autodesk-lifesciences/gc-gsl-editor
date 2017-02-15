@@ -392,6 +392,7 @@ export default class CodeEditorLayout extends Component {
    * @param {MouseEvent} click event
    */
   doDownload = (evt) => {
+    console.log('doDownload evt', evt);
     const fileMap = {
       'gsl': 'GSL source code',
       'ape': 'ApE output zip file',

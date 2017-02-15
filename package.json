@@ -43,7 +43,7 @@
     "debug": "npm run debug-server && npm run debug-client",
     "release": "npm run release-server && npm run release-client"
   },
-  "author": "Rupal Khilari <rupal.khilari@gmail.com>",
+  "author": "Autodesk Bionano <geneticconstructor@autodesk.com>",
   "dependencies": {
     "babel-cli": "^6.9.0",
     "babel-core": "^6.9.1",

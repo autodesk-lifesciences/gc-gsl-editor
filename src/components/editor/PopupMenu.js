@@ -1,8 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
-
-import MenuItem from './MenuItem';
-import MenuSeparator from './MenuSeparator';
+import invariant from 'invariant';
 
 /**
  * PopupMenu represents a rectangular menu or submenu drawn as a part of the
@@ -42,41 +40,42 @@ export default class PopupMenu extends Component {
     }
   }
 
+  renderMenu() {
+    if (this.props.open) {
+      const menuItems = this.props.menuItems.map((item, index) => {
+        return {
+          key: item.key,
+          text: item.text,
+          action: function(evt) {
+            console.log('action evt', evt);
+            this.props.closePopup();
+            if (item.action) {
+              return item.action(evt);
+            }
+          }.bind(this),
+          disabled: item.disabled,
+          classes: item.classes,
+          checked: item.checked,
+          index: index,
+        };
+      });
+
+      const showMenu = window.constructor.api.ui.uiShowMenu;
+      invariant(showMenu, 'expected uiShowMenu api to be available');
+      showMenu(menuItems, {
+        x: this.props.position.x,
+        y: this.props.position.y,
+      });
+    }
+  }
+
   render() {
-    const position = {
-      left: `${this.props.position.x}px`,
-      top: `${this.props.position.y}px`,
-    };
-    return (
-      <div
-        onMouseDown={this.onMouseDown.bind(this)}
-        className={this.props.open ? 'menu-popup-blocker-visible' : 'menu-popup-blocker-hidden'}
-        style={{}}
-        ref="blocker"
-      >
-        <div className="menu-popup-container" style={position}>
-          {this.props.menuItems.map((item, index) => {
-            const boundAction = (evt) => {
-              this.props.closePopup();
-              if (item.action) {
-                item.action(evt);
-              }
-            };
-            return (
-              item.text ?
-              (<MenuItem
-                key={item.key}
-                disabled={item.disabled}
-                classes={item.classes}
-                text={item.text}
-                action={boundAction}
-                type={item.type}
-                checked={item.checked}/>) :
-              (<MenuSeparator key={index}/>)
-            );
-          })}
-        </div>
-      </div>
-    );
+    return React.DOM.div({
+      onMouseDown: this.onMouseDown.bind(this),
+      style: {},
+      ref: "blocker",
+    }, [
+      this.renderMenu(),
+    ]);
   }
 }
