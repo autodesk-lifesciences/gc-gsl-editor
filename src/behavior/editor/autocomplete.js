@@ -1,12 +1,11 @@
 /**
  * Defines behavior for the editor autocompletion.
  */
-//const s288c = require('gsl-genome-s288c');
+const s288c = require('gsl-genome-s288c');
 
-// const genomes = [
-//   s288c,
-// ];
-const genomes = [];
+const genomes = [
+  s288c,
+];
 
 const autocompleteGeneList = [];
 const autocompleteDocStrings = {};
