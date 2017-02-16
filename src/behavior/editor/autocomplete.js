@@ -6,6 +6,7 @@ const s288c = require('gsl-genome-s288c');
 const genomes = [
   s288c,
 ];
+
 const autocompleteGeneList = [];
 const autocompleteDocStrings = {};
 const geneList = [];

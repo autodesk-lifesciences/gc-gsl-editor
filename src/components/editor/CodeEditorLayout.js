@@ -2,7 +2,6 @@ import React, { PropTypes, Component } from 'react';
 
 import CodeEditorAce from './CodeEditorAce';
 import Toolbar from './Toolbar';
-import ToolbarMenu from './ToolbarMenu';
 import * as compiler from '../../behavior/compiler/client';
 import * as canvas from '../../behavior/canvas/output';
 import { toggleComments } from '../../behavior/editor/comments';
@@ -39,7 +38,6 @@ export default class CodeEditorLayout extends Component {
       editorContent: '',
       resultContent: '',
       statusMessage: 'Begin typing GSL code.',
-      showDownloadMenu: false,
       currentMenuPosition: {},
       consoleVisible: true,
       toolbarItems: [
@@ -65,38 +63,6 @@ export default class CodeEditorLayout extends Component {
           label: 'Download',
           action: this.showDownloadMenu,
           imageUrl: '/images/ui/download_icon.svg',
-        },
-      ],
-      downloadItems: [
-        {
-          key: 'download-gsl-file',
-          type: 'gsl',
-          text: 'Source GSL',
-          disabled: false,
-          action: this.doDownload,
-        },
-        {},
-        {
-          key: 'download-ape-zip-file',
-          type: 'ape',
-          text: 'Output as ApE file archive',
-          disabled: false,
-          action: this.doDownload,
-        },
-        {
-          key: 'download-cm-zip-file',
-          type: 'cm',
-          text: 'Output as Clone Manager file achive',
-          disabled: false,
-          action: this.doDownload,
-        },
-        {},
-        {
-          key: 'download-allFormats-zip-file',
-          type: 'allFormats',
-          text: 'All formats',
-          disabled: false,
-          action: this.doDownload,
         },
       ],
     };
@@ -179,48 +145,22 @@ export default class CodeEditorLayout extends Component {
   onResultContentChange = (result) => {
     this.setState({ resultContent: result });
     this.props.onSubmit(result);
-  }
+  };
 
   /**
-   * Actions to be performed when the download menu is toggled
-   * @param {bool} value
-   */
-  onDownloadMenuToggle = (value) => {
-    this.setState({
-      showDownloadMenu: value,
-    });
-  }
-
-  /**
-   * Sets the position of the download menu
-   * @param {string} content
-   */
-  onDownloadMenuPositionSet = (value) => {
-    this.setState({
-      currentMenuPosition: value,
-    });
-  }
-
-  /**
-   * Actions to be performed when the attributes of the download items change.
-   * @param {Object} settings
+   * update state of download menu items
+   * @param settings
    */
   onDownloadMenuSettingsChange = (settings) => {
-    const items = this.state.downloadItems;
-    let index = 0;
-    for (const item of this.state.downloadItems) {
+    this.downloadMenuItems.forEach(item => {
       // special case gsl
       if (item.type === 'gsl' && this.state.editorContent !== '') {
-        items[index].disabled = false;
+        item.disabled = false;
       } else {
-        items[index].disabled = !settings[item.type];
+        item.disabled = !settings[item.type];
       }
-      index++;
-    }
-    this.setState({
-      downloadItems: items,
     });
-  }
+  };
 
   /**
    * actions to be performed when the editor content changes
@@ -231,7 +171,7 @@ export default class CodeEditorLayout extends Component {
       .then((data) => {
         this.onDownloadMenuSettingsChange(data);
       });
-  }
+  };
 
   /**
    * reload editor content from saved global state (cache)
@@ -241,14 +181,14 @@ export default class CodeEditorLayout extends Component {
     this.onEditorContentChange(gslState.editorContent);
     this.onResultContentChange(gslState.resultContent);
     this.codeEditor.ace.editor.env.editor.setReadOnly(false);
-  }
+  };
 
   /**
    * Toggles comments in the editor.
    */
   toggleComment = () => {
     toggleComments(this.codeEditor.ace);
-  }
+  };
 
   /**
    * Expands the console window.
@@ -259,7 +199,7 @@ export default class CodeEditorLayout extends Component {
     gslState.isConsoleOpen = true;
     window.dispatchEvent(new Event('resize'));
     this.codeEditor.ace.editor.focus();
-  }
+  };
 
   /**
    * Runs GSL code present in the editor
@@ -285,7 +225,7 @@ export default class CodeEditorLayout extends Component {
         this.showConsole();
       }
     });
-  }
+  };
 
   /**
    * Runs GSL code present in the editor
@@ -306,7 +246,7 @@ export default class CodeEditorLayout extends Component {
         this.showConsole();
       }
     });
-  }
+  };
 
   /**
    * Saves the GSL code associated with the project on the server.
@@ -331,58 +271,82 @@ export default class CodeEditorLayout extends Component {
       .catch((err) => {
         this.onStatusMessageChange('Failed to save the GSL code on the server.');
       });
-  }
+  };
+
+  downloadMenuItems = [
+    {
+      key: 'download-gsl-file',
+      type: 'gsl',
+      text: 'Source GSL',
+      disabled: false,
+      action: () => {
+        this.doDownload('gsl');
+      }
+    },
+    {},
+    {
+      key: 'download-ape-zip-file',
+      type: 'ape',
+      text: 'Output as ApE file archive',
+      disabled: false,
+      action: () => {
+        this.doDownload('ape');
+      },
+    },
+    {
+      key: 'download-cm-zip-file',
+      type: 'cm',
+      text: 'Output as Clone Manager file achive',
+      disabled: false,
+      action: () => {
+        this.doDownload('cm');
+      },
+    },
+    {},
+    {
+      key: 'download-allFormats-zip-file',
+      type: 'allFormats',
+      text: 'All formats',
+      disabled: false,
+      action: () => {
+        this.doDownload('allFormats');
+      },
+    },
+  ];
 
   /**
    * Opens the download menu.
    * @param {MouseEvent} click event
    */
   showDownloadMenu = (evt) => {
-    this.onDownloadMenuToggle(true);
-    //TODO: Find a better way to do this
-    let offsetLeft = -6;
-    let offsetBottom = 0;
-    if (evt.target.className === 'ToolbarItemLink') {
-      offsetLeft = 10;
-      offsetBottom = 8;
-    }
-    // TODO: Figure this out from the DOM node after it has been mounted.
-    const menuWidth = 230;
-    let fitInPageOffset = 0;
-    const xMax = evt.target.getBoundingClientRect().left - offsetLeft + menuWidth;
-    if (xMax > document.body.getBoundingClientRect().right) {
-      fitInPageOffset = xMax - document.body.getBoundingClientRect().right;
-    }
-    this.onDownloadMenuPositionSet({
-      'x': evt.target.getBoundingClientRect().left - offsetLeft - fitInPageOffset,
-      'y': evt.target.getBoundingClientRect().bottom + offsetBottom,
-    });
-  }
+    const showMenu = window.constructor.api.ui.uiShowMenu;
+    showMenu(this.downloadMenuItems, {
+      x: evt.pageX,
+      y: evt.pageY,
+    }, true);
+  };
 
   /**
    * Downloads a file based on its type.
    * @param {string} The type of file as specified in downloadMenuItems
-   * @param {int} 0 - Left Click, 1 - Middle Mouse button, 2 - Right Click
    */
-  downloadFileByType = (fileType, buttonType) => {
+  downloadFileByType = (fileType) => {
     const hyperlink = document.createElement('a');
-    let mouseEvent;
     hyperlink.href = '/extensions/api/' + extensionConfig.name + '/download?projectId=' +
       window.constructor.api.projects.projectGetCurrentId() +
       '&extension=' + extensionConfig.name +
       '&type=' + fileType;
 
-    if (buttonType === 0) {
-      hyperlink.download = true;
-    }
-
-    mouseEvent = new MouseEvent('click', {
-      view: window,
-      bubbles: true,
-      cancelable: true,
+    hyperlink.download = true;
+    console.log('REQUEST GSL DOWNLOAD:', hyperlink.href);
+    const clickEvent = new MouseEvent("click", {
+      "view": window,
+      "bubbles": true,
+      "cancelable": false
     });
+    document.body.appendChild(hyperlink);
+    hyperlink.dispatchEvent(clickEvent);
 
-    hyperlink.dispatchEvent(mouseEvent);
     (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href);
     this.codeEditor.ace.editor.focus();
   }
@@ -391,45 +355,41 @@ export default class CodeEditorLayout extends Component {
    * Download a file depending on the item clicked
    * @param {MouseEvent} click event
    */
-  doDownload = (evt) => {
+  doDownload(key) {
     const fileMap = {
       'gsl': 'GSL source code',
       'ape': 'ApE output zip file',
       'cm': 'Clone Manager output zip file',
       'allFormats': 'files',
     };
-
-    const saveGSLAndDownload = (evt, key, buttonType) => {
-      if (evt.currentTarget.id.indexOf(key) !== -1) {
-        // Save file first if required, if the gsl file is requested.
-        if ((key === 'gsl' || key === 'allFormats') && (!this.state.toolbarItems[2].disabled)) {
-          // save the GSL file first before downloading.
-          window.constructor.extensions.files.write(
-            window.constructor.api.projects.projectGetCurrentId(),
-            extensionConfig.name,
-            'project.gsl',
-            gslState.editorContent,
-          )
-            .then(() => {   // refactor this to separate the save part.
-              gslState.refreshDownloadList = true;
-              this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
-              this.downloadFileByType(key, buttonType);
-            })
-            .catch((err) => {
-              console.log('Failed to save GSL Code');
-              console.log(err);
-            });
-        } else {
-          this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
-          this.downloadFileByType(key, buttonType);
-        }
+    const saveGSLAndDownload = (key) => {
+      // Save file first if required, if the gsl file is requested.
+      if ((key === 'gsl' || key === 'allFormats') && (!this.state.toolbarItems[2].disabled)) {
+        // save the GSL file first before downloading.
+        window.constructor.extensions.files.write(
+          window.constructor.api.projects.projectGetCurrentId(),
+          extensionConfig.name,
+          'project.gsl',
+          gslState.editorContent,
+        )
+          .then(() => {   // refactor this to separate the save part.
+            gslState.refreshDownloadList = true;
+            this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
+            this.downloadFileByType(key);
+          })
+          .catch((err) => {
+            console.log('Failed to save GSL Code');
+            console.log(err);
+          });
+      } else {
+        this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
+        this.downloadFileByType(key);
       }
     };
 
-    const buttonType = evt.nativeEvent.button;
-    for (const key of Object.keys(fileMap)) {
-      saveGSLAndDownload(evt, key, buttonType);
-    }
+    //for (const key of Object.keys(fileMap)) {
+      saveGSLAndDownload(key);
+    //}
     this.codeEditor.ace.editor.focus();
   }
 
@@ -442,18 +402,15 @@ export default class CodeEditorLayout extends Component {
     return (
       <div className="CodeEditorLayout">
         <Toolbar toolbarItems={this.state.toolbarItems}/>
-        <ToolbarMenu
-          isOpen={this.state.showDownloadMenu}
-          changeState={this.onDownloadMenuToggle}
-          position={this.state.currentMenuPosition}
-          toolbarMenuItems={this.state.downloadItems}/>
-        <CodeEditorAce ref={(el) => {
-          if (el) {
-            this.codeEditor = el;
-          }
-        }}
-                       callbackParent={this.onEditorContentChange}
-                       value={this.state.editorContent}/>
+        <CodeEditorAce
+          ref={(el) => {
+            if (el) {
+              this.codeEditor = el;
+            }
+          }}
+          callbackParent={this.onEditorContentChange}
+          value={this.state.editorContent}
+        />
       </div>
     );
   }
