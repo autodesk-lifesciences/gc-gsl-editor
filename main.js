@@ -12,13 +12,22 @@ const gslState = require('./globals');
  */
 function render(container, options) {
   const subscriber = window.constructor.store.subscribe((state, lastAction) => {
+    console.log(`lastAction.type: ${lastAction.type}`);
     if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
+      console.log('GSL Render');
       ReactDOM.render(<GSLEditorLayout/>, container);
+      console.log('GSL Rendered');
     } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
       // save the current content of the editor.
+      console.log('GSL Save');
       saveProjectCode();
+      console.log('GSL Saved');
     } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_OPEN) {
+      console.log('GSL Load');
       loadProjectCode();
+      console.log('GSL Loaded');
+    } else {
+      console.log('GSL Nothing');
     }
   }, true);
 
