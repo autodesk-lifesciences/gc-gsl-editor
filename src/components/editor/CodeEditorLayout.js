@@ -30,7 +30,7 @@ export default class CodeEditorLayout extends Component {
     onToggleConsoleVisibility: PropTypes.func.isRequired,
     onStatusContentChange: PropTypes.func.isRequired,
     isConsoleOpen: PropTypes.bool,
-  }
+  };
 
   constructor(props) {
     super(props);
@@ -72,6 +72,7 @@ export default class CodeEditorLayout extends Component {
    * Actions to be performed when this component mounts.
    */
   componentDidMount() {
+    // console.log('CodeEditorLayout componentDidMount');
     this.refreshDownloadMenu();
     if (gslState.hasOwnProperty('isConsoleOpen')) {
       this.props.onToggleConsoleVisibility(gslState.isConsoleOpen);
@@ -82,6 +83,7 @@ export default class CodeEditorLayout extends Component {
 
     //if project already loaded, just set as editor content
     if (gslState[projectId] && gslState[projectId].savedCode) {
+      console.log('project ', projectId, ' has saved code');
       gslState.editorContent = gslState[projectId].savedCode;
       this.refreshEditorFromState();
     } else {
@@ -91,7 +93,6 @@ export default class CodeEditorLayout extends Component {
 
       compiler.loadProjectCode(projectId)
         .catch(() => {
-          console.log('loading defaults...');
           return compiler.loadDefaults();
         })
         .then(() => {
@@ -126,7 +127,7 @@ export default class CodeEditorLayout extends Component {
         this.setState({ toolbarItems: items });
       }
     }
-  }
+  };
 
   /**
    * Actions to be performed when the status message changes
@@ -136,7 +137,7 @@ export default class CodeEditorLayout extends Component {
     this.setState({ statusMessage: message });
     this.props.onStatusContentChange(message);
     window.constructor.api.ui.uiSetGrunt(message);
-  }
+  };
 
   /**
    * Actions to be performed when the result of the code execution changes

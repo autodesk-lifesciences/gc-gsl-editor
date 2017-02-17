@@ -69,6 +69,11 @@ export const getAvailableDownloadList = (projectId) => {
 
 //use this after saving, as it also sets the last saved code
 export const setProjectCode = (code, otherState = {}) => {
+  if ((code == null) || (code === '')) {
+    console.error('attempting to set empty project code; loading defaults...');
+    return loadDefaults();
+  }
+
   Object.assign(gslState, {
     editorContent: code,
     refreshDownloadList: false,
@@ -89,6 +94,7 @@ export const setProjectCode = (code, otherState = {}) => {
  * Load GSL code associated with the project into the editor.
  */
 export const loadProjectCode = (forceProjectId) => {
+  // console.log('loadProjectCode', forceProjectId);
   const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
   return window.constructor.extensions.files.read(
     projectId,
@@ -102,6 +108,7 @@ export const loadProjectCode = (forceProjectId) => {
  * Load editor defaults.
  */
 export const loadDefaults = () => {
+  // console.log('loading defaults...');
   setProjectCode(defaultEditorContent, {
     refreshDownloadList: true,
   });
@@ -161,7 +168,8 @@ export const saveProjectCode = (forceNextCode, forceProjectId) => {
     gslState[projectId].savedCode :
     null;
 
-  const promise = (lastCode === nextCode) ?
+  // console.log('request to save code:\n', nextCode);
+  const promise = ((nextCode == null) || (nextCode === '') || (lastCode === nextCode)) ?
     Promise.resolve(null) :
     window.constructor.extensions.files.write(
       projectId,
