@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import GSLEditorLayout from './src/components/GSLEditorLayout';
-import { loadProjectCode, saveProjectCode, setProjectCode } from './src/behavior/compiler/client';
+import { loadProjectCode, saveProjectCode } from './src/behavior/compiler/client';
 const extensionConfig = require('./package.json');
 const gslState = require('./globals');
 
@@ -18,8 +18,6 @@ function render(container, options) {
   const { actionTypes } = window.constructor.constants;
 
   const subscriber = window.constructor.store.subscribe((state, lastAction) => {
-    console.log(lastAction);
-
     switch (lastAction.type) {
       case actionTypes.PROJECT_BEFORE_OPEN:
       case actionTypes.PROJECT_SAVE: {
@@ -40,10 +38,7 @@ function render(container, options) {
   }, true);
 
   //return an unsubscribe function to clean up when the extension unmounts
-  return () => {
-    console.log('unmounting');
-    subscriber();
-  };
+  return subscriber;
 }
 
 window.constructor.extensions.register(extensionConfig.name, 'projectDetail', render);

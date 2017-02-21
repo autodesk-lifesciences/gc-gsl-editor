@@ -16,6 +16,14 @@ export const saveProjectCodeLocally = (projectId, code) => {
   gslState[projectId].savedCode = code;
 };
 
+export const writeProjectFile = (projectId, code, fileName = 'project.gsl') =>
+  window.constructor.extensions.files.write(
+    projectId,
+    config.name,
+    fileName,
+    code
+  );
+
 /**
  * Sends the code and corresponding gslc options to run the command on the server.
  * @param {string} code current Code
@@ -74,10 +82,7 @@ export const getAvailableDownloadList = (projectId) => {
     },
     body: stringified,
   })
-    .then(resp => resp.json())
-    .then((data) => {
-      return data;
-    });
+    .then(resp => resp.json());
 };
 
 //use this after saving, as it also sets the last saved code
@@ -128,12 +133,7 @@ export const loadDefaults = (projectId) => {
 
   // Adds the file to the project files, and marks it GSL
   // write the default file
-  return window.constructor.extensions.files.write(
-    projectId,
-    config.name,
-    'project.gsl',
-    defaultEditorContent
-  );
+  return writeProjectFile(projectId, defaultEditorContent);
 };
 
 /**
@@ -157,9 +157,6 @@ export const writeRemote = (projectId, extension, fileName, contents) => {
     body: stringified,
   })
     .then(resp => resp.json())
-    .then((data) => {
-      return data;
-    })
     .catch((err) => {
       console.log('Request timed out:', err);
       return {
@@ -182,42 +179,30 @@ export const saveProjectCode = (forceProjectId, forceNextCode) => {
 
   // make sure the editor code content is up to date, and save the code locally in our state
   // run this now, not after the write resolves, e.g. if we are opening another project
-  setProjectCode(projectId, nextCode);
   //saveProjectCodeLocally(projectId, nextCode); //setProjectCode calls this
+  setProjectCode(projectId, nextCode);
 
   // console.log('request to save code:\n', nextCode);
-  const promise = ((nextCode == null) || (nextCode === '') || (lastCode === nextCode)) ?
-    Promise.resolve(null) :
-    window.constructor.extensions.files.write(
-      projectId,
-      config.name,
-      'project.gsl',
-      nextCode
-    )
-      .then(project => {
-        console.log('Saved GSL Code.');
 
-        Object.assign(gslState, {
-          refreshDownloadList: true,
-        });
-
-        return project;
-      });
-
-  return promise
-    .then(() => {
-      // Save code to the remote gsl server.
-      return writeRemote(
-        projectId,
-        config.name,
-        'project.gsl',
-        nextCode
-      )
+  //no reason to chain these, or write when no changes have been made
+  const promises = ((nextCode == null) || (nextCode === '') || (lastCode === nextCode)) ?
+    [] : [
+      //write the project file, if necessary
+      writeProjectFile(projectId, nextCode)
+        .then(project => {
+          console.log('Saved GSL Code.');
+          Object.assign(gslState, { refreshDownloadList: true });
+          return project;
+        }),
+      //write to gslc server, catch if it errors, since mostly care about the project file
+      writeRemote(projectId, config.name, 'project.gsl', nextCode)
         .catch((err) => {
           console.log('Failed to save GSL code remotely');
           console.log(err);
-        });
-    })
+        }),
+    ];
+
+  return Promise.all(promises)
     .catch((err) => {
       console.log('Failed to save GSL Code');
       console.log(err);

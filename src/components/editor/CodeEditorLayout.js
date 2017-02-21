@@ -35,6 +35,7 @@ export default class CodeEditorLayout extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      editorDirty: false, // NB - this is state local to this component, not gslState
       editorContent: '',
       resultContent: '',
       statusMessage: 'Begin typing GSL code.',
@@ -49,11 +50,6 @@ export default class CodeEditorLayout extends Component {
         {
           label: 'Show Console',
           action: this.showConsole,
-        },
-        {
-          label: 'Save',
-          action: this.saveCode,
-          disabled: false,  // Make sure to update index references in saveCode if items are rearranged.
         },
         {
           label: 'Comment',
@@ -79,7 +75,7 @@ export default class CodeEditorLayout extends Component {
     }
     registerKeysRunCode(this.codeEditor.ace, this.runCode);
 
-    const projectId = window.constructor.api.projects.projectGetCurrentId();
+    const projectId = this.getProjectId();
 
     //if project already loaded, just set as editor content
     if (gslState[projectId] && gslState[projectId].savedCode) {
@@ -107,26 +103,16 @@ export default class CodeEditorLayout extends Component {
    * @param {string} content
    */
   onEditorContentChange = (content) => {
-    this.setState({ editorContent: content });
-    this.props.onEditorContentChange(content);
+    const projectId = this.getProjectId();
+    const savedCode = (gslState && gslState[projectId]) ? gslState[projectId].savedCode : null;
+    const editorDirty = content !== savedCode;
 
-    // Enable or disable the 'Save' button based on the editor content.
-    const projectId = window.constructor.api.projects.projectGetCurrentId();
-    if (gslState.hasOwnProperty(projectId)) {
-      const items = this.state.toolbarItems;
-      if (gslState[projectId].hasOwnProperty('savedCode')) {
-        if (content === gslState[projectId].savedCode) {
-          items[2].disabled = true;
-          this.setState({ toolbarItems: items });
-        } else {
-          items[2].disabled = false;
-          this.setState({ toolbarItems: items });
-        }
-      } else {
-        items[2].disabled = false;
-        this.setState({ toolbarItems: items });
-      }
-    }
+    this.setState({
+      editorContent: content,
+      editorDirty,
+    });
+
+    this.props.onEditorContentChange(content);
   };
 
   /**
@@ -163,12 +149,16 @@ export default class CodeEditorLayout extends Component {
     });
   };
 
+  getProjectId() {
+    return window.constructor.api.projects.projectGetCurrentId();
+  }
+
   /**
    * actions to be performed when the editor content changes
    * @param {string} content
    */
   refreshDownloadMenu = () => {
-    compiler.getAvailableDownloadList(window.constructor.api.projects.projectGetCurrentId())
+    compiler.getAvailableDownloadList(this.getProjectId())
       .then((data) => {
         this.onDownloadMenuSettingsChange(data);
       });
@@ -204,14 +194,20 @@ export default class CodeEditorLayout extends Component {
 
   /**
    * Runs GSL code present in the editor
-   * @param {MouseEvent} evt click event
    */
-  runCode = (evt) => {
-    console.log(`Sending code to the server: ${this.state.editorContent}`);
+  runCode = () => {
+    const projectId = this.getProjectId();
+    const code = this.state.editorContent;
+
+    // save the code, but no need to wait for it to resolve before running remotely
+    // note - this will save code even if it running GSL failed
+    compiler.saveProjectCode(projectId, code)
+      .then(() => this.setState({ editorDirty: false }));
 
     this.onStatusMessageChange('Running code...');
+    console.log(`Sending code to the server: ${code}`);
 
-    compiler.run(this.state.editorContent, config.arguments, window.constructor.api.projects.projectGetCurrentId()).then((data) => {
+    compiler.run(code, config.arguments, this.getProjectId()).then((data) => {
       this.onResultContentChange(data.result);
 
       if (data.status === 0) {
@@ -220,7 +216,7 @@ export default class CodeEditorLayout extends Component {
         this.refreshDownloadMenu();
       } else if (compiler.isPrimerFailure(data.result)) {
         this.onStatusMessageChange('Re-running the code without primers...');
-        this.rerunCode(evt, compiler.removePrimerThumperArgs(config.arguments));
+        this.rerunCode(code, compiler.removePrimerThumperArgs(config.arguments));
       } else {
         this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
         this.showConsole();
@@ -230,47 +226,25 @@ export default class CodeEditorLayout extends Component {
 
   /**
    * Runs GSL code present in the editor
-   * @param {MouseEvent} evt click event
+   * @param {string} code
+   * @param newArgs Args to run with
    */
-  rerunCode = (evt, newArgs) => {
-    console.log(`Sending code to the server: ${this.state.editorContent}`);
-    compiler.run(this.state.editorContent, newArgs, window.constructor.api.projects.projectGetCurrentId()).then((data) => {
-      // retain the previous console error.
-      const appendedResultOutput = this.state.resultContent + '\nResult on rerun without primers:\n' + data.result;
-      this.onResultContentChange(appendedResultOutput);
-      if (data.status === 0) {
-        this.onStatusMessageChange('GSL executed successfully.');
-        canvas.render(JSON.parse(data.contents));
-        this.refreshDownloadMenu();
-      } else {
-        this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
-        this.showConsole();
-      }
-    });
-  };
+  rerunCode = (code, newArgs) => {
+    console.log(`Sending code to the server: ${code}`);
 
-  /**
-   * Saves the GSL code associated with the project on the server.
-   * @param {MouseEvent} click event
-   */
-  saveCode = (evt) => {
-    const projectId = window.constructor.api.projects.projectGetCurrentId();
-
-    return compiler.saveProjectCode(projectId, this.state.editorContent)
-      .then(() => {
-        this.onStatusMessageChange('Saved GSL code.');
-        this.refreshDownloadMenu();
-        this.codeEditor.ace.editor.focus();
-
-        // disable the 'Save' Button
-        const items = this.state.toolbarItems;
-        if (gslState[projectId].hasOwnProperty('savedCode')) {
-          items[2].disabled = true;
-          this.setState({ toolbarItems: items });
+    compiler.run(code, newArgs, this.getProjectId())
+      .then((data) => {
+        // retain the previous console error.
+        const appendedResultOutput = this.state.resultContent + '\nResult on rerun without primers:\n' + data.result;
+        this.onResultContentChange(appendedResultOutput);
+        if (data.status === 0) {
+          this.onStatusMessageChange('GSL executed successfully.');
+          canvas.render(JSON.parse(data.contents));
+          this.refreshDownloadMenu();
+        } else {
+          this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
+          this.showConsole();
         }
-      })
-      .catch((err) => {
-        this.onStatusMessageChange('Failed to save the GSL code on the server.');
       });
   };
 
@@ -282,7 +256,7 @@ export default class CodeEditorLayout extends Component {
       disabled: false,
       action: () => {
         this.doDownload('gsl');
-      }
+      },
     },
     {},
     {
@@ -334,12 +308,14 @@ export default class CodeEditorLayout extends Component {
   downloadFileByType = (fileType) => {
     const hyperlink = document.createElement('a');
     hyperlink.href = '/extensions/api/' + extensionConfig.name + '/download?projectId=' +
-      window.constructor.api.projects.projectGetCurrentId() +
+      this.getProjectId() +
       '&extension=' + extensionConfig.name +
       '&type=' + fileType;
 
     hyperlink.download = true;
+
     console.log('REQUEST GSL DOWNLOAD:', hyperlink.href);
+
     const clickEvent = new MouseEvent("click", {
       "view": window,
       "bubbles": true,
@@ -363,34 +339,31 @@ export default class CodeEditorLayout extends Component {
       'cm': 'Clone Manager output zip file',
       'allFormats': 'files',
     };
-    const saveGSLAndDownload = (key) => {
-      // Save file first if required, if the gsl file is requested.
-      if ((key === 'gsl' || key === 'allFormats') && (!this.state.toolbarItems[2].disabled)) {
-        // save the GSL file first before downloading.
-        window.constructor.extensions.files.write(
-          window.constructor.api.projects.projectGetCurrentId(),
-          extensionConfig.name,
-          'project.gsl',
-          gslState.editorContent,
-        )
-          .then(() => {   // refactor this to separate the save part.
-            gslState.refreshDownloadList = true;
-            this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
-            this.downloadFileByType(key);
-          })
-          .catch((err) => {
-            console.log('Failed to save GSL Code');
-            console.log(err);
-          });
-      } else {
-        this.onStatusMessageChange('Preparing to download the ' + fileMap[key] + ' associated with this project...');
-        this.downloadFileByType(key);
-      }
-    };
 
-    //for (const key of Object.keys(fileMap)) {
-    saveGSLAndDownload(key);
-    //}
+    const projectId = this.getProjectId();
+    const code = gslState.editorContent;
+    const editorIsDirty = this.state.editorDirty;
+
+    this.onStatusMessageChange(`Preparing data for ${fileMap[key]}. Download will begin automatically when complete.`);
+
+    //want to save both the project file and the remote files before downloading
+    const writeFilesPromise = (editorIsDirty) ?
+      compiler.saveProjectCode(projectId, code)
+        .then(() => {
+          console.log('Saved GSL Code.');
+          Object.assign(gslState, { refreshDownloadList: true });
+        }) :
+      Promise.resolve(null);
+
+    writeFilesPromise
+      .catch((err) => {
+        console.log('Failed to save GSL Code');
+        console.log(err);
+        this.onStatusMessageChange('There was an error saving the GSL code. Please try again.');
+        return Promise.reject();
+      })
+      .then(() => this.downloadFileByType(key));
+
     this.codeEditor.ace.editor.focus();
   }
 
