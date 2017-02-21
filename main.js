@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import GSLEditorLayout from './src/components/GSLEditorLayout';
-import { loadProjectCode, saveProjectCode } from './src/behavior/compiler/client';
+import { loadProjectCode, saveProjectCode, setProjectCode } from './src/behavior/compiler/client';
 const extensionConfig = require('./package.json');
 const gslState = require('./globals');
 
@@ -14,24 +14,36 @@ function render(container, options) {
   //always render on load
   ReactDOM.render(<GSLEditorLayout/>, container);
 
+  // ref to action type constants in constructor
+  const { actionTypes } = window.constructor.constants;
+
   const subscriber = window.constructor.store.subscribe((state, lastAction) => {
-    // console.log(`lastAction.type: ${lastAction.type}`);
-    if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
-      // save the current content of the editor.
-      // console.log('GSL Save');
-      saveProjectCode();
-      // console.log('GSL Saved');
-    } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_OPEN) {
-      // console.log('GSL Load');
-      loadProjectCode();
-      // console.log('GSL Loaded');
-    } else {
-      // console.log('GSL Nothing');
+    console.log(lastAction);
+
+    switch (lastAction.type) {
+      case actionTypes.PROJECT_BEFORE_OPEN:
+      case actionTypes.PROJECT_SAVE: {
+        const { projectId } = lastAction;
+        //setProjectCode(projectId, gslState.editorContent); // don't save remotely, just locally
+        saveProjectCode(projectId, gslState.editorContent); //save the code before the project changes
+        break;
+      }
+      case actionTypes.PROJECT_OPEN: {
+        //console.log('loading next project')
+        loadProjectCode();
+        break;
+      }
+      default: {
+        //console.log('nothing')
+      }
     }
   }, true);
 
   //return an unsubscribe function to clean up when the extension unmounts
-  return subscriber;
+  return () => {
+    console.log('unmounting');
+    subscriber();
+  };
 }
 
 window.constructor.extensions.register(extensionConfig.name, 'projectDetail', render);

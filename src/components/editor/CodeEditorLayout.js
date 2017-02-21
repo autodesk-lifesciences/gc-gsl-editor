@@ -93,7 +93,7 @@ export default class CodeEditorLayout extends Component {
 
       compiler.loadProjectCode(projectId)
         .catch(() => {
-          return compiler.loadDefaults();
+          return compiler.loadDefaults(projectId);
         })
         .then(() => {
           this.onStatusMessageChange('');
@@ -204,7 +204,7 @@ export default class CodeEditorLayout extends Component {
 
   /**
    * Runs GSL code present in the editor
-   * @param {MouseEvent} click event
+   * @param {MouseEvent} evt click event
    */
   runCode = (evt) => {
     console.log(`Sending code to the server: ${this.state.editorContent}`);
@@ -230,7 +230,7 @@ export default class CodeEditorLayout extends Component {
 
   /**
    * Runs GSL code present in the editor
-   * @param {MouseEvent} click event
+   * @param {MouseEvent} evt click event
    */
   rerunCode = (evt, newArgs) => {
     console.log(`Sending code to the server: ${this.state.editorContent}`);
@@ -256,7 +256,7 @@ export default class CodeEditorLayout extends Component {
   saveCode = (evt) => {
     const projectId = window.constructor.api.projects.projectGetCurrentId();
 
-    return compiler.saveProjectCode(this.state.editorContent, projectId)
+    return compiler.saveProjectCode(projectId, this.state.editorContent)
       .then(() => {
         this.onStatusMessageChange('Saved GSL code.');
         this.refreshDownloadMenu();
@@ -389,7 +389,7 @@ export default class CodeEditorLayout extends Component {
     };
 
     //for (const key of Object.keys(fileMap)) {
-      saveGSLAndDownload(key);
+    saveGSLAndDownload(key);
     //}
     this.codeEditor.ace.editor.focus();
   }
