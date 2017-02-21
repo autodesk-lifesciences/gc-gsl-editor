@@ -11,13 +11,12 @@ const gslState = require('./globals');
  * @param {Object} other container size related data.
  */
 function render(container, options) {
+  //always render on load
+  ReactDOM.render(<GSLEditorLayout/>, container);
+
   const subscriber = window.constructor.store.subscribe((state, lastAction) => {
     // console.log(`lastAction.type: ${lastAction.type}`);
-    if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
-      // console.log('GSL Render');
-      ReactDOM.render(<GSLEditorLayout/>, container);
-      // console.log('GSL Rendered');
-    } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
+    if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
       // save the current content of the editor.
       // console.log('GSL Save');
       saveProjectCode();
