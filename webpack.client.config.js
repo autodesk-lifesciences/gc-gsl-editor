@@ -75,6 +75,7 @@ const dev = {
     filename: './client-build.js',
   },
   module: clientModules,
+  devtool: 'inline-source-map',
 };
 
 // get target from npm command used to start the build

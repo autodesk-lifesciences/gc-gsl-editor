@@ -11,23 +11,29 @@ const gslState = require('./globals');
  * @param {Object} other container size related data.
  */
 function render(container, options) {
+  //always render on load
+  ReactDOM.render(<GSLEditorLayout/>, container);
+
+  // ref to action type constants in constructor
+  const { actionTypes } = window.constructor.constants;
+
   const subscriber = window.constructor.store.subscribe((state, lastAction) => {
-    // console.log(`lastAction.type: ${lastAction.type}`);
-    if (lastAction.type === window.constructor.constants.actionTypes.DETAIL_VIEW_SELECT_EXTENSION) {
-      // console.log('GSL Render');
-      ReactDOM.render(<GSLEditorLayout/>, container);
-      // console.log('GSL Rendered');
-    } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_SAVE) {
-      // save the current content of the editor.
-      // console.log('GSL Save');
-      saveProjectCode();
-      // console.log('GSL Saved');
-    } else if (lastAction.type === window.constructor.constants.actionTypes.PROJECT_OPEN) {
-      // console.log('GSL Load');
-      loadProjectCode();
-      // console.log('GSL Loaded');
-    } else {
-      // console.log('GSL Nothing');
+    switch (lastAction.type) {
+      case actionTypes.PROJECT_BEFORE_OPEN:
+      case actionTypes.PROJECT_SAVE: {
+        const { projectId } = lastAction;
+        //setProjectCode(projectId, gslState.editorContent); // don't save remotely, just locally
+        saveProjectCode(projectId, gslState.editorContent); //save the code before the project changes
+        break;
+      }
+      case actionTypes.PROJECT_OPEN: {
+        //console.log('loading next project')
+        loadProjectCode();
+        break;
+      }
+      default: {
+        //console.log('nothing')
+      }
     }
   }, true);
 

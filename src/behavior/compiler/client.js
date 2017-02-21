@@ -4,25 +4,46 @@
 
 const config = require('../../../package.json');
 const gslState = require('../../../globals');
+
 const defaultEditorContent = '#refgenome S288C\n// #refgenome BY4741\n// #refgenome BY4742\n\n#name NewGSLConstruct\n';
+
+// save the project code in the GSL state
+// use saveProjectCode to write files and actually persist
+export const saveProjectCodeLocally = (projectId, code) => {
+  if (!gslState.hasOwnProperty(projectId)) {
+    gslState[projectId] = {};
+  }
+  gslState[projectId].savedCode = code;
+};
+
+export const writeProjectFile = (projectId, code, fileName = 'project.gsl') =>
+  window.constructor.extensions.files.write(
+    projectId,
+    config.name,
+    fileName,
+    code
+  );
+
 /**
  * Sends the code and corresponding gslc options to run the command on the server.
- * @param {string} editor content
- * @param {Object} gslc argument object
+ * @param {string} code current Code
+ * @param {Object} args argument object
  * @param {string} projectId
  * @return {string} resultData
  */
-export const run = (data, args, projectId) => {
+export const run = (code, args, projectId) => {
+  const extension = config.name;
+
   const payload = {
-    'code': data,
-    'projectId': projectId,
-    'extension': config.name,
-    'args': args,
+    code,
+    projectId,
+    args,
+    extension,
   };
 
   const stringified = JSON.stringify(payload);
 
-  return fetch('/extensions/api/' + config.name + '/gslc', {
+  return fetch(`/extensions/api/${extension}/gslc`, {
     method: 'POST',
     credentials: 'same-origin',
     headers: {
@@ -61,17 +82,18 @@ export const getAvailableDownloadList = (projectId) => {
     },
     body: stringified,
   })
-    .then(resp => resp.json())
-    .then((data) => {
-      return data;
-    });
+    .then(resp => resp.json());
 };
 
 //use this after saving, as it also sets the last saved code
-export const setProjectCode = (code, otherState = {}) => {
-  if ((code == null) || (code === '')) {
+// projectId *should* be passed unless
+// pass code = null to avoid setting defaults
+export const setProjectCode = (forceProjectId, code, otherState = {}) => {
+  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
+
+  if (!code) {
     console.error('attempting to set empty project code; loading defaults...');
-    return loadDefaults();
+    return loadDefaults(projectId);
   }
 
   Object.assign(gslState, {
@@ -81,11 +103,7 @@ export const setProjectCode = (code, otherState = {}) => {
     statusContent: '',
   }, otherState);
 
-  const projectId = window.constructor.api.projects.projectGetCurrentId();
-  if (!gslState.hasOwnProperty(projectId)) {
-    gslState[projectId] = {};
-  }
-  gslState[projectId].savedCode = gslState.editorContent;
+  saveProjectCodeLocally(projectId, code);
 
   return code;
 };
@@ -101,27 +119,21 @@ export const loadProjectCode = (forceProjectId) => {
     config.name,
     'project.gsl'
   )
-    .then(setProjectCode);
+    .then(code => setProjectCode(projectId, code));
 };
 
 /**
  * Load editor defaults.
  */
-export const loadDefaults = () => {
+export const loadDefaults = (projectId) => {
   // console.log('loading defaults...');
-  setProjectCode(defaultEditorContent, {
+  setProjectCode(projectId, defaultEditorContent, {
     refreshDownloadList: true,
   });
 
-  // NOTE - does not appear any reason why we need to write the empty file...
-  // does this mark it GSL? Needed for startup?
-  // write an empty file.
-  return window.constructor.extensions.files.write(
-    window.constructor.api.projects.projectGetCurrentId(),
-    config.name,
-    'project.gsl',
-    ''
-  );
+  // Adds the file to the project files, and marks it GSL
+  // write the default file
+  return writeProjectFile(projectId, defaultEditorContent);
 };
 
 /**
@@ -145,9 +157,6 @@ export const writeRemote = (projectId, extension, fileName, contents) => {
     body: stringified,
   })
     .then(resp => resp.json())
-    .then((data) => {
-      return data;
-    })
     .catch((err) => {
       console.log('Request timed out:', err);
       return {
@@ -161,46 +170,39 @@ export const writeRemote = (projectId, extension, fileName, contents) => {
  * Save Project code.
  * Only saves to constructor if it has changed. will always save to remote server
  */
-export const saveProjectCode = (forceNextCode, forceProjectId) => {
+export const saveProjectCode = (forceProjectId, forceNextCode) => {
   const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
   const nextCode = forceNextCode || gslState.editorContent;
   const lastCode = typeof gslState[projectId] === 'object' ?
     gslState[projectId].savedCode :
     null;
 
+  // make sure the editor code content is up to date, and save the code locally in our state
+  // run this now, not after the write resolves, e.g. if we are opening another project
+  //saveProjectCodeLocally(projectId, nextCode); //setProjectCode calls this
+  setProjectCode(projectId, nextCode);
+
   // console.log('request to save code:\n', nextCode);
-  const promise = ((nextCode == null) || (nextCode === '') || (lastCode === nextCode)) ?
-    Promise.resolve(null) :
-    window.constructor.extensions.files.write(
-      projectId,
-      config.name,
-      'project.gsl',
-      nextCode
-    )
-      .then(project => {
-        console.log('Saved GSL Code.');
 
-        setProjectCode(nextCode, {
-          refreshDownloadList: true,
-        });
-
-        return project;
-      });
-
-  return promise
-    .then(() => {
-      // Save code to the remote gsl server.
-      return writeRemote(
-        projectId,
-        config.name,
-        'project.gsl',
-        nextCode
-      )
+  //no reason to chain these, or write when no changes have been made
+  const promises = ((nextCode == null) || (nextCode === '') || (lastCode === nextCode)) ?
+    [] : [
+      //write the project file, if necessary
+      writeProjectFile(projectId, nextCode)
+        .then(project => {
+          console.log('Saved GSL Code.');
+          Object.assign(gslState, { refreshDownloadList: true });
+          return project;
+        }),
+      //write to gslc server, catch if it errors, since mostly care about the project file
+      writeRemote(projectId, config.name, 'project.gsl', nextCode)
         .catch((err) => {
           console.log('Failed to save GSL code remotely');
           console.log(err);
-        });
-    })
+        }),
+    ];
+
+  return Promise.all(promises)
     .catch((err) => {
       console.log('Failed to save GSL Code');
       console.log(err);
