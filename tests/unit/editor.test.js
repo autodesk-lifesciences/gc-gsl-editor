@@ -1,6 +1,5 @@
 import { assert, expect } from 'chai';
 import React from 'react';
-const TestUtils = require('react-addons-test-utils');
 import sd from 'skin-deep';
 
 import Toolbar from '../../src/components/editor/Toolbar';
