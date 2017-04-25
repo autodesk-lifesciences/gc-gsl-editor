@@ -43,15 +43,19 @@ export default class CodeEditorAce extends Component {
       },
     });
 
-    this.listener = window.addEventListener('resize', (evt) => {
+    const resizeListener = (evt) => {
       this.setState({editorHeight: this.getEditorHeight() });
-    });
+    };
+    window.addEventListener('resize', resizeListener);
+    this.dispose = () => {
+      window.removeEventListener('resize', resizeListener);
+    };
     this.setState({editorHeight: this.getEditorHeight() });
     this.ace.editor.focus();
   }
 
   componentWillUnmount() {
-    this.listener();
+    this.dispose();
   }
 
   getEditorHeight = () => {
