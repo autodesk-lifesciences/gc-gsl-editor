@@ -1,6 +1,6 @@
 {
   "name": "GC-GSL-Editor",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
   "keywords": [
     "DNA",
