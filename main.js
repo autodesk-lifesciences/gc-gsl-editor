@@ -38,7 +38,10 @@ function render(container, options) {
   }, true);
 
   //return an unsubscribe function to clean up when the extension unmounts
-  return subscriber;
+  return () => {
+    ReactDOM.unmountComponentAtNode(container);
+    subscriber();
+  }
 }
 
 window.constructor.extensions.register(extensionConfig.name, 'projectDetail', render);

@@ -68,7 +68,6 @@ export default class CodeEditorLayout extends Component {
    * Actions to be performed when this component mounts.
    */
   componentDidMount() {
-    // console.log('CodeEditorLayout componentDidMount');
     this.refreshDownloadMenu();
     if (gslState.hasOwnProperty('isConsoleOpen')) {
       this.props.onToggleConsoleVisibility(gslState.isConsoleOpen);
@@ -96,6 +95,23 @@ export default class CodeEditorLayout extends Component {
           this.refreshEditorFromState();
         });
     }
+
+    const timerId = setInterval(() => {
+      const code = gslState.editorContent;
+      if (code) {
+        compiler.saveProjectCode(projectId, code);
+      }
+    }, 5000);//Autosave every 5 seconds
+    this.dispose = () => {
+      clearInterval(timerId);
+    };
+  }
+
+  /**
+   * Actions to be performed when this component mounts.
+   */
+  componentWillUnmount() {
+    this.dispose();
   }
 
   /**
@@ -199,6 +215,7 @@ export default class CodeEditorLayout extends Component {
     const projectId = this.getProjectId();
     const code = this.state.editorContent;
 
+    // DA: WTF: why save and not wait if it's not important??????!!!!???
     // save the code, but no need to wait for it to resolve before running remotely
     // note - this will save code even if it running GSL failed
     compiler.saveProjectCode(projectId, code)
