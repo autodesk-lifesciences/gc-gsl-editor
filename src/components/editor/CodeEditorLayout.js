@@ -74,11 +74,17 @@ export default class CodeEditorLayout extends Component {
     }
     registerKeysRunCode(this.codeEditor.ace, this.runCode);
 
+    //This is a hack, because the project id is retrieved from the
+    //window object, and it could change at any moment, out of the react
+    //lifecycle events. For example, when componentWillUnmount is called,
+    //the projectId can be different (if the unmount was triggered by a
+    //project change).
+    //Nevertheless, the hack works.
     const projectId = this.getProjectId();
+    this.projectId = projectId;
 
     //if project already loaded, just set as editor content
     if (gslState[projectId] && gslState[projectId].savedCode) {
-      console.log('project ', projectId, ' has saved code');
       gslState.editorContent = gslState[projectId].savedCode;
       this.refreshEditorFromState();
     } else {
@@ -98,19 +104,24 @@ export default class CodeEditorLayout extends Component {
 
     const timerId = setInterval(() => {
       const code = gslState.editorContent;
-      if (code) {
+      if (projectId && code) {
         compiler.saveProjectCode(projectId, code);
       }
-    }, 5000);//Autosave every 5 seconds
+    }, 30000);//Autosave every 5 seconds
     this.dispose = () => {
       clearInterval(timerId);
     };
   }
 
   /**
-   * Actions to be performed when this component mounts.
+   * Actions to be performed when this component unmounts.
    */
   componentWillUnmount() {
+    const code = gslState.editorContent;
+    if (this.projectId && code) {
+      compiler.saveProjectCode(this.projectId, code);
+    }
+    this.projectId = null;
     this.dispose();
   }
 
