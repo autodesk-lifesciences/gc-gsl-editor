@@ -101,7 +101,7 @@ export default class CodeEditorLayout extends Component {
       if (code) {
         compiler.saveProjectCode(projectId, code);
       }
-    }, 5000);//Autosave every 5 seconds
+    }, 30000);//Autosave every 5 seconds
     this.dispose = () => {
       clearInterval(timerId);
     };
