@@ -111,6 +111,10 @@ export default class CodeEditorLayout extends Component {
    * Actions to be performed when this component mounts.
    */
   componentWillUnmount() {
+    const code = gslState.editorContent;
+    if (code) {
+      compiler.saveProjectCode(projectId, code);
+    }
     this.dispose();
   }
 
