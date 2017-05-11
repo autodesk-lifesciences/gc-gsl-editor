@@ -1,4 +1,6 @@
 import React, { PropTypes, Component } from 'react';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 import CodeEditorAce from './CodeEditorAce';
 import Toolbar from './Toolbar';
@@ -9,7 +11,7 @@ import { registerKeysRunCode } from '../../behavior/editor/keyBindings';
 
 const config = require('../../behavior/compiler/config.json');
 const extensionConfig = require('../../../package.json');
-const gslState = require('../../../globals');
+const gslState = require('../../../globals');//I don't understand this at all.
 
 require('../../styles/styles.css');
 /**
@@ -37,7 +39,8 @@ export default class CodeEditorLayout extends Component {
     this.state = {
       editorDirty: false, // NB - this is state local to this component, not gslState
       editorContent: '',
-      resultContent: '',
+      resultTerminalOutput: '',
+      resultsFiles: {},
       statusMessage: 'Begin typing GSL code.',
       currentMenuPosition: {},
       consoleVisible: true,
@@ -156,22 +159,34 @@ export default class CodeEditorLayout extends Component {
    * Actions to be performed when the result of the code execution changes
    * @param {string} content
    */
-  onResultContentChange = (result) => {
-    this.setState({ resultContent: result });
-    this.props.onSubmit(result);
+  onResultContentChange = (stdErrOut, fileObject) => {
+    this.setState({ resultTerminalOutput: stdErrOut });
+    this.props.onSubmit(stdErrOut);
   };
 
   /**
    * update state of download menu items
    * @param settings
    */
-  onDownloadMenuSettingsChange = (settings) => {
+  onDownloadMenuSettingsChange = (files) => {
+    let isSomethingToDownload = false;
     this.downloadMenuItems.forEach(item => {
       // special case gsl
       if (item.type === 'gsl' && this.state.editorContent !== '') {
         item.disabled = false;
+        isSomethingToDownload = true;
       } else {
-        item.disabled = !settings[item.type];
+        item.disabled = !Object.keys(files).find((fileName) => {
+          return fileName.endsWith(item.type);
+        });
+        if (!item.disabled) {
+          isSomethingToDownload = true;
+        }
+      }
+    });
+    this.downloadMenuItems.forEach((downloadItem) => {
+      if (downloadItem.type === 'allFormats' && isSomethingToDownload) {
+        downloadItem.disabled = false;
       }
     });
   };
@@ -185,10 +200,13 @@ export default class CodeEditorLayout extends Component {
    * @param {string} content
    */
   refreshDownloadMenu = () => {
-    compiler.getAvailableDownloadList(this.getProjectId())
-      .then((data) => {
-        this.onDownloadMenuSettingsChange(data);
-      });
+    const projectId = this.getProjectId();
+    const files = (gslState[projectId] && gslState[projectId].outputs) || {};
+    this.onDownloadMenuSettingsChange(files);
+    // compiler.getAvailableDownloadList(this.getProjectId())
+    //   .then((data) => {
+    //     this.onDownloadMenuSettingsChange(data);
+    //   });
   };
 
   /**
@@ -197,7 +215,7 @@ export default class CodeEditorLayout extends Component {
    */
   refreshEditorFromState = () => {
     this.onEditorContentChange(gslState.editorContent);
-    this.onResultContentChange(gslState.resultContent);
+    this.onResultContentChange(gslState.resultTerminalOutput);
     this.codeEditor.ace.editor.env.editor.setReadOnly(false);
   };
 
@@ -233,23 +251,32 @@ export default class CodeEditorLayout extends Component {
       .then(() => this.setState({ editorDirty: false }));
 
     this.onStatusMessageChange('Running code...');
-    console.log(`Sending code to the server: ${code}`);
+    // console.log(`Sending code to the server: ${code}`);
 
-    compiler.run(code, config.arguments, this.getProjectId()).then((data) => {
-      this.onResultContentChange(data.result);
-
-      if (data.status === 0) {
-        this.onStatusMessageChange('GSL executed successfully.');
-        canvas.render(JSON.parse(data.contents));
-        this.refreshDownloadMenu();
-      } else if (compiler.isPrimerFailure(data.result)) {
-        this.onStatusMessageChange('Re-running the code without primers...');
-        this.rerunCode(code, compiler.removePrimerThumperArgs(config.arguments));
-      } else {
-        this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
-        this.showConsole();
-      }
-    });
+    compiler.run(code, config.arguments, this.getProjectId())
+      .then((data) => {
+        const results = data.result;
+        if (results) {
+          gslState[projectId] = results;
+          this.onResultContentChange(results.stdout.join('') + results.stderr.join(''), results.outputs);
+          if (results.exitCode === 0) {
+            this.onStatusMessageChange('GSL executed successfully.');
+            canvas.render(JSON.parse(results.outputs['gslOut.json']));
+            this.refreshDownloadMenu();
+          //TODO: When the primers feature has been re-enabled by Darren, we
+          //can address this
+          // } else if (compiler.isPrimerFailure(data.result)) {
+          //   this.onStatusMessageChange('Re-running the code without primers...');
+          //   this.rerunCode(code, compiler.removePrimerThumperArgs(config.arguments));
+          } else {
+            this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
+            this.showConsole();
+          }
+        } else {
+          console.error(data);
+          this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');
+        }
+      });
   };
 
   /**
@@ -263,7 +290,7 @@ export default class CodeEditorLayout extends Component {
     compiler.run(code, newArgs, this.getProjectId())
       .then((data) => {
         // retain the previous console error.
-        const appendedResultOutput = this.state.resultContent + '\nResult on rerun without primers:\n' + data.result;
+        const appendedResultOutput = this.state.resultTerminalOutput + '\nResult on rerun without primers:\n' + data.result;
         this.onResultContentChange(appendedResultOutput);
         if (data.status === 0) {
           this.onStatusMessageChange('GSL executed successfully.');
@@ -334,26 +361,34 @@ export default class CodeEditorLayout extends Component {
    * @param {string} The type of file as specified in downloadMenuItems
    */
   downloadFileByType = (fileType) => {
-    const hyperlink = document.createElement('a');
-    hyperlink.href = '/extensions/api/' + extensionConfig.name + '/download?projectId=' +
-      this.getProjectId() +
-      '&extension=' + extensionConfig.name +
-      '&type=' + fileType;
-
-    hyperlink.download = true;
-
-    console.log('REQUEST GSL DOWNLOAD:', hyperlink.href);
-
-    const clickEvent = new MouseEvent("click", {
-      "view": window,
-      "bubbles": true,
-      "cancelable": false
+    const projectId = this.getProjectId();
+    const zip = new JSZip();
+    const files = (gslState[projectId] && gslState[projectId].outputs) || {};
+    const fileName = Object.keys(files).find((f) => {
+      return f.endsWith(fileType);
     });
-    document.body.appendChild(hyperlink);
-    hyperlink.dispatchEvent(clickEvent);
-
-    (window.URL || window.webkitURL).revokeObjectURL(hyperlink.href);
-    this.codeEditor.ace.editor.focus();
+    let zipFileName;
+    if (fileType === 'gsl') {
+      zip.file('project.gsl', gslState.editorContent);
+      zipFileName = 'project.gsl.zip';
+    } else if (fileType === 'allFormats') {
+      zip.file('project.gsl', gslState.editorContent);
+      Object.keys(files).forEach((f) => {
+        zip.file(f, files[f]);
+      });
+      zipFileName = 'project.zip';
+    } else {
+      if (files[fileName]) {
+        zip.file(fileName, files[fileName]);
+        zipFileName = `${fileName}.zip`;
+      }
+    }
+    if (zipFileName) {
+      zip.generateAsync({ type: 'blob' })
+        .then((content) => {
+            saveAs(content, zipFileName, 'application/octet-stream');
+        });
+    }
   }
 
   /**
@@ -361,6 +396,7 @@ export default class CodeEditorLayout extends Component {
    * @param {MouseEvent} click event
    */
   doDownload(key) {
+    console.log('doDownload key', key);
     const fileMap = {
       'gsl': 'GSL source code',
       'ape': 'ApE output zip file',

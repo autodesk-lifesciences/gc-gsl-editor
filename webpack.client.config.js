@@ -17,7 +17,6 @@ const clientModules = {
       exclude: [
         /node_modules/,
         'client-build.js',
-        'server-build.js',
       ],
     },
     {
