@@ -68,7 +68,7 @@ mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --js
     })
     .then(resp => resp.json())
     .catch((err) => {
-      console.log('Request timed out:', err);
+      console.error('Request timed out:', err);
       return {
         'result': 'Unable to process the request:' + err,
         'status': 1,

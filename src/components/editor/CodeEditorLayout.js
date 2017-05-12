@@ -203,10 +203,6 @@ export default class CodeEditorLayout extends Component {
     const projectId = this.getProjectId();
     const files = (gslState[projectId] && gslState[projectId].outputs) || {};
     this.onDownloadMenuSettingsChange(files);
-    // compiler.getAvailableDownloadList(this.getProjectId())
-    //   .then((data) => {
-    //     this.onDownloadMenuSettingsChange(data);
-    //   });
   };
 
   /**
@@ -396,7 +392,6 @@ export default class CodeEditorLayout extends Component {
    * @param {MouseEvent} click event
    */
   doDownload(key) {
-    console.log('doDownload key', key);
     const fileMap = {
       'gsl': 'GSL source code',
       'ape': 'ApE output zip file',
