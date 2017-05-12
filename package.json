@@ -1,6 +1,6 @@
 {
   "name": "GC-GSL-Editor",
-  "version": "1.1.6",
+  "version": "2.0.0",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
   "keywords": [
     "DNA",
@@ -25,20 +25,16 @@
         "file": "client-build.js",
         "region": "projectDetail"
       }
-    ],
-    "router": "server-build.js"
+    ]
   },
   "scripts": {
     "test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js",
     "lint": "./node_modules/eslint/bin/eslint.js * -c ./.eslintrc --ignore-path ./.eslintignore --ignore-pattern src/behavior/editor/brace/*/*.js,*-build.js,tests/,GSL,*.json,*.md ; exit 0",
-    "debug-server": "webpack --config webpack.server.config.js",
-    "watch-server": "webpack --watch --config webpack.server.config.js",
-    "release-server": "webpack --optimize-minimize --config webpack.server.config.js",
     "debug-client": "webpack --config webpack.client.config.js",
     "watch-client": "webpack --watch --config webpack.client.config.js",
     "release-client": "webpack --optimize-minimize --config webpack.client.config.js",
-    "debug": "npm run debug-server && npm run debug-client",
-    "release": "npm run release-server && npm run release-client"
+    "debug": "npm run debug-client",
+    "release": "npm run release-client"
   },
   "author": "Autodesk Bionano <geneticconstructor@autodesk.com>",
   "dependencies": {
@@ -61,7 +57,7 @@
     "body-parser": "^1.15.2",
     "brace": "^0.8.0",
     "command-exists": "^1.0.2",
-    "file-saver": "^1.3.2",
+    "file-saver": "^1.3.3",
     "fs": "0.0.1-security",
     "gsl-genome-s288c": "git+https://github.com/autodesk-bionano/gsl-genome-s288c.git",
     "invariant": "^2.2.1",

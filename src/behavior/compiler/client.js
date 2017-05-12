@@ -34,55 +34,47 @@ export const writeProjectFile = (projectId, code, fileName = 'project.gsl') =>
 export const run = (code, args, projectId) => {
   const extension = config.name;
 
+  const script = `
+#!/usr/bin/env sh
+mkdir /outputs
+mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --json /outputs/gslOut.json --primers /outputs/gslOut.primers.txt --ape /outputs gslOut --cm /outputs gslOut /inputs/project.gsl
+`;
+
   const payload = {
-    code,
-    projectId,
-    args,
-    extension,
+    CreateContainerOptions: {
+      Image: 'docker.io/dionjwa/gslc:1a5fe0e6', // TODO: move this to quay.io
+      Cmd: ['/bin/sh', '/inputs/script.sh'],
+      EntryPoint: [],//Otherwise it assumes the Gclc binary
+    },
+    inputs: {
+      'script.sh': script,
+      'project.gsl': code,
+    },
+    parameters: {
+      maxDuration: 3000,
+    },
+    meta: {
+      projectId: projectId, // Unnecessary, but could be useful for logging
+    },
   };
 
-  const stringified = JSON.stringify(payload);
-
-  return fetch(`/extensions/api/${extension}/gslc`, {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-    },
-    body: stringified,
-  })
+  return fetch(`/compute/${projectId}`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+      body: JSON.stringify(payload),
+    })
     .then(resp => resp.json())
     .catch((err) => {
-      console.log('Request timed out:', err);
+      console.error('Request timed out:', err);
       return {
         'result': 'Unable to process the request:' + err,
         'status': 1,
         'contents': [],
       };
     });
-};
-
-/**
- * Sends the code and corresponding gslc options to run the command on the server.
- * @param {string} projectId
- * @result {Object} List of downloadable file types and th
- */
-export const getAvailableDownloadList = (projectId) => {
-  const payload = {
-    'projectId': projectId,
-    'extension': config.name,
-  };
-
-  const stringified = JSON.stringify(payload);
-  return fetch('/extensions/api/' + config.name + '/listDownloads', {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-    },
-    body: stringified,
-  })
-    .then(resp => resp.json());
 };
 
 //use this after saving, as it also sets the last saved code
@@ -137,36 +129,6 @@ export const loadDefaults = (projectId) => {
 };
 
 /**
- * Save Project code on the GSL server (needed for downloads)
- */
-export const writeRemote = (projectId, extension, fileName, contents) => {
-  const payload = {
-    projectId,
-    extension,
-    fileName,
-    contents,
-  };
-
-  const stringified = JSON.stringify(payload);
-  return fetch('/extensions/api/' + extension + '/writeRemote', {
-    method: 'POST',
-    credentials: 'same-origin',
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-    },
-    body: stringified,
-  })
-    .then(resp => resp.json())
-    .catch((err) => {
-      console.log('Request timed out:', err);
-      return {
-        'result': 'Unable to save the file.',
-        'status': 1,
-      };
-    });
-};
-
-/**
  * Save Project code.
  * Only saves to constructor if it has changed. will always save to remote server
  */
@@ -193,13 +155,7 @@ export const saveProjectCode = (forceProjectId, forceNextCode) => {
           console.log('Saved GSL Code.');
           Object.assign(gslState, { refreshDownloadList: true });
           return project;
-        }),
-      //write to gslc server, catch if it errors, since mostly care about the project file
-      writeRemote(projectId, config.name, 'project.gsl', nextCode)
-        .catch((err) => {
-          console.log('Failed to save GSL code remotely');
-          console.log(err);
-        }),
+        })
     ];
 
   return Promise.all(promises)
