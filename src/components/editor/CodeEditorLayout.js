@@ -100,7 +100,6 @@ export default class CodeEditorLayout extends Component {
           return compiler.loadDefaults(projectId);
         })
         .then(() => {
-          this.onStatusMessageChange('');
           this.refreshEditorFromState();
         });
     }
