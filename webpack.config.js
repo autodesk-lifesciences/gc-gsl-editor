@@ -46,7 +46,7 @@ const clientModules = {
 };
 
 // entry point doesn't vary by build
-const entry = './src/main.js';
+const entry = './src/main.jsx';
 
 // ===========================================================================
 // debug builds a source map decorated, non minified version of the extension client.
