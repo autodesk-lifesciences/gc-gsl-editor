@@ -1,3 +1,5 @@
+const path = require('path');
+
 const AUTOPREFIXER_BROWSERS = [
   'Android 2.3',
   'Android >= 4',
@@ -9,6 +11,8 @@ const AUTOPREFIXER_BROWSERS = [
   'Safari >= 7.1',
 ];
 
+const distPath = 'dist/index.js';
+
 const clientModules = {
   loaders: [
     {
@@ -16,7 +20,7 @@ const clientModules = {
       loader: 'babel-loader',
       exclude: [
         /node_modules/,
-        'client-build.js',
+        distPath,
       ],
     },
     {
@@ -39,15 +43,21 @@ const clientModules = {
 };
 
 // entry point doesn't vary by build
-const entry = './main.js';
+const entry = './src/main.js';
 
-// =================================================================================
-// debug builds a source map decorated, non minified version of the extension client
-// =================================================================================
+// ===========================================================================
+// debug builds a source map decorated, non minified version of the extension client.
+// If GC_DIR is set, the output is put directly in the app.
+// ===========================================================================
+if (!process.env.GC_DIR) {
+  console.warn('GC_DIR env var not set, assuming you are running GC via docker-compose up, and mounting the sequence-viewer code via a documented change in the docker-compose.override.yml file. Otherwise set GC_DIR to the absolute path of the Genetic Constructor project');
+}
+
 const debug = {
   entry,
   output: {
-    filename: './client-build.js',
+    // for local development you can build the extension directly into its linked folder in the application
+    filename: process.env.GC_DIR ? path.join(process.env.GC_DIR, `server/extensions/node_modules/GC-GSL-Editor/${distPath}`) : distPath,
   },
   module: clientModules,
   devtool: 'inline-source',
@@ -60,7 +70,7 @@ const debug = {
 const release = {
   entry,
   output: {
-    filename: './client-build.js',
+    filename: distPath,
   },
   module: clientModules,
 };
@@ -71,7 +81,7 @@ const release = {
 const dev = {
   entry,
   output: {
-    filename: './client-build.js',
+    filename: process.env.GC_DIR ? path.join(process.env.GC_DIR, `server/extensions/node_modules/GC-GSL-Editor/${distPath}`) : distPath,
   },
   module: clientModules,
   devtool: 'inline-source-map',
@@ -81,14 +91,14 @@ const dev = {
 const TARGET = process.env.npm_lifecycle_event;
 
 // now build the required target ( for debug and/or watch mode )
-if (TARGET === 'debug-client') {
+if (TARGET === 'debug') {
   module.exports = debug;
 }
 
-if (TARGET === 'release-client') {
+if (TARGET === 'release') {
   module.exports = release;
 }
 
-if (TARGET === 'watch-client') {
+if (TARGET === 'watch') {
   module.exports = dev;
 }

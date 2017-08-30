@@ -10,12 +10,15 @@
   "parser": "babel-eslint",
   "extends": "airbnb",
   "plugins": [
-    "react"
+    "react",
+    "jsx-a11y"
   ],
   "rules": {
     "spaced-comment" : [0, "always"],
     "no-use-before-define": [2, "nofunc"],
     "no-console": [0],
-    "no-unused-vars": [2, {"vars": "all", "args": "none"}]
+    "no-unused-vars": [2, {"vars": "all", "args": "none"}],
+    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "jsx-a11y/anchor-has-content": [2, {}]
   }
 }

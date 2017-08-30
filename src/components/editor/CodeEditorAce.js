@@ -50,7 +50,7 @@ export default class CodeEditorAce extends Component {
     this.dispose = () => {
       window.removeEventListener('resize', resizeListener);
     };
-    this.setState({editorHeight: this.getEditorHeight() });
+    this.setState({editorHeight: this.getEditorHeight() }); /* eslint react/no-did-mount-set-state: 0 */
     this.ace.editor.focus();
   }
 

@@ -8,7 +8,7 @@
  * @param {AceEditor} ace editor
  */
 export const toggleComments = (ace) => {
-  const uncomment = (ace, token, pattern, row) => {
+  const uncomment = (token, pattern, row) => {
     const column = token.value.indexOf(pattern) + token.start;
     if (token.value.indexOf(pattern) !== -1) {
       ace.editor.session.replace({
@@ -25,18 +25,18 @@ export const toggleComments = (ace) => {
 
     for (selectedToken of ace.editor.session.getTokens(selectionRange.start.row)) {
       if (selectedToken.type === 'comment') {
-        uncomment(ace, selectedToken, '*)', selectionRange.start.row);
-        uncomment(ace, selectedToken, '(*', selectionRange.start.row);
-        uncomment(ace, selectedToken, '//', selectionRange.start.row);
+        uncomment(selectedToken, '*)', selectionRange.start.row);
+        uncomment(selectedToken, '(*', selectionRange.start.row);
+        uncomment(selectedToken, '//', selectionRange.start.row);
         addComment = false;
       }
     }
 
     for (selectedToken of ace.editor.session.getTokens(selectionRange.end.row)) {
       if (selectedToken.type === 'comment') {
-        uncomment(ace, selectedToken, '(*', selectionRange.end.row);
-        uncomment(ace, selectedToken, '//', selectionRange.end.row);
-        uncomment(ace, selectedToken, '*)', selectionRange.end.row);
+        uncomment(selectedToken, '(*', selectionRange.end.row);
+        uncomment(selectedToken, '//', selectionRange.end.row);
+        uncomment(selectedToken, '*)', selectionRange.end.row);
         addComment = false;
       }
     }
@@ -51,9 +51,9 @@ export const toggleComments = (ace) => {
     const cursorRow = ace.editor.getCursorPosition().row;
     for (selectedToken of ace.editor.session.getTokens(cursorRow)) {
       if (selectedToken.type === 'comment') {
-        uncomment(ace, selectedToken, '(*', cursorRow);
-        uncomment(ace, selectedToken, '//', cursorRow);
-        uncomment(ace, selectedToken, '*)', cursorRow);
+        uncomment(selectedToken, '(*', cursorRow);
+        uncomment(selectedToken, '//', cursorRow);
+        uncomment(selectedToken, '*)', cursorRow);
         addComment = false;
       }
     }

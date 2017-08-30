@@ -20,13 +20,13 @@ Or, or for a minified production build run
 
 ```npm run release```
 
-This will build the client into `./client-build.js` and the server into `./server-build.js`.
+This will build the client into `./index.js.js`.
 
 For fast development, use...
 
 ```npm run watch-client```
 
-This builds the debug version of the client (`./main.js`) and continues to watch the project for changes, recompiling on all changes. 
+This builds the debug version of the client (`./main.js`) and continues to watch the project for changes, recompiling on all changes.
 
 
 It is recommended that you use ``` npm link ``` as documented [here](https://github.com/Autodesk/genetic-constructor/blob/master/docs/extensions/npmLink.md) for faster development.

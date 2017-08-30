@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import GSLEditorLayout from './src/components/GSLEditorLayout';
-import { loadProjectCode, saveProjectCode } from './src/behavior/compiler/client';
-const extensionConfig = require('./package.json');
+import GSLEditorLayout from './components/GSLEditorLayout';
+import { loadProjectCode, saveProjectCode } from './behavior/compiler/client';
+const extensionConfig = require('../package.json');
 const gslState = require('./globals');
 
 /**

@@ -3,7 +3,7 @@
  */
 
 const config = require('../../../package.json');
-const gslState = require('../../../globals');
+const gslState = require('../../globals');
 
 const defaultEditorContent = '#refgenome S288C\n// #refgenome BY4741\n// #refgenome BY4742\n\n#name NewGSLConstruct\n';
 
@@ -32,8 +32,6 @@ export const writeProjectFile = (projectId, code, fileName = 'project.gsl') =>
  * @return {string} resultData
  */
 export const run = (code, args, projectId) => {
-  const extension = config.name;
-
   const script = `
 #!/usr/bin/env sh
 mkdir /outputs
@@ -44,7 +42,7 @@ mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --js
     CreateContainerOptions: {
       Image: 'docker.io/dionjwa/gslc:1a5fe0e6', // TODO: move this to quay.io
       Cmd: ['/bin/sh', '/inputs/script.sh'],
-      EntryPoint: [],//Otherwise it assumes the Gclc binary
+      EntryPoint: [], // Otherwise it assumes the Gclc binary
     },
     inputs: {
       'script.sh': script,
@@ -59,13 +57,13 @@ mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --js
   };
 
   return fetch(`/compute/${projectId}`, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: {
-        'Content-type': 'application/json; charset=UTF-8',
-      },
-      body: JSON.stringify(payload),
-    })
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8',
+    },
+    body: JSON.stringify(payload),
+  })
     .then(resp => resp.json())
     .catch((err) => {
       console.error('Request timed out:', err);
@@ -83,35 +81,23 @@ mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --js
 export const setProjectCode = (forceProjectId, code, otherState = {}) => {
   const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
 
+  let codeNotNull = code;
   if (!code) {
     console.error('attempting to set empty project code; loading defaults...');
-    return loadDefaults(projectId);
+    codeNotNull = defaultEditorContent;
+    otherState.refreshDownloadList = true;
   }
 
   Object.assign(gslState, {
-    editorContent: code,
+    editorContent: codeNotNull,
     refreshDownloadList: false,
     resultContent: '',
     statusContent: '',
   }, otherState);
 
-  saveProjectCodeLocally(projectId, code);
+  saveProjectCodeLocally(projectId, codeNotNull);
 
-  return code;
-};
-
-/**
- * Load GSL code associated with the project into the editor.
- */
-export const loadProjectCode = (forceProjectId) => {
-  // console.log('loadProjectCode', forceProjectId);
-  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
-  return window.constructor.extensions.files.read(
-    projectId,
-    config.name,
-    'project.gsl'
-  )
-    .then(code => setProjectCode(projectId, code));
+  return codeNotNull;
 };
 
 /**
@@ -126,6 +112,20 @@ export const loadDefaults = (projectId) => {
   // Adds the file to the project files, and marks it GSL
   // write the default file
   return writeProjectFile(projectId, defaultEditorContent);
+};
+
+/**
+ * Load GSL code associated with the project into the editor.
+ */
+export const loadProjectCode = (forceProjectId) => {
+  // console.log('loadProjectCode', forceProjectId);
+  const projectId = forceProjectId || window.constructor.api.projects.projectGetCurrentId();
+  return window.constructor.extensions.files.read(
+    projectId,
+    config.name,
+    'project.gsl'
+  )
+    .then(code => setProjectCode(projectId, code));
 };
 
 /**
@@ -147,7 +147,7 @@ export const saveProjectCode = (forceProjectId, forceNextCode) => {
   // console.log('request to save code:\n', nextCode);
 
   //no reason to chain these, or write when no changes have been made
-  const promises = ((nextCode == null) || (nextCode === '') || (lastCode === nextCode)) ?
+  const promises = ((nextCode === null) || (nextCode === '') || (lastCode === nextCode)) ?
     [] : [
       //write the project file, if necessary
       writeProjectFile(projectId, nextCode)
@@ -155,7 +155,7 @@ export const saveProjectCode = (forceProjectId, forceNextCode) => {
           console.log('Saved GSL Code.');
           Object.assign(gslState, { refreshDownloadList: true });
           return project;
-        })
+        }),
     ];
 
   return Promise.all(promises)
