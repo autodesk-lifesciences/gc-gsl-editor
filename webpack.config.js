@@ -1,4 +1,7 @@
 const path = require('path');
+const postcssImport = require('postcss-import');
+const postcssNested = require('postcss-nested');
+const postcssCssnext = require('postcss-cssnext');
 
 const AUTOPREFIXER_BROWSERS = [
   'Android 2.3',
@@ -34,9 +37,9 @@ const clientModules = {
   ],
   postcss: function plugins(bundler) {
     return [
-      require('postcss-import')({ addDependencyTo: bundler }),
-      require('postcss-nested')(),
-      require('postcss-cssnext')({ autoprefixer: AUTOPREFIXER_BROWSERS }),
+      postcssImport({ addDependencyTo: bundler }),
+      postcssNested(),
+      postcssCssnext({ autoprefixer: AUTOPREFIXER_BROWSERS }),
     ];
   },
   //devtool: 'inline-source-map',
@@ -50,13 +53,17 @@ const entry = './src/main.js';
 // If GC_DIR is set, the output is put directly in the app.
 // ===========================================================================
 if (!process.env.GC_DIR) {
-  console.warn('GC_DIR env var not set, assuming you are running GC via docker-compose up, and mounting the sequence-viewer code via a documented change in the docker-compose.override.yml file. Otherwise set GC_DIR to the absolute path of the Genetic Constructor project');
+  console.warn(`GC_DIR env var not set, assuming you are running GC via
+    docker-compose up, and mounting the sequence-viewer code via a documented
+    change in the docker-compose.override.yml file. Otherwise set GC_DIR to the
+    absolute path of the Genetic Constructor project`);
 }
 
 const debug = {
   entry,
   output: {
-    // for local development you can build the extension directly into its linked folder in the application
+    // for local development you can build the extension directly into its
+    // linked folder in the application
     filename: process.env.GC_DIR ? path.join(process.env.GC_DIR, `server/extensions/node_modules/GC-GSL-Editor/${distPath}`) : distPath,
   },
   module: clientModules,
