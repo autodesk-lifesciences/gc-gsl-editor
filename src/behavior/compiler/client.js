@@ -40,7 +40,7 @@ mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --js
 
   const payload = {
     CreateContainerOptions: {
-      Image: 'docker.io/dionjwa/gslc:1a5fe0e6', // TODO: move this to quay.io
+      Image: 'docker.io/dionjwa/gslc:9dcd8fc8', // TODO: move this to quay.io
       Cmd: ['/bin/sh', '/inputs/script.sh'],
       EntryPoint: [], // Otherwise it assumes the Gclc binary
     },
