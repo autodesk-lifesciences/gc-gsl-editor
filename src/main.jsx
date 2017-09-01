@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import GSLEditorLayout from './src/components/GSLEditorLayout';
-import { loadProjectCode, saveProjectCode } from './src/behavior/compiler/client';
-const extensionConfig = require('./package.json');
+import GSLEditorLayout from './components/GSLEditorLayout';
+import { loadProjectCode, saveProjectCode } from './behavior/compiler/client';
+
+const extensionConfig = require('../package.json');
 const gslState = require('./globals');
 
 /**
@@ -12,7 +13,7 @@ const gslState = require('./globals');
  */
 function render(container, options) {
   //always render on load
-  ReactDOM.render(<GSLEditorLayout/>, container);
+  ReactDOM.render(<GSLEditorLayout />, container);
 
   // ref to action type constants in constructor
   const { actionTypes } = window.constructor.constants;
@@ -22,8 +23,10 @@ function render(container, options) {
       case actionTypes.PROJECT_BEFORE_OPEN:
       case actionTypes.PROJECT_SAVE: {
         const { projectId } = lastAction;
-        //setProjectCode(projectId, gslState.editorContent); // don't save remotely, just locally
-        saveProjectCode(projectId, gslState.editorContent); //save the code before the project changes
+        // don't save remotely, just locally
+        //setProjectCode(projectId, gslState.editorContent);
+        //save the code before the project changes
+        saveProjectCode(projectId, gslState.editorContent);
         break;
       }
       case actionTypes.PROJECT_OPEN: {
@@ -41,7 +44,7 @@ function render(container, options) {
   return () => {
     ReactDOM.unmountComponentAtNode(container);
     subscriber();
-  }
+  };
 }
 
 window.constructor.extensions.register(extensionConfig.name, 'projectDetail', render);

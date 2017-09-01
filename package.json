@@ -1,6 +1,6 @@
 {
   "name": "GC-GSL-Editor",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
   "keywords": [
     "DNA",
@@ -22,7 +22,7 @@
     "type": "Code editor",
     "client": [
       {
-        "file": "client-build.js",
+        "file": "dist/index.js",
         "region": "projectDetail"
       }
     ]
@@ -30,17 +30,14 @@
   "scripts": {
     "test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js",
     "lint": "./node_modules/eslint/bin/eslint.js * -c ./.eslintrc --ignore-path ./.eslintignore --ignore-pattern src/behavior/editor/brace/*/*.js,*-build.js,tests/,GSL,*.json,*.md ; exit 0",
-    "debug-client": "webpack --config webpack.client.config.js",
-    "watch-client": "webpack --watch --config webpack.client.config.js",
-    "release-client": "webpack --optimize-minimize --config webpack.client.config.js",
-    "debug": "npm run debug-client",
-    "release": "npm run release-client"
+    "debug": "webpack",
+    "watch": "webpack --watch",
+    "release": "webpack --optimize-minimize"
   },
   "author": "Autodesk Bionano <geneticconstructor@autodesk.com>",
   "dependencies": {
     "babel-cli": "^6.9.0",
     "babel-core": "^6.9.1",
-    "babel-eslint": "^4.1.8",
     "babel-loader": "^6.2.4",
     "babel-plugin-add-module-exports": "^0.1.2",
     "babel-plugin-react-transform": "^2.0.0",
@@ -70,15 +67,17 @@
     "react-addons-test-utils": "^0.14.2",
     "react-dom": "0.14.2",
     "rimraf": "^2.5.4",
-    "shelljs": "^0.7.4",
-    "skin-deep": "^0.16.0"
+    "shelljs": "^0.7.4"
   },
   "devDependencies": {
+    "babel-eslint": "^7.2.3",
     "chai": "^3.5.0",
     "css-loader": "^0.23.0",
-    "eslint": "^1.9.0",
-    "eslint-config-airbnb": "^0.1.0",
-    "eslint-plugin-react": "^3.7.1",
+    "eslint": "^4.5.0",
+    "eslint-config-airbnb": "^15.1.0",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-jsx-a11y": "^5.1.0",
+    "eslint-plugin-react": "^7.3.0",
     "express": "^4.13.3",
     "istanbul": "^0.4.5",
     "jsdom": "^9.4.2",

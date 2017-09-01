@@ -10,8 +10,7 @@ import { toggleComments } from '../../behavior/editor/comments';
 import { registerKeysRunCode } from '../../behavior/editor/keyBindings';
 
 const config = require('../../behavior/compiler/config.json');
-const extensionConfig = require('../../../package.json');
-const gslState = require('../../../globals');//I don't understand this at all.
+const gslState = require('../../globals');//I don't understand this at all.
 
 require('../../styles/styles.css');
 /**
@@ -381,7 +380,7 @@ export default class CodeEditorLayout extends Component {
     if (zipFileName) {
       zip.generateAsync({ type: 'blob' })
         .then((content) => {
-            saveAs(content, zipFileName, 'application/octet-stream');
+          saveAs(content, zipFileName, 'application/octet-stream');
         });
     }
   }

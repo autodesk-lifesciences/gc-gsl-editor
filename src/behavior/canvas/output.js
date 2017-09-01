@@ -59,6 +59,8 @@ const renderBlocks = (assemblyList) => {
 
     window.constructor.api.projects.projectAddConstruct(projectId, mainBlock.id);
     window.constructor.api.blocks.blockFreeze(mainBlock.id);
+    //Focus on the most recent construct created
+    window.constructor.api.focus.focusConstruct(mainBlock.id);
   }
 };
 

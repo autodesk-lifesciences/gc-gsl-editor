@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import CodeEditorLayout from './editor/CodeEditorLayout';
 import ConsoleLayout from './console/ConsoleLayout';
-const gslState = require('../../globals');
+const gslState = require('../globals');
 
 /**
  * GSLEditorLayout groups together the Editor and Output Console Components
