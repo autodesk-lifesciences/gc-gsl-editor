@@ -48,5 +48,3 @@ jspm_packages
 
 #webstorm etc.
 .idea
-
-dist/
