@@ -40,6 +40,7 @@ const renderBlocks = (assemblyList) => {
         rules: {
           role: dnaSlice.breed !== null ? compilerConfig.breeds[dnaSlice.breed] : null,
           hidden: dnaSlice.breed === 'B_LINKER',
+          direction: dnaSlice.destFwd ? 'forward' : 'reverse',
         },
         sequence: { initialBases: dnaSlice.dna },
       });
