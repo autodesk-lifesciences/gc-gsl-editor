@@ -62,10 +62,10 @@
     "jszip": "^3.1.1",
     "lodash.throttle": "^4.1.0",
     "mkdirp": "^0.5.1",
-    "react": "^0.14.8",
+    "react": "^15.4.2",
     "react-ace": "^3.5.0",
-    "react-addons-test-utils": "^0.14.2",
-    "react-dom": "0.14.2",
+    "react-addons-test-utils": "^15.4.2",
+    "react-dom": "15.4.2",
     "rimraf": "^2.5.4",
     "shelljs": "^0.7.4"
   },
