@@ -92,7 +92,6 @@ export default class CodeEditorLayout extends Component {
     } else {
       //otherwise, load project and try to load settings
       this.codeEditor.ace.editor.env.editor.setReadOnly(true);
-      this.onStatusMessageChange('Loading...');
 
       compiler.loadProjectCode(projectId)
         .catch(() => {
