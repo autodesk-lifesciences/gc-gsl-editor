@@ -1,6 +1,7 @@
 import React, { PropTypes, Component } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import csvParse from 'csv-parse';
 
 import CodeEditorAce from './CodeEditorAce';
 import Toolbar from './Toolbar';
@@ -254,8 +255,19 @@ export default class CodeEditorLayout extends Component {
           this.onResultContentChange(results.stdout.join('') + results.stderr.join(''), results.outputs);
           if (results.exitCode === 0) {
             this.onStatusMessageChange('GSL executed successfully.');
-            canvas.render(JSON.parse(results.outputs['gslOut.json']));
-            this.refreshDownloadMenu();
+            console.log(results.outputs['gslOut.primers.txt']);
+
+            csvParse(results.outputs['gslOut.primers.txt'], { delimiter: '\t' }, (err, primersCsvData) => {
+              if (err) {
+                console.error(err);
+                canvas.render(JSON.parse(results.outputs['gslOut.json']));
+              } else {
+                console.log('csv', primersCsvData);
+                canvas.render(JSON.parse(results.outputs['gslOut.json']), primersCsvData);
+              }
+              this.refreshDownloadMenu();
+            });
+
           //TODO: When the primers feature has been re-enabled by Darren, we
           //can address this
           // } else if (compiler.isPrimerFailure(data.result)) {
@@ -286,6 +298,7 @@ export default class CodeEditorLayout extends Component {
         const appendedResultOutput = this.state.resultTerminalOutput + '\nResult on rerun without primers:\n' + data.result;
         this.onResultContentChange(appendedResultOutput);
         if (data.status === 0) {
+          console.log('data', data);
           this.onStatusMessageChange('GSL executed successfully.');
           canvas.render(JSON.parse(data.contents));
           this.refreshDownloadMenu();
