@@ -40,7 +40,7 @@ mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --js
 
   const payload = {
     CreateContainerOptions: {
-      Image: 'docker.io/dionjwa/gslc:1a5fe0e6', // TODO: move this to quay.io
+      Image: 'quay.io/bionano/gslc:ae240582',
       Cmd: ['/bin/sh', '/inputs/script.sh'],
       EntryPoint: [], // Otherwise it assumes the Gclc binary
     },
@@ -52,7 +52,8 @@ mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --js
       maxDuration: 3000,
     },
     meta: {
-      projectId: projectId, // Unnecessary, but could be useful for logging
+      projectId, // Unnecessary, but could be useful for logging
+      type: 'gsl', // So we can group all gsl jobs in kibana
     },
   };
 
@@ -68,9 +69,9 @@ mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --js
     .catch((err) => {
       console.error('Request timed out:', err);
       return {
-        'result': 'Unable to process the request:' + err,
-        'status': 1,
-        'contents': [],
+        result: `Unable to process the request:${err}`,
+        status: 1,
+        contents: [],
       };
     });
 };
