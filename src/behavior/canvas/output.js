@@ -33,6 +33,9 @@ const renderBlocks = (assemblyList, primersCsv) => {
     let dnaSequence = '';
 
     for (const dnaSlice of assembly.dnaSlices) {
+      if (dnaSlice.breed === 'B_VIRTUAL' || dnaSlice.breed === 'B_LINKER') {
+        continue;
+      }
       // create blocks inside the construct.
       const block = window.constructor.api.blocks.blockCreate({
         projectId,
