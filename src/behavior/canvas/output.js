@@ -67,39 +67,39 @@ const renderBlocks = (assemblyList, primersCsv) => {
       components,
     });
 
-    //Primers?
-    const primers = [];
-    if (primersCsv && primersCsv.length > 1) {
-      for (let i = 2; i < primersCsv.length; i += 1) {
-        if (primersCsv[i] === undefined) {
-          continue;
-        }
-        const fwd = primersCsv[i][PRIMER_CSV_INDEX.fwd];
-        if (fwd && fwd.length > 5) {
-          const primerIndex = dnaSequence.indexOf(fwd);
-          if (primerIndex > -1) {
-            //position,forward,overhangLength
-            const id = `${true ? 'F' : 'R'}_${mainBlock.id}`;
-            primers.push({
-              sequence: fwd,
-              info: {
-                id,
-                position: primerIndex,
-                forward: true,
-                overhangLength: 0,
-              },
-            });
-          }
-        }
-      }
-    }
+    //Primers? NOT YET IMPLEMENTED BUT LEAVING CODE IN HERE
+    // const primers = [];
+    // if (primersCsv && primersCsv.length > 1) {
+    //   for (let i = 2; i < primersCsv.length; i += 1) {
+    //     if (primersCsv[i] === undefined) {
+    //       continue;
+    //     }
+    //     const fwd = primersCsv[i][PRIMER_CSV_INDEX.fwd];
+    //     if (fwd && fwd.length > 5) {
+    //       const primerIndex = dnaSequence.indexOf(fwd);
+    //       if (primerIndex > -1) {
+    //         //position,forward,overhangLength
+    //         const id = `${true ? 'F' : 'R'}_${mainBlock.id}`;
+    //         primers.push({
+    //           sequence: fwd,
+    //           info: {
+    //             id,
+    //             position: primerIndex,
+    //             forward: true,
+    //             overhangLength: 0,
+    //           },
+    //         });
+    //       }
+    //     }
+    //   }
+    // }
 
     window.constructor.api.projects.projectAddConstruct(projectId, mainBlock.id);
 
-    if (primers.length > 0) {
-      console.log('Adding primers:', primers);
-      window.constructor.api.primers.addPrimers(mainBlock.id, primers);
-    }
+    // if (primers.length > 0) {
+    //   console.log('Adding primers:', primers);
+    //   window.constructor.api.primers.addPrimers(mainBlock.id, primers);
+    // }
 
     window.constructor.api.blocks.blockFreeze(mainBlock.id);
     //Focus on the most recent construct created
