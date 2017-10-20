@@ -21,7 +21,7 @@ export const writeProjectFile = (projectId, code, fileName = 'project.gsl') =>
     projectId,
     config.name,
     fileName,
-    code
+    code,
   );
 
 /**
@@ -49,7 +49,7 @@ mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --js
       'project.gsl': code,
     },
     parameters: {
-      maxDuration: 3000,
+      maxDuration: 20000,
     },
     meta: {
       projectId, // Unnecessary, but could be useful for logging
