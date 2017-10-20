@@ -193,6 +193,11 @@ export default class CodeEditorLayout extends Component {
     return window.constructor.api.projects.projectGetCurrentId();
   }
 
+  getProjectName() {
+    const projectId = this.getProjectId();
+    return window.constructor.api.projects.projectGetName(projectId);
+  }
+
   /**
    * actions to be performed when the editor content changes
    * @param {string} content
@@ -251,22 +256,30 @@ export default class CodeEditorLayout extends Component {
       .then((data) => {
         const results = data.result;
         if (results) {
+
+          //Add the project name to the output files
+          let projectName = this.getProjectName() || 'gslOut';
+          if (projectName && results.outputs) {
+            projectName = projectName.replace(' ', '');
+            const outputFileNames = Object.keys(results.outputs);
+            outputFileNames.forEach((outputName) => {
+              const val = results.outputs[outputName];
+              delete results.outputs[outputName];
+              let newOutputName = outputName.replace('gslOut', projectName);
+              if (newOutputName.endsWith('primers.txt')) {
+                newOutputName = newOutputName.replace('primers.txt', 'primers.csv');
+              }
+              results.outputs[newOutputName] = val;
+            });
+          }
+
           gslState[projectId] = results;
           this.onResultContentChange(results.stdout.join('') + results.stderr.join(''), results.outputs);
           if (results.exitCode === 0) {
             this.onStatusMessageChange('GSL executed successfully.');
-            console.log(results.outputs['gslOut.primers.txt']);
 
-            csvParse(results.outputs['gslOut.primers.txt'], { delimiter: '\t' }, (err, primersCsvData) => {
-              if (err) {
-                console.error(err);
-                canvas.render(JSON.parse(results.outputs['gslOut.json']));
-              } else {
-                console.log('csv', primersCsvData);
-                canvas.render(JSON.parse(results.outputs['gslOut.json']), primersCsvData);
-              }
-              this.refreshDownloadMenu();
-            });
+            canvas.render(JSON.parse(results.outputs[`${projectName}.json`]));
+            this.refreshDownloadMenu();
 
           //TODO: When the primers feature has been re-enabled by Darren, we
           //can address this
