@@ -1,6 +1,6 @@
 {
   "name": "GC-GSL-Editor",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
   "keywords": [
     "DNA",
@@ -54,7 +54,6 @@
     "body-parser": "^1.15.2",
     "brace": "^0.8.0",
     "command-exists": "^1.0.2",
-    "csv-parse": "^1.2.4",
     "file-saver": "^1.3.3",
     "fs": "0.0.1-security",
     "gsl-genome-s288c": "git+https://github.com/autodesk-bionano/gsl-genome-s288c.git",
@@ -68,6 +67,7 @@
     "react-addons-test-utils": "^15.4.2",
     "react-dom": "15.4.2",
     "rimraf": "^2.5.4",
+    "sanitize-filename": "^1.6.1",
     "shelljs": "^0.7.4"
   },
   "devDependencies": {
