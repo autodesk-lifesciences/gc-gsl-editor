@@ -1,7 +1,7 @@
 import React, { PropTypes, Component } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import csvParse from 'csv-parse';
+import sanitize from 'sanitize-filename';
 
 import CodeEditorAce from './CodeEditorAce';
 import Toolbar from './Toolbar';
@@ -195,7 +195,7 @@ export default class CodeEditorLayout extends Component {
 
   getProjectName() {
     const projectId = this.getProjectId();
-    return window.constructor.api.projects.projectGetName(projectId);
+    return sanitize(window.constructor.api.projects.projectGetName(projectId));
   }
 
   /**
