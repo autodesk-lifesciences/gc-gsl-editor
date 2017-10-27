@@ -263,11 +263,15 @@ export default class CodeEditorLayout extends Component {
             projectName = projectName.replace(' ', '');
             const outputFileNames = Object.keys(results.outputs);
             outputFileNames.forEach((outputName) => {
-              const val = results.outputs[outputName];
+              let val = results.outputs[outputName];
               delete results.outputs[outputName];
               let newOutputName = outputName.replace('gslOut', projectName);
               if (newOutputName.endsWith('primers.txt')) {
                 newOutputName = newOutputName.replace('primers.txt', 'primers.csv');
+                //Make actual comma separated so you can just double
+                //click the file to open in Excel etc.
+                val = val.replace(/ /g, ',');
+                val = val.replace(/\t/g, ',');
               }
               results.outputs[newOutputName] = val;
             });
