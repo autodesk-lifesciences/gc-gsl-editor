@@ -25,39 +25,18 @@ export const writeProjectFile = (projectId, code, fileName = 'project.gsl') =>
   );
 
 /**
- * Sends the code and corresponding gslc options to run the command on the server.
+ * Sends the GSL code to the server to run via the GSL compute job type.
  * @param {string} code current Code
- * @param {Object} args argument object
+ * @param {Object} args argument object (unused)
  * @param {string} projectId
  * @return {string} resultData
  */
 export const run = (code, args, projectId) => {
-  const script = `
-#!/usr/bin/env sh
-mkdir /outputs
-mono /gslc/bin/Gslc.exe --lib /gslc/gslc_lib --flat /outputs/gslOutFlat.txt --json /outputs/gslOut.json --primers /outputs/gslOut.primers.txt --ape /outputs gslOut --cm /outputs gslOut /inputs/project.gsl
-`;
-
   const payload = {
-    CreateContainerOptions: {
-      Image: 'quay.io/bionano/gslc:ae240582',
-      Cmd: ['/bin/sh', '/inputs/script.sh'],
-      EntryPoint: [], // Otherwise it assumes the Gclc binary
-    },
-    inputs: {
-      'script.sh': script,
-      'project.gsl': code,
-    },
-    parameters: {
-      maxDuration: 20000,
-    },
-    meta: {
-      projectId, // Unnecessary, but could be useful for logging
-      type: 'gsl', // So we can group all gsl jobs in kibana
-    },
+    gslfile: code,
   };
 
-  return fetch(`/compute/${projectId}`, {
+  return fetch(`/compute/${projectId}/gsl`, {
     method: 'POST',
     credentials: 'same-origin',
     headers: {
