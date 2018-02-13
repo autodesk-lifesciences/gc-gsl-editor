@@ -75,30 +75,39 @@ export default class CodeEditorAce extends Component {
 
   render() {
     return (
-        <div className="Editor" ref={(el) => {
-          if (el) {
-            this.element = el;
-          }
-        }}>
-          <AceEditor ref={(el) => {
+      <div
+        className="Editor bro"
+        ref={
+          (el) => {
             if (el) {
-              this.ace = el;
+              this.element = el;
             }
-          }}
-           mode="gsl"
-           theme="xcode"
-           name="aceEditor"
-           editorProps={{ $blockScrolling: Infinity}}
-           setOptions={{dragEnabled: true, enableSnippets: true}}
-           enableBasicAutocompletion={Boolean(true)}
-           enableSnippets={Boolean(true)}
-           enableLiveAutocompletion={Boolean(true)}
-           width="Infinity"
-           height={this.state.editorHeight + 'px'}
-           showPrintMargin={false}
-           value={this.props.value}
-           onChange={this.handleChange}/>
-        </div>
+          }
+        }
+      >
+        <AceEditor
+          ref={
+            (el) => {
+              if (el) {
+                this.ace = el;
+              }
+            }
+          }
+          mode="gsl"
+          theme="xcode"
+          name="aceEditor"
+          editorProps={{ $blockScrolling: Infinity }}
+          setOptions={{ dragEnabled: true, enableSnippets: true }}
+          enableBasicAutocompletion={Boolean(true)}
+          enableSnippets={Boolean(true)}
+          enableLiveAutocompletion={Boolean(true)}
+          height={`${this.state.editorHeight}px`}
+          width="100%"
+          showPrintMargin={false}
+          value={this.props.value}
+          onChange={this.handleChange}
+        />
+      </div>
     );
   }
 }
