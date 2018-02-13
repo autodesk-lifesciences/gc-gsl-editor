@@ -13,7 +13,6 @@ import PropTypes from 'prop-types';
 export default class ToolbarItem extends Component {
 
   static propTypes = {
-    key: PropTypes.number,
     label: PropTypes.string.isRequired,
     imageUrl: PropTypes.string,
     action: PropTypes.func.isRequired,
