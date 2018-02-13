@@ -72,6 +72,7 @@
     "postcss-import": "^7.1.0",
     "postcss-loader": "^0.7.0",
     "postcss-nested": "^1.0.0",
+    "prop-types": "^15.6.0",
     "react": "^15.4.2",
     "react-ace": "^3.5.0",
     "react-addons-test-utils": "^15.4.2",

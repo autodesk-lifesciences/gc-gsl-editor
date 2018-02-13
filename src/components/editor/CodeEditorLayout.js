@@ -1,4 +1,5 @@
-import React, { PropTypes, Component } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import sanitize from 'sanitize-filename';
