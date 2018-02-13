@@ -1,5 +1,5 @@
 {
-  "name": "GC-GSL-Editor",
+  "name": "@adsk-life-sci/gc-gsl-editor",
   "version": "2.1.9",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
   "keywords": [
