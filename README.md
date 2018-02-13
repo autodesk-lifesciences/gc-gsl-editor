@@ -8,27 +8,48 @@ This GSL Editor extension provides an interface to execute GSL code within the G
 
 Install the module dependencies via npm.
 
-```npm install```
+```
+npm install
+```
 
 ## Development
 
 For a debuggable, non minified build run
 
-```npm run debug```
+```
+npm run debug
+```
 
 Or, or for a minified production build run
 
-```npm run release```
+```
+npm run release
+```
 
 This will build the client into `./dist/index.js`.
 
 For fast development, use...
 
-```npm run watch```
+```
+npm run watch
+```
 
 This builds the debug version of the client (`./dist/index.js`) and continues to watch the project for changes, recompiling on all changes.
 
 It is recommended that you use ``` npm link ``` as documented [here](https://github.com/Autodesk/genetic-constructor/blob/master/docs/extensions/npmLink.md) for faster development.
+
+## Releasing a New Version
+First, update the version in package.json and tag your code using the following command:
+
+    npm run version patch -m "Upgrade to %s for reasons"
+    npm push origin master
+    npm push --tags
+
+Then publish your new version to npm with:
+
+    npm publish
+
+Now you can reference the new version number in GC.
 
 ## Architecture
 
