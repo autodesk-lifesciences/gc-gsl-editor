@@ -2,6 +2,7 @@ const path = require('path');
 const postcssImport = require('postcss-import');
 const postcssNested = require('postcss-nested');
 const postcssCssnext = require('postcss-cssnext');
+const webpack = require('webpack');
 
 const AUTOPREFIXER_BROWSERS = [
   'Android 2.3',
@@ -68,6 +69,11 @@ const debug = {
   },
   module: clientModules,
   devtool: 'inline-source',
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('development'),
+    }),
+  ],
 };
 
 
@@ -80,6 +86,11 @@ const release = {
     filename: distPath,
   },
   module: clientModules,
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('production'),
+    }),
+  ],
 };
 
 // =======================================================================================
@@ -92,6 +103,11 @@ const dev = {
   },
   module: clientModules,
   devtool: 'inline-source-map',
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('development'),
+    }),
+  ],
 };
 
 // get target from npm command used to start the build
