@@ -103,7 +103,7 @@ export const loadProjectCode = (forceProjectId) => {
   return window.constructor.extensions.files.read(
     projectId,
     config.name,
-    'project.gsl'
+    'project.gsl',
   )
     .then(code => setProjectCode(projectId, code));
 };
