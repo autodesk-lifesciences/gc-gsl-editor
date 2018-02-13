@@ -51,3 +51,6 @@ jspm_packages
 
 #Sublime text
 *.sublime*
+
+# Built code (but is shipped to npm)
+dist/

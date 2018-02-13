@@ -23,7 +23,8 @@
     "lint": "./node_modules/eslint/bin/eslint.js * -c ./.eslintrc --ignore-path ./.eslintignore --ignore-pattern src/behavior/editor/brace/*/*.js,*-build.js,tests/,GSL,*.json,*.md ; exit 0",
     "release": "webpack --optimize-minimize",
     "test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "prepublish": "npm run release"
   },
   "dependencies": {},
   "devDependencies": {
