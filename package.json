@@ -1,43 +1,36 @@
 {
-  "name": "GC-GSL-Editor",
-  "version": "2.1.9",
+  "name": "@adsk-life-sci/gc-gsl-editor",
+  "version": "2.2.0",
   "description": "Extension to write and execute GSL (Genotype Specification Language) code and create constructs.",
   "keywords": [
-    "DNA",
-    "GSL",
-    "Autodesk",
     "Amyris",
-    "Constructor"
+    "Autodesk",
+    "Constructor",
+    "DNA",
+    "GSL"
   ],
+  "bugs": {
+    "url": "https://github.com/autodesk-bionano/gc-gsl-editor/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Autodesk Bionano <geneticconstructor@autodesk.com>",
   "repository": {
     "type": "git",
     "url": "git@github.com:autodesk-bionano/gc-gsl-editor.git"
   },
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/autodesk-bionano/gc-gsl-editor/issues"
-  },
-  "geneticConstructor": {
-    "readable": "GSL Editor",
-    "type": "Code editor",
-    "client": [
-      {
-        "file": "dist/index.js",
-        "region": "projectDetail"
-      }
-    ]
-  },
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js",
-    "lint": "./node_modules/eslint/bin/eslint.js * -c ./.eslintrc --ignore-path ./.eslintignore --ignore-pattern src/behavior/editor/brace/*/*.js,*-build.js,tests/,GSL,*.json,*.md ; exit 0",
     "debug": "webpack",
+    "lint": "./node_modules/eslint/bin/eslint.js * -c ./.eslintrc --ignore-path ./.eslintignore --ignore-pattern src/behavior/editor/brace/*/*.js,*-build.js,tests/,GSL,*.json,*.md ; exit 0",
+    "release": "webpack --optimize-minimize",
+    "test": "node_modules/mocha/bin/mocha --compilers js:babel-core/register tests/unit/editor.test.js",
     "watch": "webpack --watch",
-    "release": "webpack --optimize-minimize"
+    "prepublish": "npm run release"
   },
-  "author": "Autodesk Bionano <geneticconstructor@autodesk.com>",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "babel-cli": "^6.9.0",
     "babel-core": "^6.9.1",
+    "babel-eslint": "^7.2.3",
     "babel-loader": "^6.2.4",
     "babel-plugin-add-module-exports": "^0.1.2",
     "babel-plugin-react-transform": "^2.0.0",
@@ -53,26 +46,8 @@
     "babel-runtime": "6.9.2",
     "body-parser": "^1.15.2",
     "brace": "^0.8.0",
-    "command-exists": "^1.0.2",
-    "file-saver": "^1.3.3",
-    "fs": "0.0.1-security",
-    "gsl-genome-s288c": "git+https://github.com/autodesk-bionano/gsl-genome-s288c.git",
-    "invariant": "^2.2.1",
-    "jquery": "^3.1.0",
-    "jszip": "^3.1.1",
-    "lodash.throttle": "^4.1.0",
-    "mkdirp": "^0.5.1",
-    "react": "^15.4.2",
-    "react-ace": "^3.5.0",
-    "react-addons-test-utils": "^15.4.2",
-    "react-dom": "15.4.2",
-    "rimraf": "^2.5.4",
-    "sanitize-filename": "^1.6.1",
-    "shelljs": "^0.7.4"
-  },
-  "devDependencies": {
-    "babel-eslint": "^7.2.3",
     "chai": "^3.5.0",
+    "command-exists": "^1.0.2",
     "css-loader": "^0.23.0",
     "eslint": "^4.5.0",
     "eslint-config-airbnb": "^15.1.0",
@@ -80,20 +55,46 @@
     "eslint-plugin-jsx-a11y": "^5.1.0",
     "eslint-plugin-react": "^7.3.0",
     "express": "^4.13.3",
+    "file-saver": "^1.3.3",
+    "fs": "0.0.1-security",
+    "gsl-genome-s288c": "git+https://github.com/autodesk-bionano/gsl-genome-s288c.git",
+    "invariant": "^2.2.1",
     "istanbul": "^0.4.5",
+    "jquery": "^3.1.0",
     "jsdom": "^9.4.2",
     "json-loader": "^0.5.4",
+    "jszip": "^3.1.1",
+    "lodash.throttle": "^4.1.0",
+    "mkdirp": "^0.5.1",
     "mocha": "^3.0.2",
     "postcss": "^5.0.10",
     "postcss-cssnext": "^2.2.0",
     "postcss-import": "^7.1.0",
     "postcss-loader": "^0.7.0",
     "postcss-nested": "^1.0.0",
+    "prop-types": "^15.6.0",
+    "react": "^15.4.2",
+    "react-ace": "^3.5.0",
+    "react-addons-test-utils": "^15.4.2",
+    "react-dom": "15.4.2",
+    "rimraf": "^2.5.4",
+    "sanitize-filename": "^1.6.1",
+    "shelljs": "^0.7.4",
     "skin-deep": "^0.16.0",
     "source-map-support": "^0.4.0",
     "style-loader": "^0.13.0",
     "webpack": "^1.9.6",
     "webpack-dev-middleware": "^1.2.0",
     "webpack-hot-middleware": "^2.0.0"
+  },
+  "geneticConstructor": {
+    "readable": "GSL Editor",
+    "type": "Code editor",
+    "client": [
+      {
+        "file": "dist/index.js",
+        "region": "projectDetail"
+      }
+    ]
   }
 }

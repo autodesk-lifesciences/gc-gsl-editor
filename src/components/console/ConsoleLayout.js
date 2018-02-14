@@ -1,4 +1,5 @@
-import React, { PropTypes, Component } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import throttle from 'lodash.throttle';
 import ResultViewer from './ResultViewer';
 import Titlebar from './Titlebar';
@@ -102,7 +103,7 @@ export default class ConsoleLayout extends Component {
 
   render() {
     return (
-      <div className="ConsoleLayout" style={{height: this.props.isOpen ? this.state.openHeight : 0 }}>
+      <div className="ConsoleLayout bro" style={{height: this.props.isOpen ? this.state.openHeight : 0 }}>
         <div ref="resizeHandle"
           className="ConsoleLayout-resizeHandle"
           onMouseDown={this.handleResizableMouseDown}></div>
