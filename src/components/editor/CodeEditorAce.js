@@ -76,7 +76,7 @@ export default class CodeEditorAce extends Component {
   render() {
     return (
       <div
-        className="Editor bro"
+        className="Editor"
         ref={
           (el) => {
             if (el) {
