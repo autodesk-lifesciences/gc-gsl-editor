@@ -72,6 +72,7 @@ export default class CodeEditorLayout extends Component {
    * Actions to be performed when this component mounts.
    */
   componentDidMount() {
+    this._isMounted = true;
     this.refreshDownloadMenu();
     if (gslState.hasOwnProperty('isConsoleOpen')) {
       this.props.onToggleConsoleVisibility(gslState.isConsoleOpen);
@@ -109,7 +110,7 @@ export default class CodeEditorLayout extends Component {
       if (projectId && code) {
         compiler.saveProjectCode(projectId, code);
       }
-    }, 30000);//Autosave every 5 seconds
+    }, 30000);//Autosave every 30 seconds
     this.dispose = () => {
       clearInterval(timerId);
     };
@@ -125,6 +126,7 @@ export default class CodeEditorLayout extends Component {
     }
     this.projectId = null;
     this.dispose();
+    this._isMounted = false;
   }
 
   /**
@@ -135,7 +137,6 @@ export default class CodeEditorLayout extends Component {
     const projectId = this.getProjectId();
     const savedCode = (gslState && gslState[projectId]) ? gslState[projectId].savedCode : null;
     const editorDirty = content !== savedCode;
-
     this.setState({
       editorContent: content,
       editorDirty,
@@ -149,7 +150,7 @@ export default class CodeEditorLayout extends Component {
    * @param {string} message
    */
   onStatusMessageChange = (message) => {
-    this.setState({ statusMessage: message });
+    this._isMounted && this.setState({ statusMessage: message });
     this.props.onStatusContentChange(message);
     window.constructor.api.ui.uiSetGrunt(message);
   };
@@ -159,7 +160,7 @@ export default class CodeEditorLayout extends Component {
    * @param {string} content
    */
   onResultContentChange = (stdErrOut, fileObject) => {
-    this.setState({ resultTerminalOutput: stdErrOut });
+    this._isMounted && this.setState({ resultTerminalOutput: stdErrOut });
     this.props.onSubmit(stdErrOut);
   };
 
@@ -252,7 +253,6 @@ export default class CodeEditorLayout extends Component {
 
     this.onStatusMessageChange('Running code...');
     // console.log(`Sending code to the server: ${code}`);
-
     compiler.run(code, config.arguments, this.getProjectId())
       .then((data) => {
         const results = data.result;
@@ -283,7 +283,7 @@ export default class CodeEditorLayout extends Component {
           if (results.exitCode === 0) {
             this.onStatusMessageChange('GSL executed successfully.');
 
-            canvas.render(JSON.parse(results.outputs[`${projectName}.json`]));
+            canvas.render(projectId, JSON.parse(results.outputs[`${projectName}.json`]));
             this.refreshDownloadMenu();
 
           //TODO: When the primers feature has been re-enabled by Darren, we
@@ -309,8 +309,8 @@ export default class CodeEditorLayout extends Component {
    */
   rerunCode = (code, newArgs) => {
     console.log(`Sending code to the server: ${code}`);
-
-    compiler.run(code, newArgs, this.getProjectId())
+    const projectId = this.getProjectId();
+    compiler.run(code, newArgs, projectId)
       .then((data) => {
         // retain the previous console error.
         const appendedResultOutput = this.state.resultTerminalOutput + '\nResult on rerun without primers:\n' + data.result;
@@ -318,7 +318,7 @@ export default class CodeEditorLayout extends Component {
         if (data.status === 0) {
           console.log('data', data);
           this.onStatusMessageChange('GSL executed successfully.');
-          canvas.render(JSON.parse(data.contents));
+          canvas.render(projectId, JSON.parse(data.contents));
           this.refreshDownloadMenu();
         } else {
           this.onStatusMessageChange('Running this code resulted in errors. Please check the console for details.');

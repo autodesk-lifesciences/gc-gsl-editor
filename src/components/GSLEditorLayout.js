@@ -18,6 +18,14 @@ export default class GSLEditorLayout extends Component {
       isConsoleOpen: false,
     };
   }
+  
+  componentDidMount() {
+    this._isMounted = true;
+  }
+  
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
 
   /**
    * Actions to be performed when the editor content changes.
@@ -35,7 +43,7 @@ export default class GSLEditorLayout extends Component {
    * @param {string} content
    */
   onResultContentChange = (content) => {
-    this.setState({ resultContent: content });
+    this._isMounted && this.setState({ resultContent: content });
     gslState.resultContent = content;
   };
 
@@ -45,7 +53,7 @@ export default class GSLEditorLayout extends Component {
    * @param {string} content
    */
   onStatusContentChange = (content) => {
-    this.setState( { statusContent: content});
+    this._isMounted && this.setState( { statusContent: content});
     gslState.statusContent = content;
   };
 

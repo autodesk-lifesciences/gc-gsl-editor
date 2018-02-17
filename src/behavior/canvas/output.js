@@ -9,8 +9,7 @@ const PRIMER_CSV_INDEX = ['Name', 'Id', 'fwd', 'rev', 'fwdtail', 'fwdbody', 'rev
 /**
  * Removes the GSL constructs from the canvas, based on which constructs are frozen
  */
-const removeGSLConstructs = () => {
-  const projectId = window.constructor.api.projects.projectGetCurrentId();
+const removeGSLConstructs = (projectId) => {
   const constructIds = window.constructor.api.projects.projectGet(projectId).components;
   const constructs = constructIds.map(constructId => window.constructor.api.blocks.blockGet(constructId));
   //remove the constructs we generate (frozen) and empty ones (in case project had one to start)
@@ -22,9 +21,8 @@ const removeGSLConstructs = () => {
  * Renders a list of GSL assemblies as Constructor constructs.
  * @param {array} assemblyList - List of objects describing GSL assemblies.
  */
-const renderBlocks = (assemblyList, primersCsv) => {
+const renderBlocks = (projectId, assemblyList, primersCsv) => {
   assemblyList.reverse();
-  const projectId = window.constructor.api.projects.projectGetCurrentId();
 
   for (const assembly of assemblyList) {
     // track blocks (dnaSlice) to put in construct (assembly)
@@ -102,8 +100,10 @@ const renderBlocks = (assemblyList, primersCsv) => {
     // }
 
     window.constructor.api.blocks.blockFreeze(mainBlock.id);
-    //Focus on the most recent construct created
-    window.constructor.api.focus.focusConstruct(mainBlock.id);
+    if (projectId === window.constructor.api.projects.projectGetCurrentId()) {
+      //Focus on the most recent construct created if the relevent project still in focus
+      window.constructor.api.focus.focusConstruct(mainBlock.id);
+    }
   }
 };
 
@@ -112,7 +112,7 @@ const renderBlocks = (assemblyList, primersCsv) => {
  * Reload the existing contructs created by GSL in global state, to associate GSL code with blocks.
  * @param {array} assemblyList - List of objects describing GSL assemblies.
  */
-export const render = (assemblyList, primers) => {
-  removeGSLConstructs();
-  return renderBlocks(assemblyList, primers);
+export const render = (projectId, assemblyList, primers) => {
+  removeGSLConstructs(projectId);
+  return renderBlocks(projectId, assemblyList, primers);
 };
