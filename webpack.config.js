@@ -49,17 +49,6 @@ const clientModules = {
 // entry point doesn't vary by build
 const entry = './src/main.jsx';
 
-// ===========================================================================
-// debug builds a source map decorated, non minified version of the extension client.
-// If GC_DIR is set, the output is put directly in the app.
-// ===========================================================================
-if (!process.env.GC_DIR) {
-  console.warn(`GC_DIR env var not set, assuming you are running GC via
-    docker-compose up, and mounting the sequence-viewer code via a documented
-    change in the docker-compose.override.yml file. Otherwise set GC_DIR to the
-    absolute path of the Genetic Constructor project`);
-}
-
 const debug = {
   entry,
   output: {
